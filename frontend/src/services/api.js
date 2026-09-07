@@ -238,6 +238,7 @@ export const accountAPI = {
 export const authAPI = {
   login: (credentials) => apiFetch('/auth/login', { method: 'POST', body: credentials }),
   register: (data) => apiFetch('/auth/register', { method: 'POST', body: data }),
+  uwoLogin: (data) => apiFetch('/auth/uwo-login', { method: 'POST', body: data }),
   updateProfile: (data) => apiFetch('/auth/profile', { method: 'PUT', body: data }),
 };
 
@@ -309,6 +310,7 @@ export const healthAPI = {
 };
 
 export default {
+  auth: authAPI,
   workspace: workspaceAPI,
   brand: brandAPI,
   campaign: campaignAPI,

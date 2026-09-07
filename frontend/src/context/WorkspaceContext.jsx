@@ -1939,13 +1939,17 @@ export const WorkspaceProvider = ({ children }) => {
       const savedName = localStorage.getItem('aisa_user_name');
       const saved = localStorage.getItem('aisa_user');
       const savedEmail = localStorage.getItem('aisa_user_email');
-      let u = { email: 'admin@aiads.io', name: 'Admin', role: 'AgencyAdmin' };
-      if (saved) u = JSON.parse(saved);
-      else if (savedEmail) u = { email: savedEmail, name: savedEmail.split('@')[0], role: 'AgencyAdmin' };
-      if (savedName) u.name = savedName;
-      return u;
+      const savedToken = localStorage.getItem('aisa_token') || localStorage.getItem('token') || localStorage.getItem('uwo_access_token');
+      if (saved && savedToken) {
+        const u = JSON.parse(saved);
+        if (savedName) u.name = savedName;
+        return u;
+      } else if (savedEmail && savedToken) {
+        return { email: savedEmail, name: savedName || savedEmail.split('@')[0], role: 'AgencyAdmin' };
+      }
+      return null;
     } catch (e) {
-      return { email: 'admin@aiads.io', name: 'Admin', role: 'AgencyAdmin' };
+      return null;
     }
   });
 
@@ -1984,6 +1988,12 @@ export const WorkspaceProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('aisa_user');
+    localStorage.removeItem('aisa_user_name');
+    localStorage.removeItem('aisa_user_email');
+    localStorage.removeItem('aisa_token');
+    localStorage.removeItem('token');
+    localStorage.removeItem('uwo_access_token');
+    localStorage.removeItem('uwo_user');
     setIsSettingsModalOpen(false);
     setActiveModuleState('dashboard');
   };

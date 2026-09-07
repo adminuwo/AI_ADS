@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, Check, ShieldCheck, UserPlus, LogIn } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, Check, ShieldCheck, UserPlus, LogIn, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { UWOLoginModal } from './UWOLoginModal';
 
 export const Login = ({ onLoginSuccess }) => {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
@@ -12,6 +13,34 @@ export const Login = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [showUwoModal, setShowUwoModal] = useState(false);
+  const [uwoRegisterMode, setUwoRegisterMode] = useState(false);
+
+  const handleUwoSuccess = (data) => {
+    setSuccess(true);
+    const uUser = data.user || {};
+    const cleanEmail = (uUser.email || email).toLowerCase().trim();
+    const formattedUser = {
+      id: uUser.id || uUser._id || `usr_${Date.now()}`,
+      _id: uUser.id || uUser._id || `usr_${Date.now()}`,
+      email: cleanEmail,
+      name: uUser.name || cleanEmail.split('@')[0],
+      role: uUser.role || (cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin'),
+      avatar: uUser.avatar || '',
+      accentColor: uUser.accentColor || 'indigo',
+      appearance: uUser.appearance || 'light',
+      credits: uUser.credits !== undefined ? uUser.credits : 500,
+      plan: uUser.plan || 'free',
+    };
+    localStorage.setItem('aisa_token', data.token || data.access_token);
+    localStorage.setItem('token', data.token || data.access_token);
+    localStorage.setItem('aisa_user_email', cleanEmail);
+    localStorage.setItem('aisa_user', JSON.stringify(formattedUser));
+
+    setTimeout(() => {
+      onLoginSuccess(formattedUser);
+    }, 600);
+  };
 
   const handleTabChange = (newMode) => {
     setMode(newMode);
@@ -216,7 +245,16 @@ export const Login = ({ onLoginSuccess }) => {
                   {mode === 'register' ? 'Create Password' : 'Password'}
                 </label>
                 {mode === 'login' && (
-                  <a href="#" className="text-xs font-bold text-brand-600 hover:text-brand-700 transition-colors">Forgot?</a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUwoRegisterMode(false);
+                      setShowUwoModal(true);
+                    }}
+                    className="text-xs font-bold text-brand-600 hover:text-brand-700 transition-colors cursor-pointer"
+                  >
+                    Forgot?
+                  </button>
                 )}
               </div>
               <div className="relative">
@@ -298,6 +336,27 @@ export const Login = ({ onLoginSuccess }) => {
             </button>
           </form>
 
+          {/* UWO Single Sign-On Option */}
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-slate-200/80" />
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">or continue with</span>
+            <div className="flex-1 h-px bg-slate-200/80" />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setUwoRegisterMode(mode === 'register');
+              setShowUwoModal(true);
+            }}
+            className="w-full py-3 px-4 bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-yellow-500/10 hover:from-amber-500/20 hover:to-yellow-500/20 border border-amber-400/50 rounded-2xl text-xs font-black uppercase tracking-wider text-amber-800 transition-all flex items-center justify-center gap-2.5 shadow-sm active:scale-[0.99] cursor-pointer"
+          >
+            <div className="w-5 h-5 rounded-lg bg-amber-500 flex items-center justify-center shadow-xs">
+              <Zap className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+            </div>
+            <span>Sign In with UWO Platform (SSO)</span>
+          </button>
+
           {/* Bottom Switch Link */}
           <div className="mt-6 pt-5 border-t border-slate-200/80 text-center">
             {mode === 'login' ? (
@@ -337,6 +396,16 @@ export const Login = ({ onLoginSuccess }) => {
         {/* Footer */}
         <p className="text-center text-xs text-slate-400 mt-6 font-medium">© 2026 AI Ads™ (AISA) · All rights reserved</p>
       </div>
+
+      {/* Centralized UWO Unified Login Modal */}
+      <UWOLoginModal
+        isOpen={showUwoModal}
+        onClose={() => setShowUwoModal(false)}
+        initialRegister={uwoRegisterMode}
+        appCode="ai_ads"
+        apiKey="key_ai_ads_live_master_2026"
+        onSuccess={handleUwoSuccess}
+      />
     </div>
   );
 };

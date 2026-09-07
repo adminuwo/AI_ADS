@@ -236,6 +236,102 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// UWO Unified Platform SSO Login Endpoint
+const handleUwoLogin = async (req, res) => {
+  const { email, name, uwo_token, uwo_user_id } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, error: 'Email is required for UWO authentication' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  let user = null;
+
+  try {
+    user = await User.findOne({ email: cleanEmail });
+    if (!user) {
+      user = await User.create({
+        email: cleanEmail,
+        name: name || cleanEmail.split('@')[0],
+        provider: 'uwo',
+        providerId: uwo_user_id || `uwo_${Date.now()}`,
+        isVerified: true,
+        appearance: 'light',
+        role: cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin',
+        credits: 500,
+        plan: 'free'
+      });
+      console.log(`👤 New UWO SSO user registered in MongoDB: ${cleanEmail}`);
+    } else {
+      if (!user.provider || user.provider === 'local') {
+        user.provider = 'uwo';
+      }
+      user.isVerified = true;
+      if (name && (!user.name || user.name === user.email.split('@')[0])) {
+        user.name = name;
+      }
+      await user.save().catch(e => console.log('UWO user update note:', e.message));
+    }
+  } catch (dbErr) {
+    console.log('MongoDB UWO Auth Note (Checking Memory Store):', dbErr.message);
+    user = memoryUsers.find(u => u.email === cleanEmail);
+    if (!user) {
+      user = {
+        id: `usr_${Date.now()}`,
+        email: cleanEmail,
+        name: name || cleanEmail.split('@')[0],
+        provider: 'uwo',
+        providerId: uwo_user_id || `uwo_${Date.now()}`,
+        isVerified: true,
+        avatar: '',
+        accentColor: 'indigo',
+        appearance: 'light',
+        role: cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin',
+        credits: 500,
+        plan: 'free'
+      };
+      memoryUsers.push(user);
+      console.log(`👤 New UWO SSO user registered in Memory: ${cleanEmail}`);
+    }
+  }
+
+  try {
+    const userId = user._id ? user._id.toString() : String(user.id || `usr_${Date.now()}`);
+    let userRole = user.role || 'AgencyAdmin';
+    if (cleanEmail === 'admin@aiads.com') {
+      userRole = 'SuperAdmin';
+    }
+
+    const token = jwt.sign(
+      { userId, email: cleanEmail, role: userRole },
+      process.env.JWT_SECRET || 'ai_ads_secret_key_123',
+      { expiresIn: '7d' }
+    );
+
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: userId,
+        _id: userId,
+        email: cleanEmail,
+        name: user.name || cleanEmail.split('@')[0],
+        avatar: user.avatar || '',
+        accentColor: user.accentColor || 'indigo',
+        appearance: user.appearance || 'light',
+        role: userRole,
+        credits: user.credits !== undefined ? user.credits : 500,
+        plan: user.plan || 'free'
+      }
+    });
+  } catch (jwtErr) {
+    console.error('UWO Auth generation error:', jwtErr);
+    return res.status(500).json({ success: false, error: `UWO Auth Error: ${jwtErr.message}` });
+  }
+};
+
+app.post('/api/auth/uwo-login', handleUwoLogin);
+app.post('/api/auth/sso/uwo-login', handleUwoLogin);
+
 // Register Endpoint
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, confirmPassword } = req.body;
