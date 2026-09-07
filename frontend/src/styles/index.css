@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-500: #7B61FF;
+  --brand-600: #6B5AED;
+  --brand-400: #A882FF;
+  --brand-300: #B388FF;
+  --brand-100: #E8E3FF;
+  --brand-50: #F8F9FD;
+  --brand-glow: rgba(123, 97, 255, 0.35);
+  --brand-from: #6B5AED;
+  --brand-to: #7B61FF;
+  --brand-500-rgb: 123, 97, 255;
+  --brand-600-rgb: 107, 90, 237;
+  --brand-400-rgb: 168, 130, 255;
+  --brand-300-rgb: 179, 136, 255;
+  --brand-700-rgb: 86, 70, 199;
+}
+
+@layer base {
+  body {
+    @apply transition-colors duration-200 antialiased selection:bg-brand-500 selection:text-white font-sans;
+  }
+}
+
+/* Glassmorphism & Modern AISA UI Components */
+.glass-card {
+  background: rgba(15, 21, 35, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.25);
+}
+
+.light .glass-card {
+  background: #FFFFFF;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 2px 8px -2px rgba(0, 0, 0, 0.02);
+}
+
+.glass-input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  @apply transition-all duration-200 text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-xl px-4 py-2.5;
+}
+
+.light .glass-input {
+  background: #F8F9FD;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  @apply text-slate-900 placeholder-slate-500 focus:bg-white;
+}
+
+.card-interactive {
+  @apply transition-all duration-200 hover:border-brand-500/40 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer;
+}
+
+.accent-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 26px -4px rgba(0, 0, 0, 0.06);
+}
+
+.dark .accent-card-hover {
+  box-shadow: 0 8px 26px -4px rgba(0, 0, 0, 0.35);
+}
+
+.accent-card-hover:hover {
+  transform: translateY(-4px);
+  border-color: var(--brand-500, #7B61FF) !important;
+  box-shadow: 0 16px 36px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)) !important;
+}
+
+.btn-primary {
+  background-image: linear-gradient(135deg, var(--brand-from, #6B5AED), var(--brand-to, #7B61FF)) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  @apply font-bold px-5 py-2.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 text-sm tracking-wide cursor-pointer;
+}
+
+.btn-primary:hover {
+  background-image: linear-gradient(135deg, var(--brand-to, #7B61FF), var(--brand-400, #A882FF)) !important;
+  box-shadow: 0 12px 28px -4px var(--brand-glow, rgba(123, 97, 255, 0.6)), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.btn-save {
+  background-image: linear-gradient(135deg, var(--brand-from, #6B5AED), var(--brand-to, #7B61FF)) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 22px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  @apply font-bold px-4 py-2 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-1.5 text-xs cursor-pointer;
+}
+
+.btn-save:hover {
+  background-image: linear-gradient(135deg, var(--brand-to, #7B61FF), var(--brand-400, #A882FF)) !important;
+  box-shadow: 0 10px 26px -4px var(--brand-glow, rgba(123, 97, 255, 0.6)), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.btn-secondary {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  @apply font-semibold px-4 py-2 rounded-xl transition-all duration-200 hover:bg-slate-800 hover:text-white hover:border-slate-500 active:scale-95 flex items-center justify-center gap-2 text-sm cursor-pointer;
+}
+
+.light .btn-secondary {
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  @apply hover:bg-slate-50 hover:text-slate-900 hover:shadow transition-all;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+/* AISA Cinematic Neural Radial Background */
+.aisa-dashboard-bg {
+  background: radial-gradient(ellipse at 15% 20%, rgba(123,97,255,0.12) 0%, transparent 55%),
+              radial-gradient(ellipse at 85% 80%, rgba(59,130,246,0.10) 0%, transparent 55%),
+              radial-gradient(ellipse at 50% 50%, rgba(245,158,11,0.03) 0%, transparent 70%),
+              linear-gradient(160deg, #060913 0%, #090e24 50%, #060a1b 100%);
+}
+
+.light .aisa-dashboard-bg {
+  background: #ffffff !important;
+}
+
+/* Sidebar Dark AISA Gradient */
+.dark aside {
+  background: linear-gradient(180deg, rgba(8, 11, 26, 0.98) 0%, rgba(11, 15, 35, 0.98) 100%) !important;
+  border-right: none !important;
+  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+
