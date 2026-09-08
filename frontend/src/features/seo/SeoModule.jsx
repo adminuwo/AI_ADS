@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { seoAPI } from '../../services/api';
 import { Search, Layers, FileText, Code2, Sparkles, Send, ShieldAlert, TrendingUp, BarChart3, Tag, Hash, ChevronRight, Copy, Check, RefreshCw, Globe, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
@@ -51,6 +51,7 @@ export const SeoModule = () => {
   const [toast, setToast] = useState(null);
   const [initialized, setInitialized] = useState(false);
   const [keywordTab, setKeywordTab] = useState('all'); // 'all' | 'existing' | 'opportunity'
+  const briefGeneratingRef = useRef(false);
 
   const showToast = (message, type = 'error') => setToast({ message, type });
 
@@ -101,128 +102,15 @@ export const SeoModule = () => {
     try { localStorage.setItem(storageKey, JSON.stringify(obj)); } catch (e) {}
   }, [activeWorkspace, keywordsList, seedKeyword, brief, setSeoSearchData]);
 
-  // ─── AI-Powered: Cluster Keywords ─────────────────────────────────────────────
-  const handleClusterKeywords = async (seed) => {
-    const kw = seed || seedKeyword || getDefaultSeed();
-    setClusterLoading(true);
-    // Clear old cached brief so stale hardcoded data doesn't persist
-    setBrief(null);
-    try {
-      const ctx = getBrandContext();
-      const result = await seoAPI.clusterKeywords({
-        seedKeyword: kw,
-        ...ctx,
-        count: 8
-      });
-      if (result.success && result.keywords?.length > 0) {
-        setKeywordsList(result.keywords);
-        setSeedKeyword(kw);
-        saveSeoData(brief, result.keywords, kw);
-        setInitialized(true);
-        showToast(`${result.keywords.length} keywords generated via ${result.model || 'AI'}`, 'success');
-      } else {
-        throw new Error('No keywords returned');
-      }
-    } catch (err) {
-      console.error('Keyword clustering failed:', err);
-      showToast(`Keyword generation failed: ${err.message}`);
-    } finally {
-      setClusterLoading(false);
-    }
-  };
-
-  // ─── AI-Powered: Regenerate Single Keyword ────────────────────────────────────
-  const handleRegenerateKeyword = async (idx, e) => {
-    e.stopPropagation();
-    setRegenLoadingIdx(idx);
-    try {
-      const ctx = getBrandContext();
-      const result = await seoAPI.regenerateKeyword({
-        ...ctx,
-        seedKeyword: seedKeyword || getDefaultSeed(),
-        existingKeywords: keywordsList
-      });
-      if (result.success && result.keyword?.term) {
-        setKeywordsList(prev => {
-          const updated = prev.map((kw, i) => i === idx ? result.keyword : kw);
-          saveSeoData(brief, updated);
-          return updated;
-        });
-      } else {
-        throw new Error('No keyword returned');
-      }
-    } catch (err) {
-      console.error('Keyword regeneration failed:', err);
-      showToast(`Keyword regeneration failed: ${err.message}`);
-    } finally {
-      setRegenLoadingIdx(null);
-    }
-  };
-
-  // ─── AI-Powered: Regenerate All Keywords ──────────────────────────────────────
-  const handleRegenerateAll = () => handleClusterKeywords(seedKeyword);
-
-  // ─── AI-Powered: Initialize SEO Pipeline ──────────────────────────────────────
-  const handleInitializeSEO = () => {
-    const defaultSeed = getDefaultSeed();
-    setSeedKeyword(defaultSeed);
-    handleClusterKeywords(defaultSeed);
-  };
-
-  // Helper to detect if cached keywords are outdated legacy/template ones
-  const isLegacyCache = (kws) => {
-    if (!kws || kws.length < 6) return true;
-    return kws.some(k => k.term && (k.term.includes('Complete Guide 2026') || k.term.includes('vs Competitors')));
-  };
-
-  // ─── Load cached data on workspace change ─────────────────────────────────────
-  useEffect(() => {
-    const wsId = activeWorkspace._id || activeWorkspace.id || activeWorkspace.brandName;
-    const storageKey = `aisa_seo_${wsId}`;
-    const defaultSeed = getDefaultSeed();
-
-    // 1. Check React Context
-    if (seoSearchData && (seoSearchData.brandName === activeWorkspace.brandName || seoSearchData.workspaceId === wsId)) {
-      if (!isLegacyCache(seoSearchData.keywordsList)) {
-        setSeedKeyword(seoSearchData.seedKeyword || defaultSeed);
-        setKeywordsList(seoSearchData.keywordsList);
-        setBrief(seoSearchData.brief || null);
-        setInitialized(true);
-        return;
-      }
-    }
-
-    // 2. Check localStorage per workspace
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.keywordsList && !isLegacyCache(parsed.keywordsList)) {
-          setSeedKeyword(parsed.seedKeyword || defaultSeed);
-          setKeywordsList(parsed.keywordsList);
-          setBrief(parsed.brief || null);
-          if (setSeoSearchData) setSeoSearchData(parsed);
-          setInitialized(true);
-          return;
-        }
-      }
-    } catch (e) {}
-
-    // 3. Obsolete or No cached data — automatically generate fresh high-quality keywords
-    setSeedKeyword(defaultSeed);
-    setKeywordsList([]);
-    setBrief(null);
-    setInitialized(true);
-    handleClusterKeywords(defaultSeed);
-  }, [activeWorkspace._id || activeWorkspace.id || activeWorkspace.brandName]);
-
   // ─── AI-Powered: Generate SEO Brief ───────────────────────────────────────────
-  const handleGenerateBrief = async (customSeed, customIntent) => {
+  const handleGenerateBrief = async (customSeed, customIntent, customKeywords) => {
     const targetSeed = customSeed !== undefined ? customSeed : seedKeyword;
     const targetIntent = customIntent !== undefined ? customIntent : intent;
+    const targetKws = customKeywords !== undefined ? customKeywords : keywordsList;
 
-    if (!targetSeed) return;
+    if (!targetSeed || briefGeneratingRef.current) return;
 
+    briefGeneratingRef.current = true;
     setLoading(true);
     try {
       const ctx = getBrandContext();
@@ -266,7 +154,7 @@ export const SeoModule = () => {
           model: b.model || 'AI'
         };
         setBrief(finalBrief);
-        saveSeoData(finalBrief, undefined, targetSeed);
+        saveSeoData(finalBrief, targetKws, targetSeed);
         showToast(`SEO Brief updated for "${targetIntent}" intent via ${finalBrief.model}`, 'success');
       } else {
         throw new Error(res.error || 'Generation failed — no brief returned');
@@ -276,8 +164,140 @@ export const SeoModule = () => {
       showToast(`Brief generation failed: ${e.message}`);
     } finally {
       setLoading(false);
+      briefGeneratingRef.current = false;
     }
   };
+
+  // ─── AI-Powered: Cluster Keywords ─────────────────────────────────────────────
+  const handleClusterKeywords = async (seed, autoGenerateBrief = true) => {
+    const kw = seed || seedKeyword || getDefaultSeed();
+    setClusterLoading(true);
+    if (!autoGenerateBrief) {
+      setBrief(null);
+    }
+    try {
+      const ctx = getBrandContext();
+      const result = await seoAPI.clusterKeywords({
+        seedKeyword: kw,
+        ...ctx,
+        count: 8
+      });
+      if (result.success && result.keywords?.length > 0) {
+        setKeywordsList(result.keywords);
+        setSeedKeyword(kw);
+        saveSeoData(brief, result.keywords, kw);
+        setInitialized(true);
+        showToast(`${result.keywords.length} keywords generated via ${result.model || 'AI'}`, 'success');
+        
+        // Auto-generate brief on 1st time
+        if (autoGenerateBrief) {
+          handleGenerateBrief(kw, intent, result.keywords);
+        }
+      } else {
+        throw new Error('No keywords returned');
+      }
+    } catch (err) {
+      console.error('Keyword clustering failed:', err);
+      showToast(`Keyword generation failed: ${err.message}`);
+    } finally {
+      setClusterLoading(false);
+    }
+  };
+
+  // ─── AI-Powered: Regenerate Single Keyword ────────────────────────────────────
+  const handleRegenerateKeyword = async (idx, e) => {
+    e.stopPropagation();
+    setRegenLoadingIdx(idx);
+    try {
+      const ctx = getBrandContext();
+      const result = await seoAPI.regenerateKeyword({
+        ...ctx,
+        seedKeyword: seedKeyword || getDefaultSeed(),
+        existingKeywords: keywordsList
+      });
+      if (result.success && result.keyword?.term) {
+        setKeywordsList(prev => {
+          const updated = prev.map((kw, i) => i === idx ? result.keyword : kw);
+          saveSeoData(brief, updated);
+          return updated;
+        });
+      } else {
+        throw new Error('No keyword returned');
+      }
+    } catch (err) {
+      console.error('Keyword regeneration failed:', err);
+      showToast(`Keyword regeneration failed: ${err.message}`);
+    } finally {
+      setRegenLoadingIdx(null);
+    }
+  };
+
+  // ─── AI-Powered: Regenerate All Keywords ──────────────────────────────────────
+  const handleRegenerateAll = () => handleClusterKeywords(seedKeyword, false);
+
+  // ─── AI-Powered: Initialize SEO Pipeline ──────────────────────────────────────
+  const handleInitializeSEO = () => {
+    const defaultSeed = getDefaultSeed();
+    setSeedKeyword(defaultSeed);
+    handleClusterKeywords(defaultSeed, true);
+  };
+
+  // Helper to detect if cached keywords are outdated legacy/template ones
+  const isLegacyCache = (kws) => {
+    if (!kws || kws.length < 6) return true;
+    return kws.some(k => k.term && (k.term.includes('Complete Guide 2026') || k.term.includes('vs Competitors')));
+  };
+
+  // ─── Load cached data on workspace change ─────────────────────────────────────
+  useEffect(() => {
+    const wsId = activeWorkspace._id || activeWorkspace.id || activeWorkspace.brandName;
+    const storageKey = `aisa_seo_${wsId}`;
+    const defaultSeed = getDefaultSeed();
+
+    // 1. Check React Context
+    if (seoSearchData && (seoSearchData.brandName === activeWorkspace.brandName || seoSearchData.workspaceId === wsId)) {
+      if (!isLegacyCache(seoSearchData.keywordsList)) {
+        const currentSeed = seoSearchData.seedKeyword || defaultSeed;
+        setSeedKeyword(currentSeed);
+        setKeywordsList(seoSearchData.keywordsList);
+        setBrief(seoSearchData.brief || null);
+        setInitialized(true);
+        // Automatically generate brief on 1st time if brief is missing
+        if (!seoSearchData.brief) {
+          handleGenerateBrief(currentSeed, intent, seoSearchData.keywordsList);
+        }
+        return;
+      }
+    }
+
+    // 2. Check localStorage per workspace
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.keywordsList && !isLegacyCache(parsed.keywordsList)) {
+          const currentSeed = parsed.seedKeyword || defaultSeed;
+          setSeedKeyword(currentSeed);
+          setKeywordsList(parsed.keywordsList);
+          setBrief(parsed.brief || null);
+          if (setSeoSearchData) setSeoSearchData(parsed);
+          setInitialized(true);
+          // Automatically generate brief on 1st time if brief is missing
+          if (!parsed.brief) {
+            handleGenerateBrief(currentSeed, intent, parsed.keywordsList);
+          }
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // 3. Obsolete or No cached data — automatically generate fresh high-quality keywords & brief
+    setSeedKeyword(defaultSeed);
+    setKeywordsList([]);
+    setBrief(null);
+    setInitialized(true);
+    handleClusterKeywords(defaultSeed, true);
+  }, [activeWorkspace._id || activeWorkspace.id || activeWorkspace.brandName]);
 
   return (
     <div className="space-y-5 animate-in fade-in">
@@ -349,11 +369,7 @@ export const SeoModule = () => {
                   <select
                     value={intent}
                     onChange={(e) => {
-                      const newIntent = e.target.value;
-                      setIntent(newIntent);
-                      if (brief) {
-                        handleGenerateBrief(seedKeyword, newIntent);
-                      }
+                      setIntent(e.target.value);
                     }}
                     className="w-full glass-input text-xs font-semibold"
                   >
@@ -367,7 +383,7 @@ export const SeoModule = () => {
 
                 <div className="w-full md:w-auto shrink-0">
                   <button
-                    onClick={() => handleGenerateBrief()}
+                    onClick={() => handleGenerateBrief(seedKeyword, intent)}
                     disabled={loading}
                     className="w-full md:w-auto btn-primary px-6 py-2.5 text-xs font-bold whitespace-nowrap shadow-lg shadow-brand-500/20"
                   >
