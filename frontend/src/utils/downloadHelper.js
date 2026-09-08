@@ -1,4 +1,5 @@
 import { getBrandLogoUrl } from './brandLogoHelper';
+import { API_BASE } from '../config/api';
 
 /**
  * Triggers a file download directly to the user's device.
@@ -196,7 +197,7 @@ export const downloadImageToDevice = async (imageUrl, defaultFilename = 'ai_ads_
 
   // Strategy 4: Backend Proxy Route Fetch -> Convert Blob to Watermarked Canvas
   try {
-    const apiBase = window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api';
+    const apiBase = API_BASE;
     const proxyUrl = `${apiBase}/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(fileName)}`;
 
     const response = await fetch(proxyUrl);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE } from "../../config/api";
 import { Sparkles, Loader2, Copy, Heart, MessageSquare, Share2, Bookmark, MoreHorizontal, Download, CheckCircle2, FolderPlus, ArrowRight, FolderKanban } from "lucide-react";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { downloadImageToDevice } from "../../utils/downloadHelper";
@@ -544,13 +545,11 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
     const refObjImageUrl = contentData?.referenceImage || generatedContent?.referenceImage || null;
     const isCustomStrategyPost = !!(contentData?.isCustomStrategy && refObjImageUrl);
 
-    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const apiBase = API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
     try {
       if (isCustomStrategyPost) {
         // ── IMAGE EDITING AGENT: Custom Strategy with reference image ──────────
-        // Sends reference image + visual directive to Gemini text model to generate
-        // a creative advertising scenario, then uses gemini-3.1-flash-image to render it
         console.log('[PlatformPostCanvas] 🤖 Invoking Image Editing Agent for Custom Strategy post...');
         const agentRes = await fetch(`${apiBase}/creative/image-editing-agent/generate`, {
           method: 'POST',

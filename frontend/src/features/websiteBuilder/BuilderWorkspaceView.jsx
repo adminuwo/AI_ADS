@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import {
   ArrowLeft,
@@ -89,7 +90,7 @@ export const BuilderWorkspaceView = ({
     if (!projectId) return;
     setLoadingFiles(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/website-builder/projects/${projectId}/files`);
+      const res = await fetch(`${API_BASE}/website-builder/projects/${projectId}/files`);
       const data = await res.json();
       if (data.success && data.files) {
         setFilesMap(data.files);
@@ -113,7 +114,7 @@ export const BuilderWorkspaceView = ({
       return;
     }
     triggerToast('Packaging project into ZIP file...');
-    const downloadUrl = `http://localhost:5000/api/website-builder/projects/${projectId}/export-zip`;
+    const downloadUrl = `${API_BASE}/website-builder/projects/${projectId}/export-zip`;
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.setAttribute('download', `${projectTitle.toLowerCase().replace(/[^a-z0-9]/g, '-')}-source-code.zip`);
@@ -140,7 +141,7 @@ export const BuilderWorkspaceView = ({
 
     if (!sandboxUrl || !sandboxUrl.startsWith('http://127.0.0.1')) {
       try {
-        const res = await fetch(`http://localhost:5000/api/website-builder/projects/${projectId}/runtime`);
+        const res = await fetch(`${API_BASE}/website-builder/projects/${projectId}/runtime`);
         const data = await res.json();
         if (data.success && data.runtime?.url) {
           sandboxUrl = data.runtime.url;

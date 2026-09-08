@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { X, Bot, Send, Sparkles, RefreshCw, Dna, Search, PenTool, CheckCircle2 } from 'lucide-react';
 
@@ -28,7 +29,7 @@ export const AISAAssistantDrawer = () => {
 
     try {
       // Call Backend API or simulate Vertex AI response
-      const res = await fetch('http://localhost:5000/api/content/social/generate', {
+      const res = await fetch(`${API_BASE}/content/social/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic: promptText, brandName: activeWorkspace.brandName })

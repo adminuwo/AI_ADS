@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../../config/api';
 import {
   FolderKanban,
   Search,
@@ -241,7 +242,7 @@ export const BuilderProjectsView = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        const downloadUrl = `http://localhost:5000/api/website-builder/projects/${proj.projectId}/export-zip`;
+                        const downloadUrl = `${API_BASE}/website-builder/projects/${proj.projectId}/export-zip`;
                         const link = document.createElement('a');
                         link.href = downloadUrl;
                         link.setAttribute('download', `${(proj.title || 'website').toLowerCase().replace(/[^a-z0-9]/g, '-')}-source-code.zip`);

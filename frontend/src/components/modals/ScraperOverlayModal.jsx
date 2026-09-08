@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { X, Dna, Globe, Sparkles, CheckCircle2, ShieldAlert, ArrowRight } from 'lucide-react';
 
@@ -16,7 +17,7 @@ export const ScraperOverlayModal = () => {
     setLoading(true);
 
     try {
-      const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000/api/workspace/scrape-preview' : '/api/workspace/scrape-preview';
+      const apiUrl = `${API_BASE}/workspace/scrape-preview`;
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, Check, ShieldCheck, UserPlus, LogIn, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UWOLoginModal } from './UWOLoginModal';
+import { API_BASE } from '../../config/api';
 
 export const Login = ({ onLoginSuccess }) => {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
@@ -84,8 +85,8 @@ export const Login = ({ onLoginSuccess }) => {
 
     try {
       const endpoint = mode === 'register' 
-        ? 'http://localhost:5000/api/auth/register' 
-        : 'http://localhost:5000/api/auth/login';
+        ? `${API_BASE}/auth/register` 
+        : `${API_BASE}/auth/login`;
 
       const bodyPayload = mode === 'register'
         ? { email, password, confirmPassword }
@@ -116,7 +117,7 @@ export const Login = ({ onLoginSuccess }) => {
       }
     } catch (err) {
       console.error(err);
-      setError('Cannot connect to backend server. Please ensure port 5000 is running.');
+      setError('Cannot connect to backend server. Please verify network connection or server status.');
       setIsLoading(false);
     }
   };

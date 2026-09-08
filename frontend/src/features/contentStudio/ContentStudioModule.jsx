@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { contentAPI } from '../../services/api';
 import { resolveBrandVisualAsset } from '../../services/brandVisualResolver';
@@ -731,7 +732,7 @@ export const ContentStudioModule = () => {
       const nextIndex = visualVariationIndex + 1;
       setVisualVariationIndex(nextIndex);
       const brand = activeWorkspace?.brandName || 'Brand';
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const apiBase = API_BASE;
 
       // ── If this is a Custom Strategy post with a reference image, use Image Editing Agent ──
       if (customStrategyRefImage) {

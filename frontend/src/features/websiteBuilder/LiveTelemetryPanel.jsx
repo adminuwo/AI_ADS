@@ -19,8 +19,9 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { API_BASE } from '../../config/api';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BASE_URL = API_BASE;
 
 export const LiveTelemetryPanel = ({ isOpen, onClose }) => {
   const [events, setEvents] = useState([]);

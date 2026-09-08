@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { downloadImageToDevice } from '../../utils/downloadHelper';
 import { getBrandLogoUrl } from '../../utils/brandLogoHelper';
@@ -84,7 +85,7 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
     setGenerating(true);
     deductVisualCredits(cost, `AI Visual: "${prompt.slice(0, 30)}..."`);
     try {
-      const res = await fetch('http://localhost:5000/api/creative/visual/generate', {
+      const res = await fetch(`${API_BASE}/creative/visual/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, style, creditCost: cost })

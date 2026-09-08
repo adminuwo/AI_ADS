@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { normalizeBrandDna } from '../../utils/normalizeBrandDna';
 import { X, Dna, Globe, Sparkles, ArrowRight, FileText, Edit3 } from 'lucide-react';
@@ -39,7 +40,7 @@ export const ScraperOverlayModal = () => {
     formData.append('brandName', brandName || file.name.split('.')[0].toUpperCase());
 
     try {
-      const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000/api/workspace/upload-doc-preview' : '/api/workspace/upload-doc-preview';
+      const apiUrl = `${API_BASE}/workspace/upload-doc-preview`;
       const res = await fetch(apiUrl, {
         method: 'POST',
         body: formData
@@ -61,7 +62,7 @@ export const ScraperOverlayModal = () => {
     setLoading(true);
 
     try {
-      const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000/api/workspace/scrape-preview' : '/api/workspace/scrape-preview';
+      const apiUrl = `${API_BASE}/workspace/scrape-preview`;
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

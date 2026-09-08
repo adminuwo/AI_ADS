@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Repeat, Sparkles, Send, Copy, Check, FileText, Share2, Mail, Layers, HelpCircle } from 'lucide-react';
 
@@ -13,7 +14,7 @@ export const RepurposeModule = () => {
     const sourceObj = approvalsQueue.find(a => a.id === selectedSource) || { title: "How AI Ads Transforms Agency Content Velocity" };
 
     try {
-      const res = await fetch('http://localhost:5000/api/repurpose/transform', {
+      const res = await fetch(`${API_BASE}/repurpose/transform`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sourceAsset: sourceObj })

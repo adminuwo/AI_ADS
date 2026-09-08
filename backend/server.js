@@ -5,6 +5,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const { createServer } = require('http');
+const path = require('path');
+const fs = require('fs');
 
 // ─── Models ────────────────────────────────────────────────────────────────────
 const Workspace = require('./models/Workspace');
@@ -40,6 +42,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const telemetryRoutes = require('./routes/telemetryRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const seoRoutes = require('./routes/seoRoutes');
+const healthRoutes = require('./routes/healthRoutes');
 
 const app = express();
 const httpServer = createServer(app);
@@ -50,14 +53,29 @@ connectDB();
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:3002',
-    'http://localhost:8081', // Expo web
-    process.env.FRONTEND_URL,
-  ].filter(Boolean),
+  origin: (origin, callback) => {
+    // Allow requests with no origin (such as same-origin requests, mobile apps, or curl)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:8080',
+      'http://localhost:8081',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean);
+
+    if (
+      process.env.NODE_ENV === 'production' ||
+      allowedOrigins.includes(origin) ||
+      process.env.ALLOW_ALL_ORIGINS === 'true'
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '50mb' }));
@@ -502,10 +520,9 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
-// ─── Health Check ──────────────────────────────────────────────────────────────
-app.get('/api/health', (req, res) => {
-  res.json({ status: "ok" });
-});
+// ─── Health Check & Testing Diagnostics Routes ─────────────────────────────────
+app.use('/health', healthRoutes);
+app.use('/api/health', healthRoutes);
 
 // ─── NEW FEATURE ROUTES ────────────────────────────────────────────────────────
 app.use('/api/account', accountRoutes);
@@ -2016,6 +2033,35 @@ app.get('/api/posts', async (req, res) => {
   }
 });
 
+// ─── SERVE FRONTEND (PRODUCTION / CLOUD RUN SINGLE-SERVICE DEPLOYMENT) ─────────
+const frontendDistCandidates = [
+  path.join(__dirname, '../frontend/dist'),
+  path.join(__dirname, 'public'),
+  path.join(__dirname, 'dist')
+];
+
+const staticDir = frontendDistCandidates.find(dir => fs.existsSync(dir) && fs.existsSync(path.join(dir, 'index.html')));
+
+if (staticDir) {
+  console.log(`📦 Serving static frontend SPA from: ${staticDir}`);
+  app.use(express.static(staticDir));
+
+  // SPA fallback for all client routes (excluding /api and /health)
+  app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/health')) {
+      return next();
+    }
+    res.sendFile(path.join(staticDir, 'index.html'));
+  });
+} else {
+  console.log('ℹ️ Static frontend build not detected; running in API-only mode.');
+}
+
+// 404 handler for API routes
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ success: false, error: `API endpoint ${req.method} ${req.originalUrl} not found` });
+});
+
 // ─── Global Error & Warning Handler ───────────────────────────────────────────
 app.use((err, req, res, next) => {
   const status = err.status || err.statusCode || 500;
@@ -2025,10 +2071,15 @@ app.use((err, req, res, next) => {
 });
 
 // ─── START SERVER ──────────────────────────────────────────────────────────────
-const server = httpServer.listen(PORT, () => {
-  console.log(`\n🚀 AI Ads Enterprise Backend v2.0 running on http://localhost:${PORT}`);
+const server = httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 AI Ads Enterprise Backend v2.0 running on http://0.0.0.0:${PORT}`);
   console.log(`📡 MongoDB: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Connecting...'}`);
   console.log(`\n📋 Active Routes:`);
+  console.log(`  GET    /                            → Frontend SPA`);
+  console.log(`  GET    /health & /api/health        → Liveness check`);
+  console.log(`  GET    /api/health/details          → System & DB diagnostics`);
+  console.log(`  GET    /api/health/db               → Database ping check`);
+  console.log(`  GET/POST /api/health/ping           → Ping/echo test`);
   console.log(`  POST   /api/chat                    → AI Chat (multi-model)`);
   console.log(`  GET    /api/chat/sessions            → List sessions`);
   console.log(`  GET/POST /api/campaigns              → Campaign CRUD`);
@@ -2051,7 +2102,7 @@ server.on('error', (err) => {
     currentPort++;
     console.log(`⚠️ Port ${currentPort - 1} in use. Trying fallback port ${currentPort}...`);
     setTimeout(() => {
-      httpServer.listen(currentPort);
+      httpServer.listen(currentPort, '0.0.0.0');
     }, 500);
   } else {
     console.error('Server error:', err);
