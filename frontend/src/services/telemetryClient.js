@@ -4,8 +4,9 @@
  * Provides structured, non-blocking event tracking for user interactions,
  * UI navigation, search inputs, modal triggers, and application pipeline state changes.
  */
+import { API_BASE } from '../config/api';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BASE_URL = API_BASE;
 
 // Persistent Session ID for the active browser session
 function getSessionId() {

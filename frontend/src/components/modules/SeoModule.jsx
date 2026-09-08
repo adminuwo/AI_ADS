@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Search, Layers, FileText, Code2, Sparkles, Send, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
@@ -19,7 +20,7 @@ export const SeoModule = () => {
   const handleGenerateBrief = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/seo/brief/generate', {
+      const res = await fetch(`${API_BASE}/seo/brief/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ keyword: seedKeyword, intent, targetAudience: 'Enterprise Leaders' })

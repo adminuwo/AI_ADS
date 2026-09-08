@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Palette, Sparkles, AlertCircle, Image as ImageIcon, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
@@ -25,7 +26,7 @@ export const CreativeStudioModule = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/creative/visual/generate', {
+      const res = await fetch(`${API_BASE}/creative/visual/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, style, creditCost: cost })

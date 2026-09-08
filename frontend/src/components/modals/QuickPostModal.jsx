@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { getBrandLogoUrl } from '../../utils/brandLogoHelper';
 import { X, Zap, Sparkles, Copy, Check, Send } from 'lucide-react';
@@ -53,7 +54,7 @@ export const QuickPostModal = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/content/social/generate', {
+      const res = await fetch(`${API_BASE}/content/social/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic, platform, tone, brandName: activeWorkspace.brandName })

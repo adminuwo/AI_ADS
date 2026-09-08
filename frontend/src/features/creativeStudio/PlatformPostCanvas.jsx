@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE } from "../../config/api";
 import { Sparkles, Loader2, Copy, Heart, MessageSquare, Share2, Bookmark, MoreHorizontal, Download, CheckCircle2, FolderPlus, ArrowRight, FolderKanban } from "lucide-react";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { downloadImageToDevice } from "../../utils/downloadHelper";
@@ -496,7 +497,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
     };
 
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const apiBase = API_BASE;
       const res = await fetch(`${apiBase}/creative/visual/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

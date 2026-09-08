@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE } from '../config/api';
 
 const WorkspaceContext = createContext();
 
@@ -2051,8 +2052,8 @@ export const WorkspaceProvider = ({ children }) => {
       try {
         const email = user?.email || localStorage.getItem('aisa_user_email') || '';
         const url = email
-          ? `http://localhost:5000/api/workspace/list?userEmail=${encodeURIComponent(email)}`
-          : 'http://localhost:5000/api/workspace/list';
+          ? `${API_BASE}/workspace/list?userEmail=${encodeURIComponent(email)}`
+          : `${API_BASE}/workspace/list`;
 
         const res = await fetch(url, {
           headers: email ? { 'x-user-email': email } : {}
@@ -2347,7 +2348,7 @@ export const WorkspaceProvider = ({ children }) => {
       const payload = { ...newWs, userEmail: email };
 
       // Persist workspace to MongoDB Atlas ONLY when user clicks "Save & Lock Brand DNA Memory"
-      const res = await fetch('http://localhost:5000/api/workspace/save-dna', {
+      const res = await fetch(`${API_BASE}/workspace/save-dna`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2393,7 +2394,7 @@ export const WorkspaceProvider = ({ children }) => {
   const updateWorkspace = async (id, updatedData) => {
     if (!id) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/workspace/${id}`, {
+      const res = await fetch(`${API_BASE}/workspace/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedData)
@@ -2415,7 +2416,7 @@ export const WorkspaceProvider = ({ children }) => {
   const deleteWorkspace = async (idToDelete) => {
     if (!idToDelete) return;
     try {
-      await fetch(`http://localhost:5000/api/workspace/${idToDelete}`, { method: 'DELETE' });
+      await fetch(`${API_BASE}/workspace/${idToDelete}`, { method: 'DELETE' });
     } catch (e) {
       console.log('Workspace Delete Note:', e.message);
     }
@@ -2514,7 +2515,7 @@ export const WorkspaceProvider = ({ children }) => {
 
     // Dispatch backend API request to persist asset & record API hit
     try {
-      const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000/api/content/save-asset' : '/api/content/save-asset';
+      const apiUrl = `${API_BASE}/content/save-asset`;
       fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -3,10 +3,10 @@
  * All frontend API calls go through this module.
  * Base URL auto-detects development vs production.
  */
+import { API_BASE } from '../config/api';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-// ─── Core Fetch Helper ─────────────────────────────────────────────────────────
+export { API_BASE };
+const BASE_URL = API_BASE;
 const apiFetch = async (path, options = {}) => {
   const url = `${BASE_URL}${path}`;
   const token = localStorage.getItem('aisa_token');

@@ -2,6 +2,7 @@
  * Unified Web Options (UWO) Central Auth Configuration
  * Enables seamless Single Sign-On (SSO) between AI Ads and the Unified Platform.
  */
+import { API_BASE } from '../config/api';
 
 export const getUnifiedApiBaseUrl = () => {
   const envUrl = (typeof window !== 'undefined' && window._env_?.VITE_UNIFIED_BACKEND_API) ||
@@ -31,7 +32,7 @@ export const getBackendApiUrl = () => {
   if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
     return envUrl.trim().replace(/\/+$/, '');
   }
-  return 'http://localhost:5000/api';
+  return API_BASE;
 };
 
 export const getApis = () => {
