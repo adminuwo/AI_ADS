@@ -42,6 +42,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const telemetryRoutes = require('./routes/telemetryRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const seoRoutes = require('./routes/seoRoutes');
+const healthRoutes = require('./routes/healthRoutes');
 
 const app = express();
 const httpServer = createServer(app);
@@ -519,19 +520,9 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
-// ─── Health Check (Cloud Run Liveness & Readiness Probes) ─────────────────────
-const healthHandler = (req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'ai-ads-platform',
-    version: '2.0.0',
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-    dbState: mongoose.connection.readyState === 1 ? 'connected' : 'connecting'
-  });
-};
-app.get('/health', healthHandler);
-app.get('/api/health', healthHandler);
+// ─── Health Check & Testing Diagnostics Routes ─────────────────────────────────
+app.use('/health', healthRoutes);
+app.use('/api/health', healthRoutes);
 
 // ─── NEW FEATURE ROUTES ────────────────────────────────────────────────────────
 app.use('/api/account', accountRoutes);
@@ -2017,7 +2008,10 @@ const server = httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`📡 MongoDB: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Connecting...'}`);
   console.log(`\n📋 Active Routes:`);
   console.log(`  GET    /                            → Frontend SPA`);
-  console.log(`  GET    /health & /api/health        → Health check`);
+  console.log(`  GET    /health & /api/health        → Liveness check`);
+  console.log(`  GET    /api/health/details          → System & DB diagnostics`);
+  console.log(`  GET    /api/health/db               → Database ping check`);
+  console.log(`  GET/POST /api/health/ping           → Ping/echo test`);
   console.log(`  POST   /api/chat                    → AI Chat (multi-model)`);
   console.log(`  GET    /api/chat/sessions            → List sessions`);
   console.log(`  GET/POST /api/campaigns              → Campaign CRUD`);
