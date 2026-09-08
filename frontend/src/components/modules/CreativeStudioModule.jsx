@@ -66,13 +66,7 @@ export const CreativeStudioModule = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 bg-slate-900/80 px-4 py-2 rounded-2xl border border-slate-800">
-          <span className="text-xs text-slate-400">Balance:</span>
-          <span className="text-sm font-extrabold text-cyan-400">{credits.balance} Visual Credits</span>
-          <button onClick={() => setIsCreditModalOpen(true)} className="btn-primary text-xs py-1 px-2.5">
-            +Top Up
-          </button>
-        </div>
+
       </div>
 
       {/* Permanent Video Policy Notice */}

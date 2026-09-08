@@ -3,6 +3,7 @@ import { Sparkles, Loader2, Copy, Heart, MessageSquare, Share2, Bookmark, MoreHo
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { downloadImageToDevice } from "../../utils/downloadHelper";
 import { getBrandLogoUrl } from "../../utils/brandLogoHelper";
+import { compositeBrandLogoOntoImage } from "../../utils/imageCompositor";
 
 const VisualControls = ({ visualStyle, setVisualStyle, generating, onGenerate }) => (
   <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm">
@@ -16,7 +17,7 @@ const VisualControls = ({ visualStyle, setVisualStyle, generating, onGenerate })
     </select>
     <button onClick={onGenerate} disabled={generating} className="w-full btn-primary py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60">
       {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-      {generating ? "Generating..." : "Generate AI Image (5 Credits)"}
+      {generating ? "Generating..." : "Generate AI Image"}
     </button>
   </div>
 );
@@ -441,15 +442,22 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
   const [visualUrl, setVisualUrl] = useState(defaultVisual);
 
   useEffect(() => {
-    if (generatedContent?.imageUrl) {
-      setVisualUrl(generatedContent.imageUrl);
-    } else {
-      const promptText = contentData?.imagePrompt || `${brand} ${topic} ${hook}`.slice(0, 150);
-      setVisualUrl(generateVertexAISvgDataUrl(promptText, brand, visualStyle));
-    }
+    let active = true;
+    const processImage = async () => {
+      const srcUrl = generatedContent?.imageUrl || generateVertexAISvgDataUrl(contentData?.imagePrompt || `${brand} ${topic} ${hook}`.slice(0, 150), brand, visualStyle);
+      const composited = await compositeBrandLogoOntoImage(srcUrl, {
+        brandName: brand,
+        domainUrl: workspace?.domainUrl,
+        logoUrl: workspace?.logoUrl,
+        faviconUrl: workspace?.faviconUrl
+      });
+      if (active) setVisualUrl(composited || srcUrl);
+    };
+    processImage();
     if (generatedContent?.imageStyle) setVisualStyle(generatedContent.imageStyle);
     if (generatedContent?.platform) setPlatform(generatedContent.platform.toLowerCase());
     setActiveSlide(0);
+    return () => { active = false; };
   }, [generatedContent, topic, hook]);
 
   const carouselSlides = variations.length > 0
@@ -484,6 +492,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
       strategyPillar: generatedContent?.strategyPillar || generatedContent?.pillar || contentData?.strategyPillar || '',
       aspect:         (platform === 'linkedin' || platform === 'blog' || platform === 'newspaper' || rawType === 'BLOG' || rawType === 'NEWSPAPER') ? '16:9' : (platform === 'story' || platform === 'reel' || platform === 'tiktok') ? '9:16' : '1:1',
       creditCost:     cost,
+      seed:           Math.floor(Math.random() * 1000000)
     };
 
     try {
@@ -495,13 +504,26 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
       });
       const data = await res.json();
       if (data.success && data.asset?.imageUrl) {
-        setVisualUrl(data.asset.imageUrl);
+        const composited = await compositeBrandLogoOntoImage(data.asset.imageUrl, {
+          brandName: brand,
+          domainUrl: workspace?.domainUrl,
+          logoUrl: workspace?.logoUrl,
+          faviconUrl: workspace?.faviconUrl
+        });
+        setVisualUrl(composited || data.asset.imageUrl);
       } else {
         throw new Error(data.error || "API returned no image");
       }
     } catch (err) {
       console.warn("[Creative Studio] Image generation fallback:", err.message);
-      setVisualUrl(generateVertexAISvgDataUrl(topic, brand));
+      const fallbackSvg = generateVertexAISvgDataUrl(topic, brand);
+      const compositedFallback = await compositeBrandLogoOntoImage(fallbackSvg, {
+        brandName: brand,
+        domainUrl: workspace?.domainUrl,
+        logoUrl: workspace?.logoUrl,
+        faviconUrl: workspace?.faviconUrl
+      });
+      setVisualUrl(compositedFallback || fallbackSvg);
     } finally {
       setGenerating(false);
     }
@@ -621,15 +643,14 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
               <div className="aspect-square relative bg-slate-900 overflow-hidden">
                 <img src={slide.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80"} alt={"Slide "+(activeSlide+1)} className="w-full h-full object-cover opacity-70" />
                 
-                {/* Brand Logo Overlay Badge */}
-                <div className="absolute top-3 left-3 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/25 shadow-lg">
+                {/* Official Brand Logo Watermark Overlay */}
+                <div className="absolute top-3 left-3 z-10 flex items-center px-3 py-1.5 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-lg">
                   <img 
                     src={getBrandLogoUrl({ brandName: brand, domainUrl: workspace?.domainUrl, logoUrl: workspace?.logoUrl, faviconUrl: workspace?.faviconUrl })} 
                     alt={brand} 
-                    className="w-5 h-5 rounded-full object-cover border border-white/30 bg-white" 
+                    className="h-6 w-auto max-w-[120px] object-contain" 
                     onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${brand.toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }}
                   />
-                  <span className="text-[10px] font-black tracking-wider text-white uppercase">{brand}</span>
                 </div>
 
                 <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-[9px] font-black">{activeSlide+1} / {carouselSlides.length}</div>
@@ -740,15 +761,14 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
               <div className="aspect-video relative overflow-hidden">
                 <img src={visualUrl} alt={topic} className="w-full h-full object-cover" />
                 
-                {/* Brand Logo Overlay Badge */}
-                <div className="absolute top-4 left-4 z-10 flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/25 shadow-xl">
+                {/* Official Brand Logo Watermark Overlay */}
+                <div className="absolute top-4 left-4 z-10 flex items-center px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-xl">
                   <img 
                     src={getBrandLogoUrl({ brandName: brand, domainUrl: workspace?.domainUrl, logoUrl: workspace?.logoUrl, faviconUrl: workspace?.faviconUrl })} 
                     alt={brand} 
-                    className="w-6 h-6 rounded-full object-cover border border-white/30 bg-white" 
+                    className="h-7 sm:h-8 w-auto max-w-[140px] object-contain" 
                     onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${brand.toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }}
                   />
-                  <span className="text-xs font-black tracking-wider text-white uppercase">{brand}</span>
                 </div>
 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 to-transparent flex items-end p-6">
@@ -866,15 +886,14 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
         <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video max-h-[520px] bg-slate-950 shadow-inner group flex items-center justify-center">
           <img src={visualUrl} alt={topic} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
           
-          {/* Brand Logo Overlay Badge (Top Left Corner) */}
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/25 shadow-xl">
+          {/* Official Brand Logo Watermark Overlay (Top Left Corner) */}
+          <div className="absolute top-4 left-4 z-10 flex items-center px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-xl">
             <img 
               src={getBrandLogoUrl({ brandName: brand, domainUrl: workspace?.domainUrl, logoUrl: workspace?.logoUrl, faviconUrl: workspace?.faviconUrl })} 
               alt={brand} 
-              className="w-6 h-6 rounded-full object-cover border border-white/30 bg-white" 
+              className="h-7 sm:h-8 w-auto max-w-[140px] object-contain" 
               onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${brand.toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }}
             />
-            <span className="text-xs font-black tracking-wider text-white uppercase">{brand}</span>
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent flex flex-col sm:flex-row justify-between sm:items-end gap-2">

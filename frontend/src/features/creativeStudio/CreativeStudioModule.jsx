@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { downloadImageToDevice } from '../../utils/downloadHelper';
 import { getBrandLogoUrl } from '../../utils/brandLogoHelper';
+import { compositeBrandLogoOntoImage } from '../../utils/imageCompositor';
 import {
   Palette, Sparkles, ShieldAlert, Image as ImageIcon, CheckCircle2,
   ArrowLeft, ArrowUpRight, Film, Layers, BookOpen, Wand2, Download,
@@ -90,8 +91,16 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
       });
       const data = await res.json();
       if (data.success) {
-        setResult(data.asset);
-        addGlobalAsset({ name: topic || 'AI Generated Image', type: 'IMAGE', url: data.asset.imageUrl || data.asset.url, date: new Date().toISOString(), credits: cost });
+        const rawUrl = data.asset.imageUrl || data.asset.url;
+        const compositedUrl = await compositeBrandLogoOntoImage(rawUrl, {
+          brandName: workspace?.brandName,
+          domainUrl: workspace?.domainUrl,
+          logoUrl: workspace?.logoUrl,
+          faviconUrl: workspace?.faviconUrl
+        });
+        const finalAsset = { ...data.asset, imageUrl: compositedUrl || rawUrl };
+        setResult(finalAsset);
+        addGlobalAsset({ name: topic || 'AI Generated Image', type: 'IMAGE', url: finalAsset.imageUrl, date: new Date().toISOString(), credits: cost });
       }
       else throw new Error('API error');
     } catch (err) {
@@ -100,12 +109,19 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
       const cleanPrompt = escapeXml((prompt || topic || 'Modern Commercial Asset').slice(0, 40));
       const safeStyle = escapeXml(style);
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800"><rect width="800" height="800" fill="#0F172A"/><circle cx="400" cy="400" r="250" fill="#6366F1" opacity="0.25"/><text x="400" y="390" fill="#FFFFFF" font-family="sans-serif" font-size="24" font-weight="bold" text-anchor="middle">${cleanPrompt}</text><text x="400" y="430" fill="#818CF8" font-family="sans-serif" font-size="14" text-anchor="middle">Style: ${safeStyle}</text><text x="400" y="520" fill="#94A3B8" font-family="sans-serif" font-size="12" text-anchor="middle">Google Cloud Vertex AI • Gemini Image Pipeline</text></svg>`;
+      const rawFallback = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`;
+      const compositedFallback = await compositeBrandLogoOntoImage(rawFallback, {
+        brandName: workspace?.brandName,
+        domainUrl: workspace?.domainUrl,
+        logoUrl: workspace?.logoUrl,
+        faviconUrl: workspace?.faviconUrl
+      });
       const fallbackResult = {
         id: `vis_${Date.now()}`,
         topic,
         prompt,
         style,
-        imageUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`,
+        imageUrl: compositedFallback || rawFallback,
         provider: 'Google Cloud Vertex AI (gemini-3.1-flash-image)',
         createdAt: new Date().toISOString()
       };
@@ -140,10 +156,7 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
             <option value="Bold Editorial Fashion">Bold Editorial Fashion</option>
           </select>
         </div>
-        <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs flex justify-between items-center font-medium text-slate-600 dark:text-slate-400">
-          <span>Cost:</span>
-          <span className="font-bold text-brand-600 dark:text-brand-400">5 Visual Credits</span>
-        </div>
+
         <button onClick={handleGenerate} disabled={generating}
           className="w-full btn-primary py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60">
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -160,15 +173,14 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
             <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video bg-slate-950 flex items-center justify-center">
               <img src={result.imageUrl} alt={result.prompt} className="w-full h-full object-cover" />
               
-              {/* Brand Logo Overlay Badge */}
-              <div className="absolute top-3 left-3 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/25 shadow-lg">
+              {/* Official Brand Logo Watermark Overlay */}
+              <div className="absolute top-4 left-4 z-10 flex items-center px-3 py-2 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-xl">
                 <img 
                   src={getBrandLogoUrl({ brandName: workspace?.brandName, domainUrl: workspace?.domainUrl, logoUrl: workspace?.logoUrl, faviconUrl: workspace?.faviconUrl })} 
                   alt={workspace?.brandName} 
-                  className="w-5 h-5 rounded-full object-cover border border-white/30 bg-white" 
+                  className="h-7 sm:h-8 w-auto max-w-[140px] object-contain" 
                   onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${(workspace?.brandName || 'google').toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }}
                 />
-                <span className="text-[10px] font-black tracking-wider text-white uppercase">{workspace?.brandName || 'Brand'}</span>
               </div>
 
               <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-slate-950/80 backdrop-blur-md border border-slate-800 text-xs text-slate-200 flex justify-between items-center">
@@ -191,7 +203,7 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
               </button>
             </div>
             <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2 font-medium">
-              <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> Visual Asset committed to Asset Library Â· 5 Credits deducted
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> Visual Asset committed to Asset Library
             </div>
           </div>
         ) : (
@@ -719,13 +731,11 @@ export const CreativeStudioModule = () => {
   const { activeWorkspace, credits, deductVisualCredits, setIsCreditModalOpen, generatedContent, studioTarget, markPostAsGenerated, t } = useWorkspace();
   const [selectedFormat, setSelectedFormat] = useState(null);
 
-  // If redirected from Calendar or Content Studio, studioTarget carries the post's platform/type/topic.
+  // If redirected from Strategy, Calendar or Content Studio, studioTarget carries post details
   const contentObj = generatedContent?.data ? { ...generatedContent, ...generatedContent.data } : generatedContent;
-  const effectiveContent = contentObj
-    ? { ...studioTarget, ...contentObj }
-    : studioTarget
-      ? { platform: studioTarget.platform, type: studioTarget.type || 'SOCIAL', topic: studioTarget.topic, hook: studioTarget.topic, caption: '', hashtags: [] }
-      : null;
+  const effectiveContent = studioTarget || contentObj
+    ? { ...(contentObj || {}), ...(studioTarget || {}) }
+    : null;
 
   // Scroll to top ONCE on mount
   useEffect(() => {

@@ -127,6 +127,7 @@ const MainContent = () => {
           </PlanGate>
         );
       case 'creative':
+      case 'creativeStudio':
         return (
           <NoBrandGate moduleName="Creative Studio">
             <CreativeStudioModule />

@@ -56,89 +56,73 @@ export const downloadImageToDevice = async (imageUrl, defaultFilename = 'ai_ads_
 
           // Calculate proportional dimensions based on canvas resolution
           const scale = Math.max(w, h) / 1080;
-          const paddingX = Math.round(20 * scale);
-          const badgeH = Math.round(44 * scale);
-          const avatarRadius = Math.round(15 * scale);
-          const fontSize = Math.round(15 * scale);
 
           ctx.save();
-          ctx.font = `800 ${fontSize}px "Plus Jakarta Sans", -apple-system, sans-serif`;
-          const textMetrics = ctx.measureText(brandName.toUpperCase());
-          const badgeW = Math.round(paddingX * 2 + avatarRadius * 2 + 10 * scale + textMetrics.width);
-
+          const badgeH = Math.round(52 * scale);
+          const maxLogoW = Math.round(160 * scale);
           const badgeX = Math.round(32 * scale);
           const badgeY = Math.round(32 * scale);
+          const padding = Math.round(10 * scale);
 
-          // Draw glassmorphic dark badge background
-          ctx.beginPath();
-          if (ctx.roundRect) {
-            ctx.roundRect(badgeX, badgeY, badgeW, badgeH, Math.round(badgeH / 2));
-          } else {
-            ctx.rect(badgeX, badgeY, badgeW, badgeH);
-          }
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-          ctx.fill();
-          ctx.lineWidth = Math.max(1, 1.5 * scale);
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-          ctx.stroke();
-
-          // Try drawing brand logo image
+          // Try loading actual brand logo image
           let logoLoaded = false;
+          let logoImg = new Image();
           if (logoUrl) {
             try {
-              const logoImg = new Image();
               logoImg.crossOrigin = 'anonymous';
               logoLoaded = await new Promise((resLogo) => {
                 logoImg.onload = () => resLogo(true);
                 logoImg.onerror = () => resLogo(false);
                 logoImg.src = logoUrl;
               });
-
-              if (logoLoaded) {
-                ctx.save();
-                const avatarCenterX = badgeX + paddingX + avatarRadius;
-                const avatarCenterY = badgeY + badgeH / 2;
-                ctx.beginPath();
-                ctx.arc(avatarCenterX, avatarCenterY, avatarRadius, 0, Math.PI * 2);
-                ctx.clip();
-                ctx.drawImage(
-                  logoImg,
-                  avatarCenterX - avatarRadius,
-                  avatarCenterY - avatarRadius,
-                  avatarRadius * 2,
-                  avatarRadius * 2
-                );
-                ctx.restore();
-              }
             } catch (e) {
               logoLoaded = false;
             }
           }
 
-          // Fallback avatar circle with brand initials if logo URL is missing or failed to load
-          if (!logoLoaded) {
-            const avatarCenterX = badgeX + paddingX + avatarRadius;
-            const avatarCenterY = badgeY + badgeH / 2;
+          if (logoLoaded && logoImg.width && logoImg.height) {
+            const aspect = logoImg.width / logoImg.height;
+            const targetH = badgeH - padding * 2;
+            const targetW = Math.min(maxLogoW, targetH * aspect);
+            const boxW = Math.round(targetW + padding * 2);
+
+            // Glassmorphic container for clean brand logo
             ctx.beginPath();
-            ctx.arc(avatarCenterX, avatarCenterY, avatarRadius, 0, Math.PI * 2);
-            ctx.fillStyle = '#6366F1'; // Brand Indigo
+            if (ctx.roundRect) {
+              ctx.roundRect(badgeX, badgeY, boxW, badgeH, Math.round(14 * scale));
+            } else {
+              ctx.rect(badgeX, badgeY, boxW, badgeH);
+            }
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
             ctx.fill();
+            ctx.lineWidth = Math.max(1, 1.5 * scale);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.stroke();
+
+            // Draw actual brand logo image preserved in aspect ratio
+            const logoX = badgeX + (boxW - targetW) / 2;
+            const logoY = badgeY + (badgeH - targetH) / 2;
+            ctx.drawImage(logoImg, logoX, logoY, targetW, targetH);
+          } else {
+            // Text brand fallback if logo image failed
+            ctx.font = `800 ${Math.round(16 * scale)}px "Plus Jakarta Sans", -apple-system, sans-serif`;
+            const textMetrics = ctx.measureText(brandName.toUpperCase());
+            const boxW = Math.round(textMetrics.width + padding * 3);
+
+            ctx.beginPath();
+            if (ctx.roundRect) {
+              ctx.roundRect(badgeX, badgeY, boxW, badgeH, Math.round(14 * scale));
+            } else {
+              ctx.rect(badgeX, badgeY, boxW, badgeH);
+            }
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.fill();
+
             ctx.fillStyle = '#FFFFFF';
-            ctx.font = `900 ${Math.round(13 * scale)}px sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            const initials = brandName.substring(0, 2).toUpperCase();
-            ctx.fillText(initials, avatarCenterX, avatarCenterY);
+            ctx.fillText(brandName.toUpperCase(), badgeX + boxW / 2, badgeY + badgeH / 2);
           }
-
-          // Draw Brand Name Text
-          const textX = badgeX + paddingX + avatarRadius * 2 + Math.round(10 * scale);
-          const textY = badgeY + badgeH / 2;
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = `800 ${fontSize}px "Plus Jakarta Sans", -apple-system, sans-serif`;
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(brandName.toUpperCase(), textX, textY);
 
           ctx.restore();
 

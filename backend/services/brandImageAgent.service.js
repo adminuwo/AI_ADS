@@ -118,25 +118,21 @@ function craftBrandAdPrompt({
     styleDirective = 'ultra-luxury dark studio editorial, rich obsidian textures, polished metallic reflections, subtle gold accents, high-end commercial ad';
   }
 
-  let logoPrompt = `featuring official ${cleanBrand} brand logo emblem badge`;
-  const lowerB = cleanBrand.toLowerCase();
-  if (lowerB.includes('jio') || lowerB.includes('hotstar')) {
-    logoPrompt = `featuring official JioHotstar brand logo emblem (iconic Jio and Hotstar brand crest display in background studio lighting)`;
-  } else if (lowerB.includes('chings')) {
-    logoPrompt = `featuring official Ching's Secret brand logo badge with red and white Asian culinary emblem on packaging`;
-  } else if (lowerB.includes('redbus')) {
-    logoPrompt = `featuring official redBus brand logo emblem (red transit emblem) prominently displayed`;
-  } else if (lowerB.includes('nataraj')) {
-    logoPrompt = `featuring official Nataraj brand logo emblem (classic red and black pencil branding)`;
-  } else if (lowerB.includes('nvidia')) {
-    logoPrompt = `featuring official NVIDIA logo emblem with glowing green eye motif (#76B900)`;
-  } else if (lowerB.includes('zomato')) {
-    logoPrompt = `featuring official Zomato brand logo emblem (crimson red food delivery badge)`;
-  } else if (lowerB.includes('swiggy')) {
-    logoPrompt = `featuring official Swiggy brand logo emblem (vibrant orange lettermark badge)`;
-  }
+  // Random perspective rotation for fresh regenerated variations on every click
+  const seedNum = typeof seed === 'number' ? seed : Math.floor(Math.random() * 1000000);
+  const angles = [
+    'hero product perspective with dramatic studio lighting',
+    'cinematic wide editorial scene with rich depth of field',
+    'top-down flat-lay composition with balanced negative space',
+    'macro close-up detail shot highlighting premium texture and craftsmanship',
+    'lifestyle environment shot with warm natural lighting'
+  ];
+  const selectedAngle = angles[seedNum % angles.length];
 
-  const finalPrompt = `${sceneDetails}, ${logoPrompt}, authentic brand essence of ${cleanBrand} ("${tagline || topic}"), brand color harmony (${colorsList}), ${styleDirective}`;
+  // Clean image directive to ensure AI generators produce clean commercial visual shots without drawing fake mangled text or artificial logos into the image
+  const cleanImageDirective = 'clean commercial photography, no rendered text, no fake logos, no artificial typography, no watermarks';
+
+  const finalPrompt = `${sceneDetails}, ${selectedAngle}, authentic brand essence of ${cleanBrand} ("${tagline || topic}"), brand color harmony (${colorsList}), ${styleDirective}, ${cleanImageDirective}`;
   return finalPrompt;
 }
 
