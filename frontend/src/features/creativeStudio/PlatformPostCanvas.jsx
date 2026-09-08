@@ -5,19 +5,47 @@ import { downloadImageToDevice } from "../../utils/downloadHelper";
 import { getBrandLogoUrl } from "../../utils/brandLogoHelper";
 import { compositeBrandLogoOntoImage } from "../../utils/imageCompositor";
 
-const VisualControls = ({ visualStyle, setVisualStyle, generating, onGenerate }) => (
+const VisualControls = ({ visualStyle, setVisualStyle, generating, onGenerate, visualDirective, referenceImage }) => (
   <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm">
-    <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">AI Image Style</h4>
-    <select value={visualStyle} onChange={(e) => setVisualStyle(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-      <option>Glassmorphic Modern 3D</option>
-      <option>Minimalist Corporate Tech</option>
-      <option>Cyberpunk Neon Gradients</option>
-      <option>Photorealistic B2B Studio</option>
-      <option>Bold Editorial Fashion</option>
-    </select>
-    <button onClick={onGenerate} disabled={generating} className="w-full btn-primary py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60">
+    <h4 className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest flex items-center gap-1.5">
+      <Sparkles className="w-3 h-3 text-purple-500" /> AI Visual Scenario & Layout
+    </h4>
+
+    {visualDirective && (
+      <div className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/50 space-y-1">
+        <span className="text-[9px] font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider block">
+          Visual Guidance Brief:
+        </span>
+        <p className="text-[11px] text-slate-800 dark:text-slate-200 font-medium leading-relaxed break-words">
+          {visualDirective}
+        </p>
+      </div>
+    )}
+
+    {referenceImage && (
+      <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+        <img src={referenceImage} alt="Reference Product Object" className="w-10 h-10 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">Product Reference Object</span>
+          <p className="text-[10px] text-slate-600 dark:text-slate-300 font-semibold truncate">User Uploaded Brief Object</p>
+        </div>
+      </div>
+    )}
+
+    <div>
+      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">AI Image Style Direction</label>
+      <select value={visualStyle} onChange={(e) => setVisualStyle(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+        <option>Glassmorphic Modern 3D</option>
+        <option>Minimalist Corporate Tech</option>
+        <option>Cyberpunk Neon Gradients</option>
+        <option>Photorealistic B2B Studio</option>
+        <option>Bold Editorial Fashion</option>
+      </select>
+    </div>
+
+    <button onClick={onGenerate} disabled={generating} className="w-full btn-primary py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer">
       {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-      {generating ? "Generating..." : "Generate AI Image"}
+      {generating ? "Synthesizing AI Image..." : "Generate AI Visual Scenario"}
     </button>
   </div>
 );
@@ -219,8 +247,9 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
   const [visualStyle, setVisualStyle] = useState("Glassmorphic Modern 3D");
   const [activeSlide, setActiveSlide] = useState(0);
 
-  const generateVertexAISvgDataUrl = (promptText = '', brandName = '', styleName = 'Glassmorphic Modern 3D') => {
+  const generateVertexAISvgDataUrl = (promptText = '', brandName = '', styleName = 'Glassmorphic Modern 3D', refImgUrl = null) => {
     const pLower = (promptText + ' ' + topic).toLowerCase();
+    const referenceObjUrl = refImgUrl || contentData?.referenceImage || generatedContent?.referenceImage || null;
     
     let category = 'LUXURY_HAMPER';
     if (pLower.includes('carousel') || pLower.includes('customization') || pLower.includes('bespoke') || pLower.includes('option') || pLower.includes('slide')) {
@@ -254,7 +283,33 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
     let categoryBadge = '';
     let centerPieceSvg = '';
 
-    if (category === 'CAROUSEL_CUSTOMIZATION') {
+    if (referenceObjUrl) {
+      bgGradient = '<radialGradient id="bg" cx="50%" cy="40%" r="80%"><stop offset="0%" stop-color="#1A0B2E"/><stop offset="60%" stop-color="#0F172A"/><stop offset="100%" stop-color="#020617"/></radialGradient>';
+      accentGrad = '<linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#A855F7"/><stop offset="50%" stop-color="#EC4899"/><stop offset="100%" stop-color="#6366F1"/></linearGradient>';
+      categoryBadge = 'PRODUCT OBJECT & VISUAL AD';
+
+      centerPieceSvg = `
+        <g filter="url(#shadow)" transform="translate(0, -10)">
+          <!-- Outer Glowing Frame -->
+          <rect x="250" y="160" width="580" height="520" rx="36" fill="none" stroke="url(#accent)" stroke-width="4" filter="url(#glow)"/>
+          <!-- Inner Dark Card Frame -->
+          <rect x="260" y="170" width="560" height="500" rx="32" fill="#0F172A" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+          
+          <!-- Embedded Product Image Object -->
+          <g clip-path="url(#productClip)">
+            <image href="${escapeXml(referenceObjUrl)}" x="260" y="170" width="560" height="500" preserveAspectRatio="xMidYMid slice"/>
+          </g>
+          
+          <!-- Gradient Frame Vignette -->
+          <rect x="260" y="170" width="560" height="500" rx="32" fill="none" stroke="url(#accent)" stroke-width="3" opacity="0.8"/>
+          <rect x="260" y="550" width="560" height="120" rx="0" fill="url(#bottomFade)" />
+          
+          <!-- Product Focus Badge -->
+          <rect x="280" y="190" width="190" height="32" rx="16" fill="rgba(15,23,42,0.85)" stroke="url(#accent)" stroke-width="1.5" />
+          <text x="375" y="211" fill="#F8FAFC" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" text-anchor="middle">PRIMARY PRODUCT OBJECT</text>
+        </g>
+      `;
+    } else if (category === 'CAROUSEL_CUSTOMIZATION') {
       bgGradient = '<radialGradient id="bg" cx="50%" cy="40%" r="80%"><stop offset="0%" stop-color="#1E1B4B"/><stop offset="60%" stop-color="#0F172A"/><stop offset="100%" stop-color="#020617"/></radialGradient>';
       accentGrad = '<linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818CF8"/><stop offset="50%" stop-color="#C084FC"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient>';
       categoryBadge = 'CAROUSEL & BESPOKE CUSTOMIZATION';
@@ -398,6 +453,13 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
           <stop offset="0%" stop-color="rgba(255,255,255,0.12)"/>
           <stop offset="100%" stop-color="rgba(255,255,255,0.03)"/>
         </linearGradient>
+        <linearGradient id="bottomFade" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="transparent"/>
+          <stop offset="100%" stop-color="rgba(15,23,42,0.95)"/>
+        </linearGradient>
+        <clipPath id="productClip">
+          <rect x="260" y="170" width="560" height="500" rx="32"/>
+        </clipPath>
         <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="0" dy="20" stdDeviation="25" flood-color="#000000" flood-opacity="0.6"/>
         </filter>
@@ -436,15 +498,18 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`;
   };
 
-  const rawImagePrompt = contentData?.imagePrompt || `${brand} ${topic} ${hook}`.slice(0, 150);
-  const defaultVisual = generatedContent?.imageUrl || generateVertexAISvgDataUrl(rawImagePrompt, brand, visualStyle);
+  const rawImagePrompt = contentData?.visualDirective || contentData?.imagePrompt || contentData?.visualPrompt || `${brand} ${topic} ${hook}`.slice(0, 150);
+  const refObjUrl = contentData?.referenceImage || generatedContent?.referenceImage || null;
+  const defaultVisual = (contentData?.isCustomStrategy ? null : generatedContent?.imageUrl) || generateVertexAISvgDataUrl(rawImagePrompt, brand, visualStyle, refObjUrl);
 
   const [visualUrl, setVisualUrl] = useState(defaultVisual);
 
   useEffect(() => {
     let active = true;
     const processImage = async () => {
-      const srcUrl = generatedContent?.imageUrl || generateVertexAISvgDataUrl(contentData?.imagePrompt || `${brand} ${topic} ${hook}`.slice(0, 150), brand, visualStyle);
+      const promptToUse = contentData?.visualDirective || contentData?.imagePrompt || contentData?.visualPrompt || `${brand} ${topic} ${hook}`.slice(0, 150);
+      const refObj = contentData?.referenceImage || generatedContent?.referenceImage || null;
+      const srcUrl = (contentData?.isCustomStrategy ? null : generatedContent?.imageUrl) || generateVertexAISvgDataUrl(promptToUse, brand, visualStyle, refObj);
       const composited = await compositeBrandLogoOntoImage(srcUrl, {
         brandName: brand,
         domainUrl: workspace?.domainUrl,
@@ -475,48 +540,94 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
     setGenerating(true);
     deductVisualCredits(cost, "AI Visual: " + topic.slice(0, 30));
 
-    // Build rich brand context so backend AI can generate a perfect prompt
-    const brandPayload = {
-      workspaceId:    workspace?._id || workspace?.id,
-      prompt:         contentData?.imagePrompt || topic,
-      topic:          topic,
-      hook:           hook,
-      brand:          brand || workspace?.brandName,
-      brandName:      brand || workspace?.brandName,
-      brandColors:    workspace?.brandColors || [],
-      industry:       workspace?.industry || workspace?.industryCategory || workspace?.niche || '',
-      tagline:        workspace?.tagline || '',
-      companyDescription: workspace?.companyDescription || workspace?.metaDescription || workspace?.positioningSummary || '',
-      platform:       platform,
-      style:          visualStyle,
-      strategyPillar: generatedContent?.strategyPillar || generatedContent?.pillar || contentData?.strategyPillar || '',
-      aspect:         (platform === 'linkedin' || platform === 'blog' || platform === 'newspaper' || rawType === 'BLOG' || rawType === 'NEWSPAPER') ? '16:9' : (platform === 'story' || platform === 'reel' || platform === 'tiktok') ? '9:16' : '1:1',
-      creditCost:     cost,
-      seed:           Math.floor(Math.random() * 1000000)
-    };
+    const visualGuidancePrompt = contentData?.visualDirective || contentData?.imagePrompt || contentData?.visualPrompt || topic;
+    const refObjImageUrl = contentData?.referenceImage || generatedContent?.referenceImage || null;
+    const isCustomStrategyPost = !!(contentData?.isCustomStrategy && refObjImageUrl);
+
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const res = await fetch(`${apiBase}/creative/visual/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(brandPayload),
-      });
-      const data = await res.json();
-      if (data.success && data.asset?.imageUrl) {
-        const composited = await compositeBrandLogoOntoImage(data.asset.imageUrl, {
-          brandName: brand,
-          domainUrl: workspace?.domainUrl,
-          logoUrl: workspace?.logoUrl,
-          faviconUrl: workspace?.faviconUrl
+      if (isCustomStrategyPost) {
+        // ── IMAGE EDITING AGENT: Custom Strategy with reference image ──────────
+        // Sends reference image + visual directive to Gemini text model to generate
+        // a creative advertising scenario, then uses gemini-3.1-flash-image to render it
+        console.log('[PlatformPostCanvas] 🤖 Invoking Image Editing Agent for Custom Strategy post...');
+        const agentRes = await fetch(`${apiBase}/creative/image-editing-agent/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workspaceId: workspace?._id || workspace?.id,
+            referenceImageUrl: refObjImageUrl,
+            visualDirective: visualGuidancePrompt,
+            topic: topic,
+            brandName: brand || workspace?.brandName,
+            brandColors: workspace?.brandColors || [],
+            industry: workspace?.industry || workspace?.industryCategory || workspace?.niche || '',
+            tagline: workspace?.tagline || '',
+            companyDescription: workspace?.companyDescription || workspace?.metaDescription || workspace?.positioningSummary || '',
+            platform: platform,
+            style: visualStyle,
+            aspect: (platform === 'linkedin' || platform === 'blog' || platform === 'newspaper') ? '16:9' : (platform === 'story' || platform === 'reel' || platform === 'tiktok') ? '9:16' : '1:1',
+            creditCost: cost
+          })
         });
-        setVisualUrl(composited || data.asset.imageUrl);
+        const agentData = await agentRes.json();
+        if (agentData.success && agentData.asset?.imageUrl) {
+          const composited = await compositeBrandLogoOntoImage(agentData.asset.imageUrl, {
+            brandName: brand,
+            domainUrl: workspace?.domainUrl,
+            logoUrl: workspace?.logoUrl,
+            faviconUrl: workspace?.faviconUrl
+          });
+          setVisualUrl(composited || agentData.asset.imageUrl);
+          console.log('[PlatformPostCanvas] ✅ Image Editing Agent visual ready.');
+        } else {
+          throw new Error(agentData.error || 'Image Editing Agent returned no image');
+        }
       } else {
-        throw new Error(data.error || "API returned no image");
+        // ── Standard visual generation for all other post types ────────────────
+        const brandPayload = {
+          workspaceId:    workspace?._id || workspace?.id,
+          prompt:         visualGuidancePrompt,
+          topic:          topic,
+          hook:           hook,
+          brand:          brand || workspace?.brandName,
+          brandName:      brand || workspace?.brandName,
+          brandColors:    workspace?.brandColors || [],
+          industry:       workspace?.industry || workspace?.industryCategory || workspace?.niche || '',
+          tagline:        workspace?.tagline || '',
+          companyDescription: workspace?.companyDescription || workspace?.metaDescription || workspace?.positioningSummary || '',
+          platform:       platform,
+          style:          visualStyle,
+          referenceImage: null, // standard path never passes reference image
+          strategyPillar: generatedContent?.strategyPillar || generatedContent?.pillar || contentData?.strategyPillar || '',
+          aspect:         (platform === 'linkedin' || platform === 'blog' || platform === 'newspaper' || rawType === 'BLOG' || rawType === 'NEWSPAPER') ? '16:9' : (platform === 'story' || platform === 'reel' || platform === 'tiktok') ? '9:16' : '1:1',
+          creditCost:     cost,
+          seed:           Math.floor(Math.random() * 1000000)
+        };
+
+        const res = await fetch(`${apiBase}/creative/visual/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(brandPayload),
+        });
+        const data = await res.json();
+        if (data.success && data.asset?.imageUrl) {
+          const composited = await compositeBrandLogoOntoImage(data.asset.imageUrl, {
+            brandName: brand,
+            domainUrl: workspace?.domainUrl,
+            logoUrl: workspace?.logoUrl,
+            faviconUrl: workspace?.faviconUrl
+          });
+          setVisualUrl(composited || data.asset.imageUrl);
+        } else {
+          throw new Error(data.error || "API returned no image");
+        }
       }
     } catch (err) {
       console.warn("[Creative Studio] Image generation fallback:", err.message);
-      const fallbackSvg = generateVertexAISvgDataUrl(topic, brand);
+      const refObj = contentData?.referenceImage || generatedContent?.referenceImage || null;
+      const fallbackSvg = generateVertexAISvgDataUrl(visualGuidancePrompt, brand, visualStyle, refObj);
       const compositedFallback = await compositeBrandLogoOntoImage(fallbackSvg, {
         brandName: brand,
         domainUrl: workspace?.domainUrl,
@@ -528,6 +639,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
       setGenerating(false);
     }
   };
+
 
   const isCarousel  = rawPostType.includes("carousel");
   const isEmail     = rawType==="EMAIL"     || platform==="email";
@@ -619,7 +731,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
         <HeaderRow platform={platform} topic={topic} formatLabel={formatLabel} onViewAssetLibrary={handleViewAssetLibrary} />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-4 space-y-4">
-            <VisualControls visualStyle={visualStyle} setVisualStyle={setVisualStyle} generating={generating} onGenerate={handleGenerateVisual} />
+            <VisualControls visualStyle={visualStyle} setVisualStyle={setVisualStyle} generating={generating} onGenerate={handleGenerateVisual} visualDirective={contentData?.visualDirective} referenceImage={contentData?.referenceImage || contentData?.imageUrl} />
             <CopySidebar hook={hook} story={story} shortCap={shortCap} longCap={longCap} cta={cta} hashtags={hashtags} />
           </div>
           <div className="lg:col-span-8 space-y-4">
@@ -731,7 +843,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
         <HeaderRow platform={platform} topic={topic} formatLabel={formatLabel} onViewAssetLibrary={handleViewAssetLibrary} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="space-y-4">
-            <VisualControls visualStyle={visualStyle} setVisualStyle={setVisualStyle} generating={generating} onGenerate={handleGenerateVisual} />
+            <VisualControls visualStyle={visualStyle} setVisualStyle={setVisualStyle} generating={generating} onGenerate={handleGenerateVisual} visualDirective={contentData?.visualDirective} referenceImage={contentData?.referenceImage || contentData?.imageUrl} />
             
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm">
               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">Article Specifications</span>
@@ -871,16 +983,46 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            <select value={visualStyle} onChange={(e) => setVisualStyle(e.target.value)} className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+              <option>Glassmorphic Modern 3D</option>
+              <option>Minimalist Corporate Tech</option>
+              <option>Cyberpunk Neon Gradients</option>
+              <option>Photorealistic B2B Studio</option>
+              <option>Bold Editorial Fashion</option>
+            </select>
             <button 
               onClick={handleGenerateVisual} 
               disabled={generating} 
-              className="btn-primary py-2 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60 shadow-md hover:scale-105 transition-all"
+              className="btn-primary py-2 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60 shadow-md hover:scale-105 transition-all cursor-pointer"
             >
               {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-              {generating ? "Generating Visual..." : "Regenerate Image"}
+              {generating ? "Synthesizing AI Visual..." : "Regenerate Image"}
             </button>
           </div>
         </div>
+
+        {/* Visual Guidance Brief Banner (if coming from Custom Strategy) */}
+        {(contentData?.visualDirective || contentData?.referenceImage) && (
+          <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div className="space-y-1 min-w-0 flex-1">
+              <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-purple-500" /> Visual Guidance &amp; Image Layout:
+              </span>
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-relaxed break-words">
+                {contentData.visualDirective || rawImagePrompt}
+              </p>
+            </div>
+            {(contentData.referenceImage || contentData.imageUrl) && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-800/60 shrink-0">
+                <img src={contentData.referenceImage || contentData.imageUrl} alt="Reference Object" className="w-8 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-700" />
+                <div>
+                  <span className="text-[9px] font-extrabold text-purple-600 dark:text-purple-300 block uppercase">Product Object</span>
+                  <span className="text-[10px] text-slate-500 font-semibold">User Reference</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* High-Res Image Display */}
         <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video max-h-[520px] bg-slate-950 shadow-inner group flex items-center justify-center">

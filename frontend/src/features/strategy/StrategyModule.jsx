@@ -1377,7 +1377,7 @@ export const StrategyModule = () => {
                         });
                       }
 
-                      setActiveModule('creativeStudio');
+                      setActiveModule('studio');
                     }}
                     className="group relative p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 hover:border-brand-500/50 dark:hover:border-brand-500/50 hover:shadow-xl transition-all duration-300 space-y-3 cursor-pointer"
                   >
@@ -1838,11 +1838,12 @@ export const StrategyModule = () => {
                             longCaption: post.caption,
                             visualDirective: post.visualDirective,
                             imagePrompt: post.visualDirective,
-                            imageUrl: customStrategy?.imagePreviewUrl || null,
+                            imageUrl: null,
                             referenceImage: customStrategy?.imagePreviewUrl || null,
                             cta: post.cta,
                             hashtags: post.hashtags ? post.hashtags.split(' ') : [],
-                            autoGenerate: true
+                            autoGenerate: true,
+                            isCustomStrategy: true
                           };
                           if (setStudioTarget) {
                             setStudioTarget(studioPayload);

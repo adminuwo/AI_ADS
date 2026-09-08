@@ -93,6 +93,8 @@ export const ContentStudioModule = () => {
   const [visualAspect, setVisualAspect] = useState('1:1');
   const [visualVariationIndex, setVisualVariationIndex] = useState(0);
   const [regeneratingImage, setRegeneratingImage] = useState(false);
+  // Track reference image from Custom Strategy for consistent regeneration
+  const [customStrategyRefImage, setCustomStrategyRefImage] = useState(null);
 
   // Email Studio State
   const [emailForm, setEmailForm] = useState({
@@ -359,6 +361,16 @@ export const ContentStudioModule = () => {
         } else if (studioTarget.autoGenerate) {
           setDraftingSocial(true);
           const fullStrategyContext = studioTarget.strategyDescription || studioTarget.actionItem || studioTarget.customPrompt || '';
+          const isCustomStrategyWithImage = studioTarget.isCustomStrategy && studioTarget.referenceImage;
+
+          // Store reference image in state so Regenerate Image button can also use it
+          if (isCustomStrategyWithImage) {
+            setCustomStrategyRefImage(studioTarget.referenceImage);
+          } else {
+            setCustomStrategyRefImage(null);
+          }
+
+          // ── Generate social copy text ──────────────────────────────────────────
           contentAPI.generateSocialPost({
             workspaceId,
             brandName: activeWorkspace?.brandName,
@@ -367,18 +379,70 @@ export const ContentStudioModule = () => {
             customPrompt: fullStrategyContext,
             postType: postType.toLowerCase() === 'image' || postType.toLowerCase() === 'reel' ? 'engagement' : postType.toLowerCase(),
           })
-            .then(res => {
+            .then(async res => {
               const brand = activeWorkspace?.brandName || 'Brand';
               const fullPromptTopic = fullStrategyContext ? `${topic}: ${fullStrategyContext}` : topic;
-              const imgPrompt = res?.data?.imagePrompt || studioTarget.imagePrompt || `${fullPromptTopic} — ${brand} commercial advertising photography, 8k`;
-              const imgUrl = res?.data?.imageUrl || studioTarget.imageUrl || resolveBrandVisualAsset({
-                prompt: imgPrompt,
-                brandName: brand,
-                topic: fullPromptTopic,
-                style: 'Photorealistic Commercial',
-                aspect: initialAspect,
-                variationIndex: 0
-              });
+
+              let imgUrl = '';
+              let imgPrompt = '';
+
+              if (isCustomStrategyWithImage) {
+                // ── IMAGE EDITING AGENT: Custom Strategy with reference image ──────
+                // Use Image Editing Agent — sends reference image to Gemini to craft
+                // a creative scenario, then generates the ad image via gemini-3.1-flash-image
+                try {
+                  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                  console.log('[ContentStudio] 🤖 Invoking Image Editing Agent with reference image...');
+                  const agentRes = await fetch(`${apiBase}/creative/image-editing-agent/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      workspaceId,
+                      referenceImageUrl: studioTarget.referenceImage,
+                      visualDirective: studioTarget.visualDirective || topic,
+                      topic: topic,
+                      brandName: brand,
+                      brandColors: activeWorkspace?.brandColors,
+                      industry: activeWorkspace?.industryCategory || activeWorkspace?.niche,
+                      tagline: activeWorkspace?.tagline,
+                      companyDescription: activeWorkspace?.metaDescription || activeWorkspace?.positioningSummary,
+                      platform: matchedPlatform,
+                      style: 'Photorealistic Commercial',
+                      aspect: initialAspect
+                    })
+                  });
+                  const agentData = await agentRes.json();
+                  if (agentData.success && agentData.asset?.imageUrl) {
+                    imgUrl = agentData.asset.imageUrl;
+                    imgPrompt = agentData.asset.imagePrompt || topic;
+                    console.log('[ContentStudio] ✅ Image Editing Agent succeeded.');
+                  } else {
+                    throw new Error(agentData.error || 'Agent did not return image');
+                  }
+                } catch (agentErr) {
+                  console.warn('[ContentStudio] Image Editing Agent fallback:', agentErr.message);
+                  imgPrompt = studioTarget.visualDirective || `${fullPromptTopic} — ${brand} commercial photography, 8k`;
+                  imgUrl = resolveBrandVisualAsset({
+                    prompt: imgPrompt,
+                    brandName: brand,
+                    topic: fullPromptTopic,
+                    style: 'Photorealistic Commercial',
+                    aspect: initialAspect,
+                    variationIndex: 0
+                  });
+                }
+              } else {
+                // ── Standard image generation (non-custom-strategy) ───────────────
+                imgPrompt = res?.data?.imagePrompt || studioTarget.imagePrompt || `${fullPromptTopic} — ${brand} commercial advertising photography, 8k`;
+                imgUrl = res?.data?.imageUrl || studioTarget.imageUrl || resolveBrandVisualAsset({
+                  prompt: imgPrompt,
+                  brandName: brand,
+                  topic: fullPromptTopic,
+                  style: 'Photorealistic Commercial',
+                  aspect: initialAspect,
+                  variationIndex: 0
+                });
+              }
 
               const payload = {
                 ...(res?.data || {}),
@@ -666,10 +730,51 @@ export const ContentStudioModule = () => {
     try {
       const nextIndex = visualVariationIndex + 1;
       setVisualVariationIndex(nextIndex);
-      const promptToUse = (customPrompt || socialImagePrompt || socialResult?.imagePrompt || socialTopic).trim();
       const brand = activeWorkspace?.brandName || 'Brand';
       const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+      // ── If this is a Custom Strategy post with a reference image, use Image Editing Agent ──
+      if (customStrategyRefImage) {
+        console.log('[ContentStudio] 🤖 Regenerating via Image Editing Agent with reference image...');
+        const agentRes = await fetch(`${apiBase}/creative/image-editing-agent/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workspaceId,
+            referenceImageUrl: customStrategyRefImage,
+            visualDirective: socialResult?.imagePrompt || customPrompt || socialTopic,
+            topic: socialTopic,
+            brandName: brand,
+            brandColors: activeWorkspace?.brandColors,
+            industry: activeWorkspace?.industryCategory || activeWorkspace?.niche,
+            tagline: activeWorkspace?.tagline,
+            companyDescription: activeWorkspace?.metaDescription || activeWorkspace?.positioningSummary,
+            platform: socialPlatform,
+            style: customStyle,
+            aspect: customAspect
+          })
+        });
+        const agentData = await agentRes.json();
+        if (agentData.success && agentData.asset?.imageUrl) {
+          setSocialResult(prev => {
+            const updated = {
+              ...prev,
+              imageUrl: agentData.asset.imageUrl,
+              imagePrompt: agentData.asset.imagePrompt || socialTopic,
+              imageStyle: customStyle,
+              imageAspect: customAspect,
+              engine: agentData.asset.engine || 'gemini-3.1-flash-image'
+            };
+            if (setGeneratedContent) setGeneratedContent(updated);
+            return updated;
+          });
+          return;
+        }
+        throw new Error(agentData.error || 'Image Editing Agent did not return image');
+      }
+
+      // ── Standard visual generation for non-custom-strategy posts ─────────────
+      const promptToUse = (customPrompt || socialImagePrompt || socialResult?.imagePrompt || socialTopic).trim();
       const res = await fetch(`${apiBase}/creative/visual/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
