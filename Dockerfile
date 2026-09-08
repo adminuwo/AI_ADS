@@ -9,7 +9,7 @@ WORKDIR /app/frontend
 
 # Install dependencies
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm ci || npm install --no-audit
 
 # Build production frontend bundle
 COPY frontend/ ./
@@ -47,7 +47,7 @@ WORKDIR /app
 
 # Install backend production dependencies
 COPY backend/package*.json ./backend/
-RUN cd backend && npm ci --only=production
+RUN cd backend && (npm ci --omit=dev || npm install --omit=dev --no-audit)
 
 # Copy backend source code
 COPY backend/ ./backend/
