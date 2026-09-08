@@ -367,7 +367,9 @@ async function _executeBrandAdImageGeneration({
   let gcsPath = null;
   const client = globalAiClient || aiClient;
   if (client && typeof client.models?.generateContent === 'function') {
-    const candidateModels = ['gemini-3.1-flash-image'];
+    const candidateModels = [
+      'gemini-3.1-flash-image'
+    ];
     for (const modelName of candidateModels) {
       if (imageUrl) break;
       try {

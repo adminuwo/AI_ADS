@@ -1650,6 +1650,74 @@ app.post('/api/creative/visual/generate', async (req, res) => {
   }
 });
 
+// ─── Image Editing Agent Endpoint (Custom Strategy Reference Image → AI Ad Image) ───
+// Activated when user clicks "Create in Studio" from a Custom Strategy card that has a
+// reference image uploaded. The agent:
+//   1. Fetches the reference image (user uploaded product/object photo)
+//   2. Sends it to Gemini text model to generate a creative advertising scenario prompt
+//   3. Passes that prompt to gemini-3.1-flash-image to generate the actual ad image
+app.post('/api/creative/image-editing-agent/generate', async (req, res) => {
+  try {
+    const {
+      workspaceId,
+      referenceImageUrl,
+      visualDirective,
+      topic,
+      brandName,
+      brandColors,
+      industry,
+      tagline,
+      companyDescription,
+      platform,
+      style,
+      aspect,
+      creditCost = 8
+    } = req.body;
+
+    if (!referenceImageUrl) {
+      return res.status(400).json({ success: false, error: 'referenceImageUrl is required for the Image Editing Agent' });
+    }
+
+    const deduction = deductCredits(creditCost, `Image Editing Agent: "${topic || 'Custom Strategy Visual'}"`);
+
+    const { runImageEditingAgent } = require('./services/imageEditingAgent.service');
+    const agentResult = await runImageEditingAgent({
+      workspaceId,
+      referenceImageUrl,
+      visualDirective,
+      topic,
+      brandName: brandName || 'Brand',
+      brandColors,
+      industry,
+      tagline,
+      companyDescription,
+      platform: platform || 'instagram',
+      style: style || 'Photorealistic Commercial',
+      aspect: aspect || '1:1'
+    });
+
+    console.log(`🤖 [IMAGE EDITING AGENT] Completed for "${brandName}" via ${agentResult.engine}`);
+
+    return res.json({
+      success: true,
+      remainingCredits: deduction.newBalance,
+      asset: {
+        imageUrl: agentResult.imageUrl,
+        gcsPath: agentResult.gcsPath,
+        imagePrompt: agentResult.imagePrompt,
+        brand: agentResult.brandName,
+        style: agentResult.imageStyle,
+        aspect: agentResult.imageAspect,
+        engine: agentResult.engine,
+        svgFallback: agentResult.svgFallback
+      }
+    });
+  } catch (err) {
+    console.error('[/api/creative/image-editing-agent/generate] Error:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.get('/api/calendar/entries', async (req, res) => {
   try {
     const dbEntries = await Calendar.find().sort({ createdAt: -1 });
