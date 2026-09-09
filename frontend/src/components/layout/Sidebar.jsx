@@ -64,7 +64,6 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
   }, []);
 
   const modules = [
-    { id: 'landing', label: '0. Landing Page', icon: Globe },
     { id: 'dashboard', label: t('dashboard', '1. Dashboard'), icon: LayoutGrid },
     { id: 'brands', label: t('brands', '2. Brand DNA'), icon: Dna },
     { id: 'seo', label: t('seo', '3. SEO Intelligence'), icon: Search },
