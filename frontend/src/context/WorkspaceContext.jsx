@@ -4,6 +4,7 @@ import { API_BASE } from '../config/api';
 const WorkspaceContext = createContext();
 
 const MODULE_TO_PATH = {
+  landing: '/',
   dashboard: '/dashboard',
   brands: '/brand-dna',
   strategy: '/strategy',
@@ -23,7 +24,8 @@ const MODULE_TO_PATH = {
 };
 
 const PATH_TO_MODULE = {
-  '/': 'dashboard',
+  '/': 'landing',
+  '/landing': 'landing',
   '/dashboard': 'dashboard',
   '/brand-dna': 'brands',
   '/brands': 'brands',
@@ -53,9 +55,9 @@ const PATH_TO_MODULE = {
 };
 
 function getModuleFromLocation() {
-  if (typeof window === 'undefined') return 'dashboard';
+  if (typeof window === 'undefined') return 'landing';
   const cleanPath = window.location.pathname.split('?')[0].split('#')[0].toLowerCase().replace(/\/$/, '') || '/';
-  return PATH_TO_MODULE[cleanPath] || 'dashboard';
+  return PATH_TO_MODULE[cleanPath] || 'landing';
 }
 
 export const TRANSLATIONS = {

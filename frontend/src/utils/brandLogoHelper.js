@@ -1,8 +1,36 @@
+import { API_BASE } from '../config/api';
+
 /**
  * brandLogoHelper.js
  * Universal Brand Logo & Icon Resolver
- * Guarantees a real, accurate high-res logo image for any brand.
+ * Guarantees a real, accurate high-res logo image for any brand while preventing
+ * Mixed Content (http/https) and CORS cross-origin blocking errors in browser canvas.
  */
+
+function formatOrProxyUrl(urlStr) {
+  if (!urlStr || typeof urlStr !== 'string' || !urlStr.startsWith('http')) return null;
+  if (urlStr.includes('picsum.photos') || urlStr.includes('dicebear')) return null;
+
+  // Trusted CORS-friendly domains (Google, GCS, Cloudinary, data URIs)
+  if (
+    urlStr.includes('google.com') ||
+    urlStr.includes('storage.googleapis.com') ||
+    urlStr.includes('cloudinary.com') ||
+    urlStr.startsWith('data:')
+  ) {
+    return urlStr;
+  }
+
+  // Ensure HTTPS
+  let cleanUrl = urlStr;
+  if (cleanUrl.startsWith('http://')) {
+    cleanUrl = cleanUrl.replace(/^http:\/\//i, 'https://');
+  }
+
+  // Proxy external third-party logo through backend proxy endpoint to avoid CORS block
+  const apiBase = API_BASE || '/api';
+  return `${apiBase}/proxy/image?url=${encodeURIComponent(cleanUrl)}`;
+}
 
 export function getBrandLogoUrl(brandName = '', domainUrl = '', logoUrl = '', faviconUrl = '') {
   let name = brandName;
@@ -10,7 +38,6 @@ export function getBrandLogoUrl(brandName = '', domainUrl = '', logoUrl = '', fa
   let logo = logoUrl;
   let favicon = faviconUrl;
 
-  // Support object arguments: getBrandLogoUrl({ brandName, domainUrl, logoUrl, faviconUrl })
   if (typeof brandName === 'object' && brandName !== null) {
     const opts = brandName;
     name = opts.brandName || opts.brand || '';
@@ -19,13 +46,12 @@ export function getBrandLogoUrl(brandName = '', domainUrl = '', logoUrl = '', fa
     favicon = opts.faviconUrl || '';
   }
 
-  // 1. Return valid custom logo or favicon if available and not a dummy placeholder
-  if (logo && typeof logo === 'string' && logo.startsWith('http') && !logo.includes('picsum.photos') && !logo.includes('dicebear')) {
-    return logo;
-  }
-  if (favicon && typeof favicon === 'string' && favicon.startsWith('http') && !favicon.includes('picsum.photos') && !favicon.includes('dicebear')) {
-    return favicon;
-  }
+  // 1. Try formatted/proxied logo or favicon
+  const validLogo = formatOrProxyUrl(logo);
+  if (validLogo) return validLogo;
+
+  const validFavicon = formatOrProxyUrl(favicon);
+  if (validFavicon) return validFavicon;
 
   // 2. Extract clean domain from domainUrl or infer from brandName
   let cleanDomain = '';
@@ -68,6 +94,6 @@ export function getBrandLogoUrl(brandName = '', domainUrl = '', logoUrl = '', fa
 
   if (!cleanDomain) cleanDomain = 'google.com';
 
-  // Google Favicon API 256px delivers high-resolution official brand logo icons
+  // Google Favicon API 256px delivers high-resolution official brand logo icons — 100% CORS & HTTPS safe
   return `https://www.google.com/s2/favicons?domain=${cleanDomain}&sz=256`;
 }

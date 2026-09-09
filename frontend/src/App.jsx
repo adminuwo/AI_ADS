@@ -27,6 +27,7 @@ import { AISAAssistantDrawer } from './features/aisaAssistant/AISAAssistantDrawe
 import { Login } from './features/auth/Login';
 import { AdminDashboardModule } from './features/admin/AdminDashboard';
 import { AdminLayout } from './components/layout/AdminLayout';
+import { LandingPage } from './features/landing/LandingPage';
 
 import { CustomPopupModal } from './components/modals/CustomPopupModal';
 import { CustomToastContainer } from './components/modals/CustomToastContainer';
@@ -53,6 +54,10 @@ const MainContent = () => {
       mainEl.scrollTop = 0;
     }
   }, [activeModule]);
+
+  if (activeModule === 'landing' || activeModule === 'landingpage') {
+    return <LandingPage />;
+  }
 
   if (!user) {
     return <Login onLoginSuccess={loginUser} />;

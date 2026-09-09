@@ -599,6 +599,56 @@ app.get('/api/download-image', async (req, res) => {
   }
 });
 
+// ─── CORS Image Proxy Endpoint (Proxies external brand logos & assets without browser CORS block) ───
+app.get('/api/proxy/image', async (req, res) => {
+  try {
+    const rawUrl = req.query.url;
+    if (!rawUrl) return res.status(400).send('Missing url parameter');
+
+    let targetUrl = rawUrl;
+    if (targetUrl.startsWith('http://')) {
+      targetUrl = targetUrl.replace('http://', 'https://');
+    }
+
+    const axios = require('axios');
+    const response = await axios.get(targetUrl, {
+      responseType: 'arraybuffer',
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+
+    const contentType = response.headers['content-type'] || 'image/png';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.send(Buffer.from(response.data));
+  } catch (err) {
+    if (req.query.url && req.query.url.startsWith('http://')) {
+      try {
+        const axios = require('axios');
+        const response = await axios.get(req.query.url, {
+          responseType: 'arraybuffer',
+          timeout: 10000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          }
+        });
+        const contentType = response.headers['content-type'] || 'image/png';
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.send(Buffer.from(response.data));
+      } catch (e2) {
+        // Fallback error below
+      }
+    }
+    console.warn('[ProxyImage] Proxy fetch note:', err.message);
+    return res.status(404).send('Image proxy fetch failed');
+  }
+});
+
 // ─── LEGACY WORKSPACE / BRAND DNA ENDPOINTS (backward compatible & Multi-Tenant Isolated) ──────────────
 app.get('/api/workspace/list', async (req, res) => {
   try {

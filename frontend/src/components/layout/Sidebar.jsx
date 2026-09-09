@@ -64,6 +64,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
   }, []);
 
   const modules = [
+    { id: 'landing', label: '0. Landing Page', icon: Globe },
     { id: 'dashboard', label: t('dashboard', '1. Dashboard'), icon: LayoutGrid },
     { id: 'brands', label: t('brands', '2. Brand DNA'), icon: Dna },
     { id: 'seo', label: t('seo', '3. SEO Intelligence'), icon: Search },
@@ -115,6 +116,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 src="/logo.png" 
                 alt="AI ADS™ Logo" 
                 className="w-12 h-12 sm:w-13 sm:h-13 object-contain shrink-0 drop-shadow-sm" 
+                onError={(e) => { e.target.onerror = null; e.target.src = '/logo.jpg'; }}
               />
               <div className="min-w-0 flex-1 flex items-center">
                 <span className="font-extrabold text-xl sm:text-2xl tracking-tight bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 bg-clip-text text-transparent leading-none">

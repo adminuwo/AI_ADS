@@ -45,8 +45,9 @@ export async function compositeBrandLogoOntoImage(imageUrl, brandOptions = {}) {
           try {
             logoImg.crossOrigin = 'anonymous';
             logoLoaded = await new Promise((resLogo) => {
-              logoImg.onload = () => resLogo(true);
-              logoImg.onerror = () => resLogo(false);
+              const timer = setTimeout(() => resLogo(false), 4000);
+              logoImg.onload = () => { clearTimeout(timer); resLogo(true); };
+              logoImg.onerror = () => { clearTimeout(timer); resLogo(false); };
               logoImg.src = logoUrl;
             });
           } catch (e) {
