@@ -2506,7 +2506,7 @@ export const SettingsModal = () => {
               {/* Sidebar Header */}
               <div className="p-5 flex items-center justify-between shrink-0 border-b border-slate-200/60 dark:border-slate-800/60">
                 <div className="flex items-center gap-3">
-                  <img src="/logo.png" alt="AI Ads™ Logo" className="w-10 h-10 object-contain shrink-0" />
+                  <img src="/logo.png" alt="AI Ads™ Logo" className="w-12 h-12 object-contain shrink-0" />
                   <div>
                     <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">AI Ads Preferences</h2>
                     <span className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block">Platform Settings</span>

@@ -40,6 +40,7 @@ router.get('/dashboard-summary', adminAuth, adminController.getDashboardSummary)
 router.get('/users-stats', adminAuth, adminController.getAllUserStats);
 router.get('/user/:id', adminAuth, adminController.getUserDetail);
 router.put('/user/:id/quota', adminAuth, adminController.updateUserQuotaAndPlan);
+router.delete('/user/:id', adminAuth, adminController.deleteUserAccount);
 router.get('/chat-sessions', adminAuth, adminController.getChatSessions);
 
 // Legal content management

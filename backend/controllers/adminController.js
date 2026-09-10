@@ -154,6 +154,50 @@ const updateUserQuotaAndPlan = async (req, res) => {
   }
 };
 
+// ─── DELETE /api/admin/user/:id ────────────────────────────────────────────────
+const deleteUserAccount = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const u = await User.findById(userId);
+    if (!u) {
+      return res.status(404).json({ success: false, error: 'User account not found' });
+    }
+
+    // Protect primary SuperAdmin account from deletion
+    if (u.email === 'admin@aiads.com') {
+      return res.status(400).json({ success: false, error: 'Cannot delete primary SuperAdmin account' });
+    }
+
+    // Cascade clean up user's workspaces and generated content
+    try {
+      const userWorkspaces = await Workspace.find({ userEmail: u.email }).select('_id');
+      const wsIds = userWorkspaces.map(w => w._id.toString());
+
+      if (wsIds.length > 0) {
+        await GeneratedPost.deleteMany({ workspaceId: { $in: wsIds } });
+        await Content.deleteMany({ workspaceId: { $in: wsIds } });
+      }
+      await Workspace.deleteMany({ userEmail: u.email });
+      await BrandProfile.deleteMany({ userEmail: u.email });
+      await ChatSession.deleteMany({ userEmail: u.email });
+      await SupportTicket.deleteMany({ userEmail: u.email });
+    } catch (cleanErr) {
+      console.warn('[Admin] Non-critical warning cleanup during user deletion:', cleanErr.message);
+    }
+
+    await User.findByIdAndDelete(userId);
+
+    return res.json({
+      success: true,
+      message: `User account (${u.email}) and associated data deleted successfully`,
+      deletedUserId: userId
+    });
+  } catch (err) {
+    console.error('[Admin] deleteUserAccount error:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // ─── GET /api/admin/dashboard-summary ──────────────────────────────────────────
 const getDashboardSummary = async (req, res) => {
   try {
@@ -595,6 +639,7 @@ module.exports = {
   getAllUserStats,
   getUserDetail,
   updateUserQuotaAndPlan,
+  deleteUserAccount,
   getDashboardSummary,
   getChatSessions,
   getLegalContent,

@@ -127,6 +127,9 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
   const [isBlocked, setIsBlocked] = useState(initialUser?.isBlocked || false);
   const [saveSuccess, setSaveSuccess] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     if (!userId) return;
@@ -176,6 +179,26 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
       console.error('Error saving user quota:', err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userId) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      const res = await adminAPI.deleteUser(userId);
+      if (res?.success) {
+        if (onUserUpdated) onUserUpdated();
+        onClose();
+      } else {
+        setDeleteError(res?.error || 'Failed to delete user account.');
+      }
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setDeleteError(err?.message || 'An error occurred while deleting user account.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -368,6 +391,64 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
                 <Save className="w-4 h-4" />
                 {saving ? 'Saving Profile & Quota...' : 'Save User Profile & Access Settings'}
               </button>
+
+              {/* Danger Zone: Delete User Account */}
+              <div className="pt-3 border-t border-indigo-100/90 space-y-2">
+                {deleteError && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{deleteError}</span>
+                  </div>
+                )}
+
+                {!confirmDelete ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(true)}
+                    className="w-full py-2.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 border border-rose-200 font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-500" />
+                    Delete User Account
+                  </button>
+                ) : (
+                  <div className="p-4 bg-white/95 rounded-2xl border border-rose-300 shadow-sm space-y-3 animate-in fade-in">
+                    <div className="flex items-center gap-2 text-rose-700 font-extrabold text-xs">
+                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>Confirm User Account Deletion</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                      Are you sure you want to permanently delete <strong className="text-slate-900">{userObj?.email}</strong>? This will purge all associated workspaces and content. This action cannot be undone.
+                    </p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => { setConfirmDelete(false); setDeleteError(''); }}
+                        className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDeleteUser}
+                        disabled={deleting}
+                        className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold shadow-sm flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                      >
+                        {deleting ? (
+                          <>
+                            <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            Deleting Account...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Delete Account
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* User's Workspaces Section */}
@@ -887,12 +968,21 @@ export const AdminDashboardModule = () => {
                           {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                         </td>
                         <td className="p-4 text-right">
-                          <button
-                            onClick={() => setSelectedUserId(u.id)}
-                            className="px-3.5 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 border border-brand-200 font-extrabold text-[11px] transition-colors"
-                          >
-                            Manage User
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => setSelectedUserId(u.id)}
+                              className="px-3.5 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 border border-brand-200 font-extrabold text-[11px] transition-colors"
+                            >
+                              Manage User
+                            </button>
+                            <button
+                              onClick={() => setSelectedUserId(u.id)}
+                              title="Delete User Account"
+                              className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))

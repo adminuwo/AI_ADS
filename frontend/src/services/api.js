@@ -295,6 +295,7 @@ export const adminAPI = {
   getAllUserStats: () => adminApiFetch('/admin/users-stats'),
   getUserDetail: (userId) => adminApiFetch(`/admin/user/${userId}`),
   updateUserQuota: (userId, data) => adminApiFetch(`/admin/user/${userId}/quota`, { method: 'PUT', body: data }),
+  deleteUser: (userId) => adminApiFetch(`/admin/user/${userId}`, { method: 'DELETE' }),
   getChatSessions: () => adminApiFetch('/admin/chat-sessions'),
   getLegalPages: () => adminApiFetch('/admin/legal'),
   updateLegalPages: (data) => adminApiFetch('/admin/legal', { method: 'POST', body: data }),

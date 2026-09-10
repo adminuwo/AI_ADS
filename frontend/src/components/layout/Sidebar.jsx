@@ -114,7 +114,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
               <img 
                 src="/logo.png" 
                 alt="AI ADS™ Logo" 
-                className="w-12 h-12 sm:w-13 sm:h-13 object-contain shrink-0 drop-shadow-sm" 
+                className="w-14 h-14 sm:w-16 sm:h-16 object-contain shrink-0 drop-shadow-sm" 
                 onError={(e) => { e.target.onerror = null; e.target.src = '/logo.jpg'; }}
               />
               <div className="min-w-0 flex-1 flex items-center">
