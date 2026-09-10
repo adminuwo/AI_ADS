@@ -5,7 +5,7 @@ const WebsiteProjectSchema = new mongoose.Schema({
   workspaceId: { type: String, required: true, index: true },
   title: { type: String, required: true, trim: true },
   businessType: { type: String, default: 'General Website' },
-  industry: { type: String, default: 'Technology & E-Commerce' },
+  industry: { type: String, default: '' },
   status: { type: String, enum: ['DRAFT', 'GENERATED', 'MODIFIED', 'VALIDATED', 'DEPLOYED'], default: 'DRAFT' },
   activeVersion: { type: String, default: 'v1' },
   

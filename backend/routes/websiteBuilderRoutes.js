@@ -125,7 +125,7 @@ router.post('/build', async (req, res) => {
             workspaceId: wsId,
             title: projectTitle,
             businessType: buildResult.requirement?.businessType || 'Full-Stack App',
-            industry: buildResult.requirement?.industry || 'Technology & E-Commerce',
+            industry: buildResult.requirement?.industry || '',
             status: 'GENERATED',
             activeVersion: 'v1',
             blueprint: buildResult.blueprint,

@@ -74,7 +74,10 @@ export const SeoModule = () => {
     if (ws.contentPillars?.[0]) return ws.contentPillars[0].split('&')[0].trim();
     const name = ws.brandName || 'Brand';
     const cat = ws.industryCategory || '';
-    if (cat) return `${name} ${cat}`;
+    // Only use industryCategory if it was genuinely scraped — not a generic/default placeholder
+    const GENERIC_DEFAULTS = ['technology & e-commerce', 'e-commerce', 'general', 'technology', 'consumer & enterprise', ''];
+    const isGeneric = !cat || GENERIC_DEFAULTS.includes(cat.toLowerCase().trim());
+    if (!isGeneric) return `${name} ${cat}`;
     return `${name} Brand Strategy & Marketing`;
   }, [activeWorkspace]);
 
@@ -330,7 +333,7 @@ export const SeoModule = () => {
           </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
             {clusterLoading
-              ? `Analyzing "${activeWorkspace.brandName}" in the ${activeWorkspace.industryCategory || 'your'} industry to generate intelligent keyword clusters...`
+              ? `Analyzing "${activeWorkspace.brandName}" brand to generate intelligent keyword clusters...`
               : 'Generate AI-powered keyword clusters, search intent profiles, and topic maps anchored to your Brand DNA.'}
           </p>
           <button

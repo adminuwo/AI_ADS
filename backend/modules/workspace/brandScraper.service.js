@@ -1,6 +1,14 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-let Vibrant;
+const https = require('https');
+const httpsAgent = new https.Agent({ rejectUnauthorized: false });
+
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0'
+];
 try {
   const vModule = require('node-vibrant/node');
   Vibrant = vModule.Vibrant || vModule.default || vModule;
@@ -25,6 +33,197 @@ let puppeteer = null;
 try {
   puppeteer = require('puppeteer');
 } catch (e) {}
+
+async function fetchWebsiteHtmlWithResilience(cleanUrl, brandName, domainName) {
+  let html = '';
+  let $ = null;
+  const crawledSources = [];
+
+  const candidateUrls = [
+    cleanUrl,
+    `https://www.${domainName.replace(/^www\./i, '')}`,
+    `https://${domainName.replace(/^www\./i, '')}`,
+    `http://${domainName.replace(/^www\./i, '')}`
+  ];
+  const uniqueUrls = Array.from(new Set(candidateUrls));
+
+  // TIER 1: Multi-format Axios GET with rotated Chrome Headers & SSL bypass
+  for (const urlToFetch of uniqueUrls) {
+    if (html && html.length > 300) break;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const ua = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+      try {
+        const response = await axios.get(urlToFetch, {
+          timeout: 6000,
+          maxRedirects: 5,
+          httpsAgent,
+          headers: {
+            'User-Agent': ua,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Sec-Ch-Ua': '"Chromium";v="123", "Not:A-Brand";v="8", "Google Chrome";v="123"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1'
+          }
+        });
+        if (response.status === 200 && response.data && typeof response.data === 'string') {
+          const rawData = response.data;
+          if (!/challenge-running|cf-browser-verification|just a moment\.\.\.|access denied/i.test(rawData) && rawData.length > 300) {
+            html = rawData;
+            $ = cheerio.load(html);
+            crawledSources.push('WEBSITE_HOMEPAGE');
+            console.log(`📡 [SCRAPER] Tier 1: Direct HTTP Fetch Successful for ${urlToFetch}`);
+            break;
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
+  // TIER 2: Puppeteer Headless Chrome Browser DOM Rendering (Bypasses Cloudflare JS challenges)
+  if ((!html || html.length < 300) && puppeteer) {
+    console.log(`🛡️ [SCRAPER] Direct HTTP blocked/incomplete. Tier 2: Launching Puppeteer browser renderer for ${cleanUrl}...`);
+    let browser = null;
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--disable-web-security',
+          '--ignore-certificate-errors'
+        ]
+      });
+      const page = await browser.newPage();
+      await page.setUserAgent(USER_AGENTS[0]);
+      await page.setViewport({ width: 1280, height: 800 });
+      await page.goto(cleanUrl, { waitUntil: 'domcontentloaded', timeout: 8000 });
+      await new Promise(r => setTimeout(r, 1000));
+      const renderedHtml = await page.content();
+      if (renderedHtml && renderedHtml.length > 300) {
+        html = renderedHtml;
+        $ = cheerio.load(html);
+        crawledSources.push('PUPPETEER_LIVE_DOM_RENDER');
+        console.log(`📡 [SCRAPER] Tier 2: Puppeteer Browser DOM Rendering Successful (${html.length} chars)`);
+      }
+    } catch (pupErr) {
+      console.warn(`⚠️ [SCRAPER] Tier 2 Puppeteer Note: ${pupErr.message}`);
+    } finally {
+      if (browser) {
+        try { await browser.close(); } catch (e) {}
+      }
+    }
+  }
+
+  // TIER 3: Tavily Anti-Bot Extract / Search
+  if (!html || html.length < 300) {
+    console.log(`🛡️ [SCRAPER] Tier 3: Attempting Tavily Anti-Bot Bypass for ${cleanUrl}...`);
+    try {
+      const tavilyExtract = await extractTavilyUrl(cleanUrl);
+      if (tavilyExtract && tavilyExtract.rawContent && tavilyExtract.rawContent.length > 300) {
+        html = tavilyExtract.rawContent;
+        $ = cheerio.load(html);
+        crawledSources.push('TAVILY_ANTI_BOT_BYPASS');
+        console.log(`📡 [SCRAPER] Tier 3: Tavily Anti-Bot Bypass Successful`);
+      } else {
+        const tavilySearch = await searchTavily(`official website brand positioning and corporate details for ${brandName} ${domainName}`);
+        if (tavilySearch && (tavilySearch.answer || tavilySearch.results?.length > 0)) {
+          const bodyText = (tavilySearch.answer || '') + ' ' + (tavilySearch.results || []).map(r => `${r.title}: ${r.snippet}`).join(' ');
+          html = `<html><head><title>${brandName}</title><meta name="description" content="${bodyText.slice(0, 300)}"></head><body><h1>${brandName}</h1><p>${bodyText}</p></body></html>`;
+          $ = cheerio.load(html);
+          crawledSources.push('TAVILY_DEEP_SEARCH');
+          console.log(`📡 [SCRAPER] Tier 3: Tavily Search Result Retrieved`);
+        }
+      }
+    } catch (tavErr) {}
+  }
+
+  // TIER 4: DuckDuckGo Public HTML Search Scraper (Zero API Key Required)
+  if (!html || html.length < 300) {
+    console.log(`🛡️ [SCRAPER] Tier 4: Querying DuckDuckGo HTML Search engine for ${domainName}...`);
+    try {
+      const ddgUrl = `https://html.duckduckgo.com/html/?q=site:${encodeURIComponent(domainName)}+OR+${encodeURIComponent(brandName)}`;
+      const ddgRes = await axios.get(ddgUrl, {
+        timeout: 6000,
+        httpsAgent,
+        headers: {
+          'User-Agent': USER_AGENTS[0],
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9'
+        }
+      });
+      if (ddgRes.status === 200 && ddgRes.data) {
+        const ddg$ = cheerio.load(ddgRes.data);
+        const snippets = [];
+        ddg$('.result__snippet, .result__title').each((_, el) => {
+          const t = ddg$(el).text().trim();
+          if (t) snippets.push(t);
+        });
+        if (snippets.length > 0) {
+          const combined = snippets.join(' ');
+          html = `<html><head><title>${brandName} - Official Site</title><meta name="description" content="${combined.slice(0, 300)}"></head><body><h1>${brandName}</h1><p>${combined}</p></body></html>`;
+          $ = cheerio.load(html);
+          crawledSources.push('PUBLIC_SEARCH_ENGINE_SCRAPE');
+          console.log(`📡 [SCRAPER] Tier 4: DuckDuckGo Public Search Snippets Extracted (${snippets.length} snippets)`);
+        }
+      }
+    } catch (ddgErr) {
+      console.warn(`⚠️ [SCRAPER] Tier 4 DuckDuckGo Note: ${ddgErr.message}`);
+    }
+  }
+
+  // TIER 5: AI Live Web Search Grounding (Vertex/Gemini API)
+  if (!html || html.length < 300) {
+    console.log(`🛡️ [SCRAPER] Tier 5: Querying Gemini Search Grounding for ${brandName} (${domainName})...`);
+    try {
+      const { aiClient, globalAiClient } = require('../../config/vertex');
+      const client = globalAiClient || aiClient;
+      if (client) {
+        const aiRes = await client.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents: `Search the web and provide the official details for the brand "${brandName}" with website "${domainName}".
+Include:
+- Official brand tagline
+- Corporate description & founding background
+- Core products/services
+- Primary headquarters city & country
+- Contact email and helpline numbers
+- Official brand color palette (hex codes)
+- Official logo description or image URL
+
+Return a detailed plain text overview.`,
+          config: { tools: [{ googleSearch: {} }] }
+        });
+        const groundingText = aiRes?.text || '';
+        if (groundingText && groundingText.length > 50) {
+          html = `<html><head><title>${brandName}</title><meta name="description" content="${groundingText.slice(0, 300)}"></head><body><h1>${brandName}</h1><p>${groundingText}</p></body></html>`;
+          $ = cheerio.load(html);
+          crawledSources.push('GEMINI_GROUNDED_SEARCH');
+          console.log(`📡 [SCRAPER] Tier 5: Gemini Live Search Grounding Successful`);
+        }
+      }
+    } catch (aiGroundErr) {
+      console.warn(`⚠️ [SCRAPER] Tier 5 Gemini Grounding Note: ${aiGroundErr.message}`);
+    }
+  }
+
+  // Final Fallback if all tiers failed
+  if (!html || !$) {
+    html = `<html><head><title>${brandName}</title><meta name="description" content="${brandName} Official Corporate Brand Workspace"></head><body><h1>${brandName}</h1><p>${brandName} official corporate website.</p></body></html>`;
+    $ = cheerio.load(html);
+    crawledSources.push('SYNTHESIZED_FALLBACK_DOM');
+  }
+
+  return { html, $, crawledSources };
+}
 
 function extractEmailsFromText(text) {
   if (!text || typeof text !== 'string') return [];
@@ -286,7 +485,7 @@ Return ONLY a raw JSON array of 3 to 5 hex string codes representing the exact o
 Return ONLY a raw JSON array of hex strings with no markdown formatting. Example: ["#000000", "#D8A016", "#FED260", "#9F6B08"]`;
 
       const aiRes = await client.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.0-flash',
         contents: prompt,
         config: { tools: [{ googleSearch: {} }] }
       });
@@ -509,10 +708,11 @@ async function crawlBrandContext(cleanUrl, $) {
       const isPressPage = /press|media|newsroom|brand|corporate|faq/i.test(pageUrl);
 
       const response = await axios.get(pageUrl, {
-        timeout: 2500,
-        maxRedirects: 3,
+        timeout: 5000,
+        maxRedirects: 5,
+        httpsAgent,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'User-Agent': USER_AGENTS[0],
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9'
         }
@@ -772,54 +972,11 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
 
   console.log(`\n🌐 [SCRAPER] 🚀 Initiating Live Web Scrape & Brand DNA Setup for: ${cleanUrl} (${brandName})`);
 
-  let html = '';
-  let $ = null;
-  let crawledSources = ['WEBSITE_HOMEPAGE'];
-
-  // STEP 1: Fast HTTP Fetch with Full Chrome Browser Headers
-  try {
-    const response = await axios.get(cleanUrl, {
-      timeout: 8000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1'
-      }
-    });
-    html = response.data;
-    $ = cheerio.load(html);
-    console.log(`📡 [SCRAPER] Step 1: Live Homepage HTTP Fetch Successful (200 OK)`);
-  } catch (err) {
-    console.log(`🛡️ [SCRAPER] Direct HTTP blocked (${err.message}). Switching to secondary web fetcher...`);
-    const tavilyExtract = await extractTavilyUrl(cleanUrl);
-    if (tavilyExtract && tavilyExtract.rawContent) {
-      html = tavilyExtract.rawContent;
-      $ = cheerio.load(html);
-      crawledSources.push('TAVILY_ANTI_BOT_BYPASS');
-      console.log(`📡 [SCRAPER] Tavily Anti-Bot Bypass Content Retrieved Successfully`);
-    } else {
-      const tavilySearch = await searchTavily(`brand positioning and official details for ${domainName}`);
-      if (tavilySearch && tavilySearch.answer) {
-        html = `<html><body><h1>${tavilySearch.answer}</h1></body></html>`;
-        $ = cheerio.load(html);
-        crawledSources.push('TAVILY_DEEP_SEARCH');
-        console.log(`📡 [SCRAPER] Tavily Deep Search Details Retrieved`);
-      }
-    }
-    if (!$) {
-      html = `<html><head><title>${brandName}</title><meta name="description" content="${brandName} Official Corporate Brand Workspace"></head><body><h1>${brandName}</h1><p>${brandName} official corporate website.</p></body></html>`;
-      $ = cheerio.load(html);
-      crawledSources.push('SYNTHESIZED_FALLBACK_DOM');
-    }
-  }
+  // STEP 1: Resilient Multi-Tier Web Fetch (Direct HTTP -> Puppeteer -> Tavily -> DuckDuckGo -> Gemini Grounding)
+  const fetchedResult = await fetchWebsiteHtmlWithResilience(cleanUrl, brandName, domainName);
+  let html = fetchedResult.html;
+  let $ = fetchedResult.$;
+  let crawledSources = fetchedResult.crawledSources;
 
   // STEP 2: Dual-Mode Logo Extraction (Google Favicon 128px + Clearbit + Schema JSON-LD + OpenGraph)
   const rootDomain = domainName.replace(/^www\./i, '');
@@ -862,7 +1019,7 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
   };
 
   try {
-    const clearbitRes = await axios.head(clearbitLogoUrl, { timeout: 1200 });
+    const clearbitRes = await axios.head(clearbitLogoUrl, { timeout: 1500, httpsAgent });
     if (clearbitRes.status === 200) {
       logoUrl = clearbitLogoUrl;
       crawledSources.push('CLEARBIT_LOGO_API');

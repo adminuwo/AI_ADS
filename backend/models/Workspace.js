@@ -21,7 +21,7 @@ const WorkspaceSchema = new mongoose.Schema({
     phone: { type: String, default: '' },
     location: { type: String, default: 'Global Operations' }
   },
-  industryCategory: { type: String, default: 'Technology & E-Commerce' },
+  industryCategory: { type: String, default: '' },
   missionStatement: { type: String, default: '' },
   tagline: { type: String, default: '' },
   positioningSummary: { type: String, default: '' },
