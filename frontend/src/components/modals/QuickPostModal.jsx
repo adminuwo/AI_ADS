@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { getBrandLogoUrl } from '../../utils/brandLogoHelper';
-import { X, Zap, Sparkles, Copy, Check, Send } from 'lucide-react';
+import { X, Zap, Sparkles, Copy, Check, Send, Eye } from 'lucide-react';
+import FullImageModal from './FullImageModal';
 
 export const QuickPostModal = () => {
   const { isQuickPostOpen, setIsQuickPostOpen, activeWorkspace, setActiveModule, setStudioTarget } = useWorkspace();
@@ -12,6 +13,7 @@ export const QuickPostModal = () => {
   const [loading, setLoading] = useState(false);
   const [output, setOutput] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showFullImage, setShowFullImage] = useState(false);
 
   if (!isQuickPostOpen) return null;
 
@@ -185,15 +187,22 @@ export const QuickPostModal = () => {
             
             <div className="space-y-2 text-xs text-slate-200">
               {output.imageUrl && (
-                <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-sm max-h-72 my-2 bg-slate-950">
+                <div 
+                  className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-sm max-h-72 my-2 bg-slate-950 group cursor-pointer"
+                  onClick={() => setShowFullImage(true)}
+                >
                   <img 
                     src={output.imageUrl} 
                     alt={output.imagePrompt || output.topic || 'Generated visual'} 
-                    className="w-full h-full object-cover max-h-72"
+                    className="w-full h-full object-cover max-h-72 group-hover:scale-105 transition-transform duration-300"
                   />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-extrabold text-xs">
+                    <Eye className="w-4 h-4 text-emerald-400" />
+                    <span>View Full Image</span>
+                  </div>
                   <div className="absolute bottom-2 left-2 right-2 px-3 py-1.5 rounded-xl bg-slate-950/80 backdrop-blur-md text-[10px] text-white font-semibold flex items-center justify-between shadow-lg">
                     <span className="truncate">🎨 AI Generated Visual (Gemini 3.1 Flash Image)</span>
-                    <span className="font-bold text-emerald-400 shrink-0">Ready</span>
+                    <span className="font-bold text-emerald-400 shrink-0">Click to Expand</span>
                   </div>
                 </div>
               )}
@@ -215,6 +224,15 @@ export const QuickPostModal = () => {
           </div>
         )}
       </div>
+
+      {showFullImage && output?.imageUrl && (
+        <FullImageModal
+          imageUrl={output.imageUrl}
+          title={output.topic || output.hook || 'AI Generated Visual'}
+          brandName={activeWorkspace?.brandName}
+          onClose={() => setShowFullImage(false)}
+        />
+      )}
     </div>
   );
 };

@@ -277,7 +277,7 @@ const BRAND_VISUAL_POOLS = {
 function detectVisualDomain(prompt = '', brand = '', topic = '', industry = '') {
   const text = `${prompt} ${brand} ${topic} ${industry}`.toLowerCase();
 
-  if (/redbus|bus|coach|travel|trip|transit|commute|passenger|ticket|booking|route|highway|tour|flight|airline|train|cab|taxi|mobility/i.test(text)) {
+  if (/bus|coach|travel|trip|transit|commute|passenger|ticket|booking|route|highway|tour|flight|airline|train|cab|taxi|mobility/i.test(text)) {
     return 'BUS_TRAVEL_TRANSIT';
   }
   if (/nataraj|pencil|pen|stationery|eraser|sharpener|ruler|notebook|drawing|sketch|student|school|exam|writing|paper|journal/i.test(text)) {
@@ -316,14 +316,14 @@ function detectVisualDomain(prompt = '', brand = '', topic = '', industry = '') 
 
 function resolveBrandVisualAsset({
   prompt = '',
-  brandName = 'Redbus',
+  brandName = '',
   topic = 'Customer Case Studies & Proof',
   style = 'Photorealistic Commercial',
   aspect = '1:1',
   variationIndex = 0,
   industry = ''
 }) {
-  const cleanBrand = (brandName || 'Redbus').trim();
+  const cleanBrand = (brandName || 'Brand').trim();
   const cleanTopic = (topic || prompt || 'Marketing Campaign').trim();
   const topicText = `${topic} ${prompt}`.toLowerCase();
 

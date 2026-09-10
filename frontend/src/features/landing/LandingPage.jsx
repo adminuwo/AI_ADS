@@ -188,7 +188,7 @@ export const LandingPage = () => {
             <img
               src="/logo.png"
               alt="AI Ads™ Official Logo"
-              className="w-14 h-14 object-contain shrink-0 transition-transform group-hover:scale-105"
+              className="w-11 h-11 object-contain shrink-0 transition-transform group-hover:scale-105"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = '/logo.jpg';

@@ -9,9 +9,10 @@ import {
   ArrowLeft, ArrowUpRight, Film, Layers, BookOpen, Wand2, Download,
   Copy, RefreshCw, Loader2, Send, Calendar, Tag, Clock, Star,
   FileVideo, LayoutGrid, Mic, Brush, Camera, Zap, X, Heart, MessageSquare,
-  Share2, Bookmark, MoreHorizontal, Mail, FileText, Newspaper
+  Share2, Bookmark, MoreHorizontal, Mail, FileText, Newspaper, Eye
 } from 'lucide-react';
 import { PlatformPostCanvas } from './PlatformPostCanvas';
+import FullImageModal from '../../components/modals/FullImageModal';
 
 // â”€â”€â”€ Utility: Format Date â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const formatDate = (iso) => {
@@ -77,6 +78,7 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
   const [topic, setTopic] = useState('AI Marketing Campaign Visual');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState(null);
+  const [showFullImageModal, setShowFullImageModal] = useState(false);
 
   const handleGenerate = async () => {
     if (generating) return;
@@ -171,9 +173,17 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
         {result ? (
           <div className="space-y-4 animate-in fade-in">
             <MetaStamp topic={result.topic || topic} type={result.style || style} date={result.createdAt} />
-            <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video bg-slate-950 flex items-center justify-center">
-              <img src={result.imageUrl} alt={result.prompt} className="w-full h-full object-cover" />
+            <div 
+              className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video bg-slate-950 flex items-center justify-center group cursor-pointer"
+              onClick={() => setShowFullImageModal(true)}
+            >
+              <img src={result.imageUrl} alt={result.prompt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-extrabold text-xs z-20 pointer-events-none">
+                <Eye className="w-5 h-5 text-emerald-400" />
+                <span>Click to View Full Resolution Image</span>
+              </div>
+
               {/* Official Brand Logo Watermark Overlay */}
               <div className="absolute top-4 left-4 z-10 flex items-center px-3 py-2 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-xl">
                 <img 
@@ -214,6 +224,14 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
           </div>
         )}
       </div>
+      {showFullImageModal && result?.imageUrl && (
+        <FullImageModal
+          imageUrl={result.imageUrl}
+          title={result.prompt || topic || 'AI Visual Asset'}
+          brandName={workspace?.brandName}
+          onClose={() => setShowFullImageModal(false)}
+        />
+      )}
     </div>
   );
 };

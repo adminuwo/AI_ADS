@@ -57,7 +57,7 @@ export const ScraperOverlayModal = () => {
     }
   };
 
-  const handleScrape = async () => {
+  const handleScrape = async (engineMode = 'both') => {
     if (!url.trim()) return;
     setLoading(true);
 
@@ -66,13 +66,18 @@ export const ScraperOverlayModal = () => {
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domainUrl: url.trim(), brandName: brandName.trim() })
+        body: JSON.stringify({ domainUrl: url.trim(), brandName: brandName.trim(), engineMode })
       });
       const data = await res.json();
       const extractedWorkspace = data.workspace || data.brandProfile;
 
       if (data.success && extractedWorkspace) {
-        setResult(normalizeBrandDna(extractedWorkspace));
+        const normalized = normalizeBrandDna(extractedWorkspace);
+        // Retain raw scraped data object internally for backend persistence
+        if (data.rawScrapedData || extractedWorkspace.rawScrapedData) {
+          normalized.rawScrapedData = data.rawScrapedData || extractedWorkspace.rawScrapedData;
+        }
+        setResult(normalized);
       }
     } catch (err) {
       console.error('Scrape error:', err);
@@ -100,11 +105,9 @@ export const ScraperOverlayModal = () => {
   return (
     <div 
       className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in"
-      onClick={() => setIsScraperOpen(false)}
     >
       <div 
-        className="w-full max-w-[95vw] sm:max-w-2xl md:max-w-3xl bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 text-slate-900 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[95vw] sm:max-w-2xl md:max-w-4xl bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 text-slate-900 max-h-[90vh] overflow-y-auto"
       >
 
         {/* Header */}
@@ -175,19 +178,20 @@ export const ScraperOverlayModal = () => {
                 </div>
 
                 <button
-                  onClick={handleScrape}
+                  type="button"
+                  onClick={() => handleScrape('both')}
                   disabled={loading || !url.trim()}
-                  className="w-full btn-primary py-3 rounded-xl font-bold text-xs shadow-lg shadow-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full btn-primary py-3.5 rounded-xl font-bold text-xs shadow-lg shadow-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
                 >
                   {loading ? (
                     <>
                       <Sparkles className="w-4 h-4 animate-spin text-amber-300" />
-                      {t('scrapingWebsiteLive', 'Scraping Website & Extracting Brand DNA...')}
+                      <span>{t('scrapingWebsiteLive', 'Scraping Website & Extracting Brand DNA...')}</span>
                     </>
                   ) : (
                     <>
                       <Dna className="w-4 h-4" />
-                      {t('extractBrandDnaMemory', 'Extract Brand DNA Memory')}
+                      <span>{t('extractBrandDnaMemory', 'Extract Brand DNA Memory')}</span>
                     </>
                   )}
                 </button>
@@ -211,7 +215,7 @@ export const ScraperOverlayModal = () => {
             )}
           </div>
         ) : (
-          /* Step 2: Preview Extracted DNA (Editable Fields) */
+          /* Step 2: Preview Extracted DNA */
           <div className="space-y-4 animate-in fade-in">
             {/* Top Brand Banner */}
             <div className="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-between">
@@ -242,9 +246,8 @@ export const ScraperOverlayModal = () => {
               </div>
             </div>
 
-            {/* Company Information & Brand Identity Layout */}
+            {/* EDITABLE BRAND DNA FORM PREVIEW */}
             <div className="space-y-4 text-xs">
-              
               {/* SECTION 1: COMPANY INFORMATION */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
@@ -255,7 +258,7 @@ export const ScraperOverlayModal = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {/* BRAND NAME */}
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">BRAND NAME</span>
                       <Edit3 className="w-3 h-3 text-slate-400" />
@@ -270,7 +273,7 @@ export const ScraperOverlayModal = () => {
                   </div>
 
                   {/* TAGLINE */}
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">TAGLINE</span>
                       <Edit3 className="w-3 h-3 text-slate-400" />
@@ -285,7 +288,7 @@ export const ScraperOverlayModal = () => {
                   </div>
 
                   {/* WEBSITE */}
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">WEBSITE</span>
                       <Edit3 className="w-3 h-3 text-slate-400" />
@@ -300,7 +303,7 @@ export const ScraperOverlayModal = () => {
                   </div>
 
                   {/* INDUSTRY */}
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">INDUSTRY</span>
                       <Edit3 className="w-3 h-3 text-slate-400" />
@@ -315,7 +318,7 @@ export const ScraperOverlayModal = () => {
                   </div>
 
                   {/* BUSINESS TYPE */}
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">BUSINESS TYPE</span>
                       <Edit3 className="w-3 h-3 text-slate-400" />
@@ -330,7 +333,7 @@ export const ScraperOverlayModal = () => {
                   </div>
 
                   {/* HEADQUARTERS */}
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">HEADQUARTERS</span>
                       <Edit3 className="w-3 h-3 text-slate-400" />
@@ -345,7 +348,7 @@ export const ScraperOverlayModal = () => {
                   </div>
 
                   {/* CONTACT INFO */}
-                  <div className="sm:col-span-2 p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                  <div className="sm:col-span-2 p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">CONTACT INFO</span>
                       <Edit3 className="w-3 h-3 text-slate-400" />
@@ -364,7 +367,7 @@ export const ScraperOverlayModal = () => {
                   </div>
 
                   {/* COMPANY DESCRIPTION */}
-                  <div className="sm:col-span-2 p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                  <div className="sm:col-span-2 p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">COMPANY DESCRIPTION</span>
                       <Edit3 className="w-3 h-3 text-slate-400" />
@@ -384,12 +387,12 @@ export const ScraperOverlayModal = () => {
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <span className="font-extrabold text-brand-500 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
-                    ✨ Brand Identity
+                    ✨ Brand Identity & Strategy
                   </span>
                 </div>
 
                 {/* MISSION */}
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">MISSION</span>
                     <Edit3 className="w-3 h-3 text-slate-400" />
@@ -404,7 +407,7 @@ export const ScraperOverlayModal = () => {
                 </div>
 
                 {/* VISION */}
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">VISION</span>
                     <Edit3 className="w-3 h-3 text-slate-400" />
@@ -417,8 +420,35 @@ export const ScraperOverlayModal = () => {
                     className="w-full font-medium text-slate-700 text-xs bg-transparent border-none outline-none p-0 leading-relaxed resize-y"
                   />
                 </div>
-              </div>
 
+                {/* CORE PRODUCTS & SERVICES */}
+                {Array.isArray(result.coreProductsServices) && result.coreProductsServices.length > 0 && (
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">CORE PRODUCTS / SERVICES</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {result.coreProductsServices.map((prod, i) => (
+                        <span key={i} className="px-2.5 py-1 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-semibold border border-slate-200">
+                          {typeof prod === 'string' ? prod : (prod.name || JSON.stringify(prod))}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TARGET AUDIENCE */}
+                {Array.isArray(result.targetAudience) && result.targetAudience.length > 0 && (
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">TARGET AUDIENCE</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {result.targetAudience.map((aud, i) => (
+                        <span key={i} className="px-2.5 py-1 bg-brand-50 text-brand-700 rounded-lg text-[11px] font-semibold border border-brand-200">
+                          {typeof aud === 'string' ? aud : (aud.personaName || JSON.stringify(aud))}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <button

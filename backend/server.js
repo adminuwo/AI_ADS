@@ -28,6 +28,7 @@ const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
 const { scrapeDomainUrl, parseBrandDocument, generateBrandDNA } = require('./modules/workspace/scraper.service');
+const { generateBrandDnaTavilyOnly, generateBrandDnaGoogleGroundingOnly, generateBrandDnaBoth } = require('./modules/workspace/brandIntelligence.service');
 const { verifyContentClaims } = require('./modules/factCheck/factCheck.service');
 const { generateSeoBrief, generateSocialPosts, generateBlogArticle, transformRepurposeContent } = require('./modules/seo/vertex.service');
 const { getCreditBalance, deductCredits, topUpCredits, setSubscriptionTier } = require('./modules/creative/credit.service');
@@ -677,7 +678,7 @@ app.get('/api/workspace/list', async (req, res) => {
 // ─── SCRAPE PREVIEW ENDPOINT (DOES NOT SAVE TO DB UNTIL LOCK BUTTON CLICKED) ────
 app.post('/api/workspace/scrape-preview', async (req, res) => {
   try {
-    const { domainUrl, brandName, userEmail } = req.body;
+    const { domainUrl, brandName, userEmail, engineMode } = req.body;
     if (!domainUrl) return res.status(400).json({ success: false, error: 'Domain URL is required' });
 
     try {
@@ -686,8 +687,18 @@ app.post('/api/workspace/scrape-preview', async (req, res) => {
       });
     } catch (e) { }
 
-    console.log(`🌐 [SCRAPER-PREVIEW] Generating non-persisted Brand DNA preview for: ${domainUrl}`);
-    const brandDna = await generateBrandDNA(domainUrl, brandName || '');
+    console.log(`🌐 [SCRAPER-PREVIEW] Generating non-persisted Brand DNA preview for: ${domainUrl} (Mode: ${engineMode || 'DEFAULT'})`);
+
+    let brandDna = null;
+    if (engineMode === 'tavily') {
+      brandDna = await generateBrandDnaTavilyOnly(domainUrl, brandName || '');
+    } else if (engineMode === 'google_grounding') {
+      brandDna = await generateBrandDnaGoogleGroundingOnly(domainUrl, brandName || '');
+    } else if (engineMode === 'both') {
+      brandDna = await generateBrandDnaBoth(domainUrl, brandName || '');
+    } else {
+      brandDna = await generateBrandDNA(domainUrl, brandName || '');
+    }
 
     const previewWorkspace = {
       tempId: `preview_${Date.now()}`,
@@ -735,6 +746,7 @@ app.post('/api/workspace/scrape-preview', async (req, res) => {
       contactInfoProvenance: brandDna.contactInfoProvenance || null,
       fieldSources: brandDna.fieldSources || {},
       evidenceCitations: brandDna.evidenceCitations || [],
+      rawScrapedData: brandDna.rawScrapedData || null,
       pagesEvidence: (brandDna.pagesEvidence || []).map(p => ({
         url: p.url,
         pageTitle: p.pageTitle,
@@ -751,7 +763,7 @@ app.post('/api/workspace/scrape-preview', async (req, res) => {
       isLockSaved: false // Not saved in DB yet
     };
 
-    res.json({ success: true, workspace: previewWorkspace });
+    res.json({ success: true, workspace: previewWorkspace, rawScrapedData: brandDna.rawScrapedData || null });
   } catch (err) {
     console.log('Scrape Preview Error:', err.message);
     res.status(500).json({ success: false, error: err.message });

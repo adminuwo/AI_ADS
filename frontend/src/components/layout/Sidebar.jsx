@@ -110,18 +110,18 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
         <div className="flex flex-col h-full overflow-hidden">
           {/* Top Header / Logo */}
           <div className="h-20 flex items-center justify-between px-4 shrink-0">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <img 
                 src="/logo.png" 
                 alt="AI ADS™ Logo" 
-                className="w-14 h-14 sm:w-16 sm:h-16 object-contain shrink-0 drop-shadow-sm" 
+                className="w-11 h-11 object-contain shrink-0 drop-shadow-sm" 
                 onError={(e) => { e.target.onerror = null; e.target.src = '/logo.jpg'; }}
               />
-              <div className="min-w-0 flex-1 flex items-center">
-                <span className="font-extrabold text-xl sm:text-2xl tracking-tight bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 bg-clip-text text-transparent leading-none">
+              <div className="flex items-center font-black text-2xl tracking-tight leading-none">
+                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
                   AI Ads
                 </span>
-                <sup className="text-xs font-extrabold text-cyan-400 ml-1 font-sans -mt-3">TM</sup>
+                <sup className="text-xs font-extrabold text-cyan-400 ml-1 font-sans -mt-3 select-none">TM</sup>
               </div>
             </div>
 

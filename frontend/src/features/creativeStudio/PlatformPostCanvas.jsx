@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { API_BASE } from "../../config/api";
-import { Sparkles, Loader2, Copy, Heart, MessageSquare, Share2, Bookmark, MoreHorizontal, Download, CheckCircle2, FolderPlus, ArrowRight, FolderKanban } from "lucide-react";
+import { Sparkles, Loader2, Copy, Heart, MessageSquare, Share2, Bookmark, MoreHorizontal, Download, CheckCircle2, FolderPlus, ArrowRight, FolderKanban, Eye } from "lucide-react";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { downloadImageToDevice } from "../../utils/downloadHelper";
 import { getBrandLogoUrl } from "../../utils/brandLogoHelper";
 import { compositeBrandLogoOntoImage } from "../../utils/imageCompositor";
+import { FullImageModal } from "../../components/modals/FullImageModal";
 
 const VisualControls = ({ visualStyle, setVisualStyle, generating, onGenerate, visualDirective, referenceImage }) => (
   <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm">
@@ -504,6 +505,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
   const defaultVisual = (contentData?.isCustomStrategy ? null : generatedContent?.imageUrl) || generateVertexAISvgDataUrl(rawImagePrompt, brand, visualStyle, refObjUrl);
 
   const [visualUrl, setVisualUrl] = useState(defaultVisual);
+  const [showFullImageModal, setShowFullImageModal] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -1024,9 +1026,17 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
         )}
 
         {/* High-Res Image Display */}
-        <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video max-h-[520px] bg-slate-950 shadow-inner group flex items-center justify-center">
+        <div 
+          className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video max-h-[520px] bg-slate-950 shadow-inner group flex items-center justify-center cursor-pointer"
+          onClick={() => setShowFullImageModal(true)}
+        >
           <img src={visualUrl} alt={topic} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
           
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-extrabold text-xs z-20 pointer-events-none">
+            <Eye className="w-5 h-5 text-emerald-400" />
+            <span>Click to View Full Resolution Image</span>
+          </div>
+
           {/* Official Brand Logo Watermark Overlay (Top Left Corner) */}
           <div className="absolute top-4 left-4 z-10 flex items-center px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-xl">
             <img 
@@ -1037,7 +1047,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
             />
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent flex flex-col sm:flex-row justify-between sm:items-end gap-2">
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent flex flex-col sm:flex-row justify-between sm:items-end gap-2 z-10">
             <div className="space-y-0.5">
               <p className="text-white font-extrabold text-xs sm:text-sm line-clamp-1">"{hook}"</p>
               <p className="text-slate-300 text-[10px] font-medium">{brand} · High-Res 8K Studio Render</p>
@@ -1207,6 +1217,15 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
           )}
         </div>
       </div>
+
+      {showFullImageModal && visualUrl && (
+        <FullImageModal
+          imageUrl={visualUrl}
+          title={topic || hook || 'High-Res Studio Render'}
+          brandName={brand}
+          onClose={() => setShowFullImageModal(false)}
+        />
+      )}
     </div>
   );
 };

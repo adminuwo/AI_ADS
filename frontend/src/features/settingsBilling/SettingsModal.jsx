@@ -19,6 +19,7 @@ import {
   Scale,
   AlertCircle,
   Eye,
+  EyeOff,
   LogOut,
   Monitor,
   Check,
@@ -700,6 +701,7 @@ export const SettingsModal = () => {
   const [resetStep, setResetStep] = useState(1);
   const [resetOtp, setResetOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
 
   // Delete account modal
@@ -2812,13 +2814,23 @@ export const SettingsModal = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">New Password</label>
-                    <input
-                      type="password"
-                      placeholder="Create strong password"
-                      value={newPassword}
-                      onChange={e => setNewPassword(e.target.value)}
-                      className="glass-input text-sm w-full p-3.5"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showSettingsPassword ? 'text' : 'password'}
+                        placeholder="Create strong password"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        className="glass-input text-sm w-full p-3.5 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSettingsPassword(!showSettingsPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors p-1 cursor-pointer"
+                        title={showSettingsPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showSettingsPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                   <button
                     onClick={handleResetPassword}

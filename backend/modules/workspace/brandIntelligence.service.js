@@ -1,4 +1,4 @@
-const { scrapeBrandWebsite, formatCleanSpacedBrandName } = require('./brandScraper.service');
+const { scrapeBrandWebsite, formatCleanSpacedBrandName, extractOfficialLogoColors } = require('./brandScraper.service');
 const { classifyBrandCategory } = require('./brandProcessor.service');
 const { runBrandDnaMasterAgent } = require('../brandDnaAgent');
 const aiService = require('../../services/aiService');
@@ -215,9 +215,13 @@ Return ONLY a raw valid JSON object with NO markdown formatting:
     : [];
 
   // Requirement 7: Brand Colors visual facts
-  const visualBrandColors = (masterAgentResult.brandColors && masterAgentResult.brandColors.length >= 1)
+  let visualBrandColors = (masterAgentResult.brandColors && masterAgentResult.brandColors.length >= 1)
     ? masterAgentResult.brandColors
     : (scrapedData.brandColors || categoryDetails.brandColors || []);
+
+  if (!visualBrandColors || visualBrandColors.length === 0) {
+    visualBrandColors = await extractOfficialLogoColors(scrapedData.cleanUrl || domainUrl, brandName, masterAgentResult.logoUrl || scrapedData.logoUrl);
+  }
 
   const dnaResult = {
     brandName: formattedBrandName,
@@ -330,6 +334,356 @@ Return ONLY a raw valid JSON object with NO markdown formatting:
   return dnaResult;
 }
 
+// ─── TAVILY-ONLY BRAND SCRAPER ENGINE ──────────────────────────────────────────
+async function generateBrandDnaTavilyOnly(domainUrl, brandNameOverride = '') {
+  const tavilyService = require('../../services/tavilyService');
+  const cleanUrl = domainUrl.startsWith('http') ? domainUrl : `https://${domainUrl}`;
+  const domainHost = cleanUrl.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+  const derivedName = brandNameOverride || domainHost.split('.')[0].toUpperCase();
+
+  console.log(`🌐 [SCRAPER-TAVILY-ONLY] Executing Tavily-exclusive extraction for: ${cleanUrl}`);
+
+  const [tavilyExtract, tavilySearch] = await Promise.all([
+    tavilyService.extractTavilyUrl(cleanUrl).catch(e => { console.warn('Tavily extract error:', e.message); return null; }),
+    tavilyService.searchTavily(`${cleanUrl} ${derivedName} official brand tagline mission vision headquarters colors products target audience competitors`, 'advanced', 5).catch(e => { console.warn('Tavily search error:', e.message); return null; })
+  ]);
+
+  const rawExcerpt = tavilyExtract?.rawContent || '';
+  const searchAnswer = tavilySearch?.answer || '';
+  const searchResults = tavilySearch?.results || [];
+
+  const prompt = `You are an expert Brand Intelligence Engine.
+Analyze the following raw scraped website text AND Tavily web search results for brand "${derivedName}" (${cleanUrl}).
+Extract factual Brand DNA details.
+
+TAVILY SEARCH SUMMARY:
+${searchAnswer || 'No search summary answer available'}
+
+TAVILY SEARCH RESULTS & SNIPPETS:
+${searchResults.map(r => `Title: ${r.title}\nURL: ${r.url}\nSnippet: ${r.snippet}`).join('\n\n')}
+
+TAVILY RAW EXTRACTED WEBSITE CONTENT:
+${rawExcerpt.slice(0, 8000)}
+
+Return ONLY a raw valid JSON object with NO markdown or explanation:
+{
+  "companyName": "${derivedName}",
+  "brandName": "${derivedName}",
+  "parentCompany": null,
+  "domainUrl": "${cleanUrl}",
+  "logoUrl": "",
+  "brandColors": ["#000000", "#FFFFFF"],
+  "industryCategory": null,
+  "subIndustry": null,
+  "businessType": null,
+  "headquarters": null,
+  "contactInfo": { "email": null, "phone": null, "location": null },
+  "companyDescription": null,
+  "tagline": null,
+  "missionStatement": null,
+  "vision": null,
+  "targetAudience": [],
+  "coreProductsServices": [],
+  "brandValues": [],
+  "competitorLandscape": []
+}`;
+
+  let aiData = {};
+  try {
+    const aiRes = await aiService.generateJSON(prompt, { temperature: 0.1 });
+    aiData = aiRes?.data || aiRes || {};
+  } catch (err) {
+    console.warn('[SCRAPER-TAVILY-ONLY] AI synthesis error:', err.message);
+  }
+
+  const brandName = aiData.brandName || aiData.companyName || derivedName;
+  const logoUrl = aiData.logoUrl || `https://www.google.com/s2/favicons?domain=${domainHost}&sz=128`;
+  const officialLogoColors = await extractOfficialLogoColors(cleanUrl, brandName, logoUrl);
+  const brandColors = (officialLogoColors && officialLogoColors.length >= 1)
+    ? officialLogoColors
+    : (Array.isArray(aiData.brandColors) ? aiData.brandColors : []);
+
+  const rawScrapedData = {
+    engineUsed: 'tavily',
+    engineName: 'Tavily AI Web Scraper',
+    scrapedAt: new Date().toISOString(),
+    targetUrl: cleanUrl,
+    tavilyExtract: tavilyExtract || null,
+    tavilySearch: tavilySearch || null,
+    searchAnswer: searchAnswer,
+    searchResults: searchResults,
+    images: tavilySearch?.images || [],
+    rawTextExcerpt: rawExcerpt.slice(0, 5000),
+    allFields: {
+      ...aiData,
+      rawContentSnippet: rawExcerpt.slice(0, 3000),
+      searchAnswer: searchAnswer,
+      searchResultsCount: searchResults.length,
+      extractedAt: new Date().toISOString()
+    }
+  };
+
+  return {
+    brandName,
+    companyName: aiData.companyName || brandName,
+    parentCompany: aiData.parentCompany || null,
+    domainUrl: cleanUrl,
+    logoUrl,
+    faviconUrl: logoUrl,
+    brandColors,
+    industry: aiData.industryCategory || null,
+    industryCategory: aiData.industryCategory || null,
+    subIndustry: aiData.subIndustry || null,
+    businessType: aiData.businessType || null,
+    headquarters: aiData.headquarters || null,
+    companyDescription: aiData.companyDescription || searchAnswer || null,
+    tagline: aiData.tagline || null,
+    missionStatement: aiData.missionStatement || null,
+    vision: aiData.vision || null,
+    contactInfo: aiData.contactInfo || null,
+    targetAudience: aiData.targetAudience || [],
+    coreProductsServices: aiData.coreProductsServices || [],
+    brandValues: aiData.brandValues || [],
+    competitorLandscape: aiData.competitorLandscape || [],
+    rawScrapedData
+  };
+}
+
+// ─── GOOGLE SEARCH GROUNDING BRAND SCRAPER ENGINE ──────────────────────────────
+async function generateBrandDnaGoogleGroundingOnly(domainUrl, brandNameOverride = '') {
+  const { aiClient, globalAiClient } = require('../../config/vertex');
+  const cleanUrl = domainUrl.startsWith('http') ? domainUrl : `https://${domainUrl}`;
+  const domainHost = cleanUrl.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+  const derivedName = brandNameOverride || domainHost.split('.')[0].toUpperCase();
+
+  console.log(`🌐 [SCRAPER-GOOGLE-GROUNDING] Executing Google Search Grounding extraction for: ${cleanUrl}`);
+
+  const prompt = `Use Google Search Grounding to perform live web research for "${cleanUrl}" (Brand: "${derivedName}").
+
+Extract official factual details:
+1. Official Company Name & Parent Company
+2. Brand Tagline / Slogan
+3. Mission Statement & Vision Statement
+4. Corporate Headquarters address & Contact Email / Phone
+5. Industry Category, Sub-Industry, and Business Type (D2C, B2B, B2C, Enterprise)
+6. Primary Brand Colors (Hex codes or color names)
+7. Core Products or Services
+8. Target Audience & Core Brand Values
+9. Key Competitors
+
+Return ONLY a raw valid JSON object with NO markdown:
+{
+  "companyName": "${derivedName}",
+  "brandName": "${derivedName}",
+  "parentCompany": null,
+  "domainUrl": "${cleanUrl}",
+  "logoUrl": "",
+  "brandColors": ["#000000", "#FFFFFF"],
+  "industryCategory": null,
+  "subIndustry": null,
+  "businessType": null,
+  "headquarters": null,
+  "contactInfo": { "email": null, "phone": null, "location": null },
+  "companyDescription": null,
+  "tagline": null,
+  "missionStatement": null,
+  "vision": null,
+  "targetAudience": [],
+  "coreProductsServices": [],
+  "brandValues": [],
+  "competitorLandscape": []
+}`;
+
+  let gRes = null;
+  const client = globalAiClient || aiClient;
+  
+  if (!client) {
+    throw new Error('Google Cloud Vertex / Gemini client is not configured for search grounding');
+  }
+
+  try {
+    gRes = await client.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: { tools: [{ googleSearch: {} }] }
+    });
+  } catch (e1) {
+    console.warn('[SCRAPER-GOOGLE-GROUNDING] gemini-2.5-flash failed, trying gemini-2.0-flash:', e1.message);
+    try {
+      gRes = await client.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+        config: { tools: [{ googleSearch: {} }] }
+      });
+    } catch (e2) {
+      console.warn('[SCRAPER-GOOGLE-GROUNDING] Grounding call failed:', e2.message);
+      throw e2;
+    }
+  }
+
+  const rawText = gRes?.text || '';
+  const groundingMetadata = gRes?.candidates?.[0]?.groundingMetadata || {};
+  const webQueries = groundingMetadata.webSearchQueries || [];
+  const groundingChunks = (groundingMetadata.groundingChunks || []).map(c => c.web || c);
+
+  let aiData = {};
+  try {
+    const cleaned = rawText.replace(/```json\n?|```\n?/g, '').trim();
+    aiData = JSON.parse(cleaned);
+  } catch (pErr) {
+    try {
+      const firstB = rawText.indexOf('{');
+      const lastB = rawText.lastIndexOf('}');
+      if (firstB !== -1 && lastB > firstB) {
+        aiData = JSON.parse(rawText.substring(firstB, lastB + 1));
+      }
+    } catch (e) {
+      console.warn('[SCRAPER-GOOGLE-GROUNDING] JSON parse error:', pErr.message);
+    }
+  }
+
+  const brandName = aiData.brandName || aiData.companyName || derivedName;
+  const logoUrl = aiData.logoUrl || `https://www.google.com/s2/favicons?domain=${domainHost}&sz=128`;
+  const officialLogoColors = await extractOfficialLogoColors(cleanUrl, brandName, logoUrl);
+  const brandColors = (officialLogoColors && officialLogoColors.length >= 1)
+    ? officialLogoColors
+    : (Array.isArray(aiData.brandColors) ? aiData.brandColors : []);
+
+  const rawScrapedData = {
+    engineUsed: 'google_grounding',
+    engineName: 'Google Search Grounding Engine',
+    scrapedAt: new Date().toISOString(),
+    targetUrl: cleanUrl,
+    groundingQueries: webQueries,
+    groundingSources: groundingChunks,
+    groundingSupports: groundingMetadata.groundingSupports || [],
+    rawGroundedResponseText: rawText,
+    allFields: {
+      ...aiData,
+      rawGroundedTextSnippet: rawText.slice(0, 3000),
+      groundingQueries: webQueries,
+      groundingSourcesCount: groundingChunks.length,
+      extractedAt: new Date().toISOString()
+    }
+  };
+
+  return {
+    brandName,
+    companyName: aiData.companyName || brandName,
+    parentCompany: aiData.parentCompany || null,
+    domainUrl: cleanUrl,
+    logoUrl,
+    faviconUrl: logoUrl,
+    brandColors,
+    industry: aiData.industryCategory || null,
+    industryCategory: aiData.industryCategory || null,
+    subIndustry: aiData.subIndustry || null,
+    businessType: aiData.businessType || null,
+    headquarters: aiData.headquarters || null,
+    companyDescription: aiData.companyDescription || null,
+    tagline: aiData.tagline || null,
+    missionStatement: aiData.missionStatement || null,
+    vision: aiData.vision || null,
+    contactInfo: aiData.contactInfo || null,
+    targetAudience: aiData.targetAudience || [],
+    coreProductsServices: aiData.coreProductsServices || [],
+    brandValues: aiData.brandValues || [],
+    competitorLandscape: aiData.competitorLandscape || [],
+    rawScrapedData
+  };
+}
+
+// ─── DUAL ENGINE BRAND SCRAPER (TAVILY + GOOGLE SEARCH GROUNDING COMBINED) ─────
+async function generateBrandDnaBoth(domainUrl, brandNameOverride = '') {
+  const cleanUrl = domainUrl.startsWith('http') ? domainUrl : `https://${domainUrl}`;
+  console.log(`🌐 [SCRAPER-BOTH] Executing DUAL Extraction (Tavily + Google Grounding) for: ${cleanUrl}`);
+
+  const [tavResult, googleResult] = await Promise.allSettled([
+    generateBrandDnaTavilyOnly(domainUrl, brandNameOverride),
+    generateBrandDnaGoogleGroundingOnly(domainUrl, brandNameOverride)
+  ]);
+
+  const tavRes = tavResult.status === 'fulfilled' ? tavResult.value : null;
+  const gRes = googleResult.status === 'fulfilled' ? googleResult.value : null;
+
+  if (tavResult.status === 'rejected') {
+    console.warn('[SCRAPER-BOTH] Tavily failed:', tavResult.reason?.message);
+  }
+  if (googleResult.status === 'rejected') {
+    console.warn('[SCRAPER-BOTH] Google Grounding failed:', googleResult.reason?.message);
+  }
+
+  // Deduplicate array values helper
+  const mergeArrays = (arr1 = [], arr2 = []) => {
+    const set = new Set();
+    [...(arr1 || []), ...(arr2 || [])].forEach(item => {
+      if (item) set.add(typeof item === 'string' ? item.trim() : JSON.stringify(item));
+    });
+    return Array.from(set).map(i => {
+      try { return JSON.parse(i); } catch (e) { return i; }
+    });
+  };
+
+  const brandName = gRes?.brandName || tavRes?.brandName || brandNameOverride || 'New Brand';
+  const companyName = gRes?.companyName || tavRes?.companyName || brandName;
+  const logoUrl = gRes?.logoUrl || tavRes?.logoUrl || '';
+  const officialLogoColors = await extractOfficialLogoColors(cleanUrl, brandName, logoUrl);
+  const combinedColors = mergeArrays(gRes?.brandColors, tavRes?.brandColors);
+  const brandColors = (officialLogoColors && officialLogoColors.length >= 1)
+    ? officialLogoColors
+    : combinedColors;
+
+  const rawScrapedData = {
+    engineUsed: 'both',
+    engineName: 'Dual Engine (Tavily AI + Google Search Grounding)',
+    scrapedAt: new Date().toISOString(),
+    targetUrl: cleanUrl,
+    tavily: tavRes?.rawScrapedData || null,
+    googleGrounding: gRes?.rawScrapedData || null,
+    searchAnswer: tavRes?.rawScrapedData?.searchAnswer || '',
+    searchResults: tavRes?.rawScrapedData?.searchResults || [],
+    groundingQueries: gRes?.rawScrapedData?.groundingQueries || [],
+    groundingSources: gRes?.rawScrapedData?.groundingSources || [],
+    rawTextExcerpt: tavRes?.rawScrapedData?.rawTextExcerpt || '',
+    rawGroundedResponseText: gRes?.rawScrapedData?.rawGroundedResponseText || '',
+    allFields: {
+      tavilyScrapedFields: tavRes || null,
+      googleGroundingScrapedFields: gRes || null,
+      scrapedAt: new Date().toISOString()
+    }
+  };
+
+  return {
+    brandName,
+    companyName,
+    parentCompany: gRes?.parentCompany || tavRes?.parentCompany || null,
+    domainUrl: cleanUrl,
+    logoUrl,
+    faviconUrl: logoUrl,
+    brandColors,
+    industry: gRes?.industryCategory || tavRes?.industryCategory || null,
+    industryCategory: gRes?.industryCategory || tavRes?.industryCategory || null,
+    subIndustry: gRes?.subIndustry || tavRes?.subIndustry || null,
+    businessType: gRes?.businessType || tavRes?.businessType || null,
+    headquarters: gRes?.headquarters || tavRes?.headquarters || null,
+    companyDescription: gRes?.companyDescription || tavRes?.companyDescription || null,
+    tagline: gRes?.tagline || tavRes?.tagline || null,
+    missionStatement: gRes?.missionStatement || tavRes?.missionStatement || null,
+    vision: gRes?.vision || tavRes?.vision || null,
+    contactInfo: gRes?.contactInfo || tavRes?.contactInfo || null,
+    targetAudience: mergeArrays(gRes?.targetAudience, tavRes?.targetAudience),
+    coreProductsServices: mergeArrays(gRes?.coreProductsServices, tavRes?.coreProductsServices),
+    brandValues: mergeArrays(gRes?.brandValues, tavRes?.brandValues),
+    competitorLandscape: mergeArrays(gRes?.competitorLandscape, tavRes?.competitorLandscape),
+    rawScrapedData
+  };
+}
+
 module.exports = {
-  generateBrandDNA
+  generateBrandDNA,
+  generateBrandDnaTavilyOnly,
+  generateBrandDnaGoogleGroundingOnly,
+  generateBrandDnaBoth
 };
+
+

@@ -20,14 +20,6 @@ const BrandProfile = require('../models/BrandProfile');
  * Default color palette inference based on brand name / keywords if not configured
  */
 function inferBrandColors(brandName = '', companyDesc = '') {
-  const text = `${brandName} ${companyDesc}`.toLowerCase();
-  if (text.includes('nvidia')) return ['#76B900', '#000000', '#1E293B'];
-  if (text.includes('redbus')) return ['#D84E55', '#1E293B', '#FFFFFF'];
-  if (text.includes('nataraj') || text.includes('camlin')) return ['#DC2626', '#1E1B4B', '#F59E0B'];
-  if (text.includes('nike')) return ['#111827', '#EA580C', '#FFFFFF'];
-  if (text.includes('zomato') || text.includes('swiggy')) return ['#E23744', '#FC8019', '#FFFFFF'];
-  if (text.includes('apple') || text.includes('tesla')) return ['#0F172A', '#38BDF8', '#F8FAFC'];
-  if (text.includes('google') || text.includes('microsoft')) return ['#4285F4', '#34A853', '#FBBC05'];
   return ['#6366F1', '#8B5CF6', '#06B6D4']; // Modern AI indigo / violet / cyan default
 }
 
@@ -48,7 +40,7 @@ function craftBrandAdPrompt({
   aspect = '1:1'
 }) {
   const colorsList = brandColors && brandColors.length > 0 ? brandColors.join(', ') : inferBrandColors(brandName, companyDescription).join(', ');
-  const cleanBrand = brandName.replace(/World Leader In Artificial Intelligence Computing/gi, 'NVIDIA').trim();
+  const cleanBrand = brandName.trim();
 
   let sceneDetails = '';
   const textContext = `${cleanBrand} ${industry} ${companyDescription} ${topic}`.toLowerCase();
@@ -66,42 +58,32 @@ function craftBrandAdPrompt({
   const isTestimonialChallenge = /testimonial|customer|challenge|fan|community|patio|friends|lifestyle|review|appreciation/i.test(topicText);
   const isFoodTourLocal = /food tour|st\. augustine|exploring|local spots|community|partnership|local love/i.test(topicText);
 
-  if (textContext.includes('nvidia') || textContext.includes('gpu') || textContext.includes('ai computing') || textContext.includes('semiconductor') || textContext.includes('neural')) {
-    sceneDetails = `Futuristic high-performance AI computing facility, glowing green neon circuitry accents matching NVIDIA palette (#76B900), ultra-detailed next-generation AI chip processor die with intricate optical reflections, sleek server rack infrastructure in background, ray-traced depth of field, high-tech enterprise innovation visual`;
-  } else if (textContext.includes('bus') || textContext.includes('redbus') || textContext.includes('travel') || textContext.includes('transit') || textContext.includes('booking')) {
-    sceneDetails = `Modern luxury passenger bus coach cruising along a scenic mountain highway during golden hour, polished exterior reflecting warm sunlight, clean interior seating, traveler holding smartphone app showing confirmed ticket, commercial advertising photography`;
-  } else if (textContext.includes('stationery') || textContext.includes('pencil') || textContext.includes('nataraj') || textContext.includes('pen') || textContext.includes('school')) {
-    sceneDetails = `Artisan stationery flat-lay on polished oak wood desk, premium sharp graphite pencils with rich red and black finish, crisp notebook paper with creative sketches, soft natural window morning lighting, Hasselblad studio photography`;
-  } else if (textContext.includes('saas') || textContext.includes('software') || textContext.includes('analytics') || textContext.includes('app') || textContext.includes('cloud')) {
-    sceneDetails = `Clean modern glass tech headquarters, high-resolution futuristic holographic data visualization showing growth metrics and seamless cloud connectivity, professional creative lighting, minimalist executive aesthetic`;
-  } else if (textContext.includes('food') || textContext.includes('dining') || textContext.includes('restaurant') || textContext.includes('sweet') || textContext.includes('sauce') || textContext.includes('pepper')) {
-    if (isOfferSale) {
-      sceneDetails = `Sleek high-impact promotional advertising banner for ${cleanBrand}, luxury gift box with ribbon and promotional countdown timer display, vibrant brand colors (${colorsList}), polished studio commercial lighting`;
-    } else if (isFamilyPhoto) {
-      sceneDetails = `Authentic vintage family portrait for ${cleanBrand}, warm sepia-toned film photography of family founders sharing traditional family recipe in classic kitchen, emotional heritage storytelling, 35mm film camera commercial visual`;
-    } else if (isBehindTheScenes) {
-      sceneDetails = `Authentic behind-the-scenes craft kitchen production for ${cleanBrand}, small-batch artisanal team carefully hand-bottling hot sauce in stainless steel commercial kitchen, glass bottles with custom labels, authentic craftsmanship commercial photography`;
-    } else if (isIngredientFarm) {
-      sceneDetails = `Vibrant close-up macro photography of fresh ripe Datil peppers harvested on a Florida farm, bright orange and red peppers on rustic wooden surface with morning dew drops, farm-to-table natural lighting`;
-    } else if (isProductBottle) {
-      sceneDetails = `Sleek glass bottle of ${cleanBrand} hot sauce prominently displayed on a rustic oak tabletop, surrounded by fresh Datil peppers and whole spices, hero commercial product advertising shot`;
-    } else if (isFoodTourLocal) {
-      sceneDetails = `Sunlit historic street scene in St. Augustine Florida, outdoor cafe dining patio featuring ${cleanBrand} hot sauce bottle on wooden table, warm travel lifestyle photography`;
-    } else if (isRecipeDish) {
-      sceneDetails = `Mouth-watering gourmet brunch presentation of eggs benedict drizzled with spicy ${cleanBrand} hot sauce, rich aroma steam, warm bistro lighting, macro food photography`;
-    } else if (isHeritageOrigin) {
-      sceneDetails = `Nostalgic vintage recipe journal with handwritten 30-year family hot sauce recipe, surrounded by vintage glass spice jars, warm morning sunbeams, heritage editorial photography`;
-    } else if (isTestimonialChallenge) {
-      sceneDetails = `High-energy outdoor patio dining scene with friends laughing and enjoying grilled BBQ food drizzled with ${cleanBrand} hot sauce, golden hour natural light, vibrant social ad visual`;
-    } else {
-      sceneDetails = `Mouth-watering gourmet culinary presentation of grilled wings and roasted vegetables drizzled with vibrant ${cleanBrand} hot sauce, rich aroma steam, warm bistro lighting, macro food photography`;
-    }
-  } else if (isOfferSale) {
-    sceneDetails = `High-impact commercial promotional offer display for ${cleanBrand}, sleek discount announcement banner, vibrant brand colors (${colorsList}), studio advertising photography`;
+  if (isOfferSale) {
+    sceneDetails = `High-impact commercial promotional offer display for ${cleanBrand}, sleek announcement banner, luxury presentation, vibrant brand colors (${colorsList}), polished studio commercial advertising photography`;
   } else if (isFamilyPhoto) {
-    sceneDetails = `Nostalgic authentic family photo portrait for ${cleanBrand}, warm film tones, heartfelt emotional connection, commercial editorial photography`;
+    sceneDetails = `Authentic warm family photo portrait for ${cleanBrand}, sepia-toned film photography, emotional storytelling and heritage connection, 35mm film commercial visual`;
+  } else if (isBehindTheScenes) {
+    sceneDetails = `Authentic behind-the-scenes craft production for ${cleanBrand}, small-batch artisanal team in clean modern workspace, authentic craftsmanship commercial photography`;
+  } else if (isIngredientFarm) {
+    sceneDetails = `Vibrant close-up macro photography of fresh natural ingredients and raw materials for ${cleanBrand}, rustic wooden surface with morning dew drops, farm-to-table natural lighting`;
+  } else if (isProductBottle) {
+    sceneDetails = `Sleek product hero presentation for ${cleanBrand}, prominently displayed on an elegant tabletop with brand color accents (${colorsList}), commercial product advertising shot`;
+  } else if (isFoodTourLocal) {
+    sceneDetails = `Sunlit historic street scene with outdoor cafe dining patio featuring ${cleanBrand}, warm travel lifestyle photography`;
+  } else if (isRecipeDish) {
+    sceneDetails = `Mouth-watering gourmet dish presentation for ${cleanBrand}, highlighting ${topic}, rich aroma steam, warm bistro lighting, macro food photography`;
+  } else if (isHeritageOrigin) {
+    sceneDetails = `Nostalgic vintage editorial scene celebrating ${cleanBrand}'s heritage and origin story, warm morning sunbeams, editorial commercial photography`;
+  } else if (isTestimonialChallenge) {
+    sceneDetails = `High-energy outdoor lifestyle scene with satisfied customers and community enjoying ${cleanBrand}, golden hour natural light, vibrant social ad visual`;
+  } else if (textContext.includes('food') || textContext.includes('dining') || textContext.includes('restaurant') || textContext.includes('cafe')) {
+    sceneDetails = `Mouth-watering gourmet culinary presentation for ${cleanBrand}, highlighting ${topic}, elegant plating setup, fresh organic ingredients, warm bistro lighting, macro food photography`;
+  } else if (textContext.includes('saas') || textContext.includes('software') || textContext.includes('analytics') || textContext.includes('app') || textContext.includes('tech')) {
+    sceneDetails = `Clean modern glass tech headquarters for ${cleanBrand}, highlighting ${topic}, sleek minimalist desk with high-tech workspace environment, soft studio lighting, executive aesthetic`;
+  } else if (textContext.includes('fashion') || textContext.includes('apparel') || textContext.includes('clothing')) {
+    sceneDetails = `High-end fashion editorial scene for ${cleanBrand}, highlighting ${topic}, sunlit studio setting, elegant apparel display, Vogue editorial photography`;
   } else {
-    sceneDetails = `Commercial advertising studio setup for ${cleanBrand}, highlighting ${topic}, modern architectural interior, brand colors (${colorsList}) subtle ambient lighting, pristine focus, premium commercial ad aesthetic`;
+    sceneDetails = `Commercial advertising studio setup for ${cleanBrand}, highlighting ${topic}, modern architectural interior, brand colors (${colorsList}), subtle ambient lighting, pristine focus, premium commercial ad aesthetic`;
   }
 
   // Style Modifiers

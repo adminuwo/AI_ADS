@@ -8,6 +8,8 @@ import {
   CheckCircle2, ArrowLeft, Share2, Twitter, Linkedin, Mail, MessageCircle, Send, Link2, ArrowRight
 } from 'lucide-react';
 
+import FullImageModal from '../../components/modals/FullImageModal';
+
 // ━━━ Content Studio Aligned Asset Sections ━━━━━━━━━━━━━━━━━━━━━
 const ASSET_SECTIONS = [
   {
@@ -103,11 +105,12 @@ const cleanText = (raw) => {
     .replace(/[*_]/g, '')
     .replace(/`{1,3}.*?`{1,3}/gs, '')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/undefined/g, '')
     .trim();
 };
 
 // ━━━ Asset Detail Drawer Modal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const AssetDetailDrawer = ({ asset, onClose, onDelete }) => {
+const AssetDetailDrawer = ({ asset, onClose, onDelete, onOpenFullImage }) => {
   const [copiedContent, setCopiedContent] = useState(false);
   const [downloadedDrawer, setDownloadedDrawer] = useState(false);
 
@@ -141,16 +144,29 @@ const AssetDetailDrawer = ({ asset, onClose, onDelete }) => {
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in p-4" onClick={onClose}>
       <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl mx-auto border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         
-        <div className="relative aspect-video max-h-[260px] bg-slate-950 shrink-0 overflow-hidden">
+        <div 
+          className="relative aspect-video max-h-[260px] bg-slate-950 shrink-0 overflow-hidden group cursor-pointer"
+          onClick={() => {
+            if (isVisual && onOpenFullImage) {
+              onOpenFullImage({ url: asset.url, title: asset.name });
+            }
+          }}
+        >
           {isVisual ? (
-            <img src={asset.url} alt={asset.name} className="w-full h-full object-cover" />
+            <>
+              <img src={asset.url} alt={asset.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-extrabold text-xs">
+                <Eye className="w-4 h-4 text-emerald-400" /> 
+                <span>View Full Resolution Image</span>
+              </div>
+            </>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-brand-950 to-slate-900 p-6 text-center">
               <FileText className="w-12 h-12 text-brand-400 mb-2 opacity-80" />
               <p className="text-sm font-extrabold text-white line-clamp-2 max-w-md">{asset.name}</p>
             </div>
           )}
-          <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-xl bg-black/60 text-white hover:bg-black/80 transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-3 right-3 p-2 rounded-xl bg-black/60 text-white hover:bg-black/80 transition-colors z-10" title="Close Preview">
             <X className="w-4 h-4" />
           </button>
           <span className={`absolute top-3 left-3 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${typeColors[asset.type] || 'bg-brand-500/10 text-brand-400 border-brand-500/30'}`}>
@@ -227,6 +243,7 @@ export const AssetLibraryModule = () => {
   const [copiedId, setCopiedId] = useState(null);
   const [downloadedId, setDownloadedId] = useState(null);
   const [selectedAsset, setSelectedAsset] = useState(null);
+  const [fullImageModal, setFullImageModal] = useState(null);
   const [sharePopoverId, setSharePopoverId] = useState(null);
   const sharePopoverRef = useRef(null);
   const hasAutoOpenedRef = useRef(false);
@@ -511,9 +528,18 @@ export const AssetLibraryModule = () => {
                   <span className={`absolute top-2 right-2 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${typeColors[asset.type] || 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>
                     {asset.type}
                   </span>
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <div className="p-2.5 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30">
+                  <div 
+                    className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
+                    onClick={(e) => {
+                      if (asset.url && (asset.url.startsWith('http') || asset.url.startsWith('data:image'))) {
+                        e.stopPropagation();
+                        setFullImageModal({ url: asset.url, title: asset.name });
+                      }
+                    }}
+                  >
+                    <div className="p-2.5 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center gap-1.5 text-white font-extrabold text-xs">
                       <Eye className="w-5 h-5 text-white" />
+                      <span className="text-[11px] font-extrabold">View Full Image</span>
                     </div>
                   </div>
                 </div>
@@ -607,8 +633,8 @@ export const AssetLibraryModule = () => {
           })}
         </div>
       ) : (
-        <div className="p-12 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 flex flex-col items-center justify-center text-center gap-4">
-          <div className="w-16 h-16 rounded-3xl bg-brand-500/10 flex items-center justify-center text-brand-500">
+        <div className="p-16 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 flex flex-col items-center justify-center">
+          <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500">
             <FolderOpen className="w-8 h-8" />
           </div>
           <div className="space-y-1 max-w-sm">
@@ -634,7 +660,21 @@ export const AssetLibraryModule = () => {
       )}
 
       {selectedAsset && (
-        <AssetDetailDrawer asset={selectedAsset} onClose={() => setSelectedAsset(null)} onDelete={removeGlobalAsset} />
+        <AssetDetailDrawer 
+          asset={selectedAsset} 
+          onClose={() => setSelectedAsset(null)} 
+          onDelete={removeGlobalAsset}
+          onOpenFullImage={(img) => setFullImageModal(img)}
+        />
+      )}
+
+      {fullImageModal && (
+        <FullImageModal
+          imageUrl={fullImageModal.url}
+          title={fullImageModal.title}
+          brandName={activeWorkspace?.brandName}
+          onClose={() => setFullImageModal(null)}
+        />
       )}
     </div>
   );

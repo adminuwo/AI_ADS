@@ -147,7 +147,7 @@ export const Login = ({ onLoginSuccess }) => {
         {/* Brand Header */}
         <div className="text-center mb-7 flex flex-col items-center justify-center">
           <div className="flex items-center justify-center gap-3.5">
-            <img src="/logo.png" alt="AI Ads™ Logo" className="w-20 h-20 sm:w-24 sm:h-24 object-contain shrink-0 drop-shadow-md" />
+            <img src="/logo.png" alt="AI Ads™ Logo" className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 drop-shadow-md" />
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight flex items-center justify-center">
               <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 bg-clip-text text-transparent leading-none">
                 AI Ads

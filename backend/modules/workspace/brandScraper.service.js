@@ -67,44 +67,7 @@ function isGrayscaleOrNeutral(hex) {
   return false;
 }
 
-const KNOWN_BRAND_COLORS = {
-  'redtape': ['#F43424', '#111827', '#FFFFFF', '#7E0F06'],
-  'red tape': ['#F43424', '#111827', '#FFFFFF', '#7E0F06'],
-  'nvidia': ['#76B900', '#000000', '#1E293B', '#FFFFFF'],
-  'redbus': ['#D84E55', '#1E293B', '#FFFFFF', '#BA2E35'],
-  'nike': ['#111827', '#EA580C', '#FFFFFF', '#F3F4F6'],
-  'adidas': ['#000000', '#FFFFFF', '#0070EB', '#111827'],
-  'puma': ['#BA0C2F', '#000000', '#FFFFFF', '#1E293B'],
-  'zomato': ['#E23744', '#FFFFFF', '#2D2D2D', '#CB202D'],
-  'swiggy': ['#FC8019', '#282C3F', '#FFFFFF', '#F26F00'],
-  'boat': ['#E21E24', '#000000', '#FFFFFF', '#1A1A1A'],
-  'apple': ['#000000', '#1D1D1F', '#F5F5F7', '#0071E3'],
-  'tesla': ['#E82127', '#000000', '#3E3E3E', '#FFFFFF'],
-  'tata': ['#004C97', '#0085CA', '#FFFFFF', '#0A2540'],
-  'jio': ['#0A2885', '#E31837', '#FFFFFF', '#0078D4'],
-  'airtel': ['#ED1C24', '#1C1C1C', '#FFFFFF', '#8E1216'],
-  'lenskart': ['#000042', '#00BAC6', '#EAECF0', '#000000'],
-  'myntra': ['#FF3F6C', '#FF527B', '#FFFFFF', '#282C3F'],
-  'flipkart': ['#2874F0', '#FFE500', '#FB641B', '#FFFFFF'],
-  'amazon': ['#FF9900', '#146EB4', '#000000', '#FFFFFF'],
-  'google': ['#4285F4', '#EA4335', '#FBBC05', '#34A853'],
-  'microsoft': ['#F25022', '#7FBA00', '#00A4EF', '#FFB900'],
-  'spotify': ['#1DB954', '#191414', '#FFFFFF', '#121212'],
-  'netflix': ['#E50914', '#141414', '#FFFFFF', '#221F1F'],
-  'starbucks': ['#00704A', '#27251F', '#D4E9E2', '#FFFFFF'],
-  'nataraj': ['#DC2626', '#1E1B4B', '#F59E0B', '#FFFFFF'],
-  'camlin': ['#0066B2', '#E31E24', '#FFCC00', '#FFFFFF'],
-  'mamaearth': ['#5FB346', '#222222', '#FFFFFF', '#8ED276'],
-  'nykaa': ['#FC2779', '#FFFFFF', '#000000', '#E80071'],
-  'dominos': ['#0078AE', '#E31837', '#FFFFFF', '#005580'],
-  'subway': ['#008C15', '#FFC20E', '#FFFFFF', '#005810'],
-  'uber': ['#000000', '#FFFFFF', '#276EF1', '#1E1E1E'],
-  'ola': ['#B0D337', '#000000', '#FFFFFF', '#222222'],
-  'paytm': ['#00BAF2', '#002E6E', '#FFFFFF', '#00B9F5'],
-  'cred': ['#111111', '#FFFFFF', '#404040', '#D1A054'],
-  'zerodha': ['#387ED1', '#666666', '#FFFFFF', '#222222'],
-  'razorpay': ['#0C2340', '#3395FF', '#07162C', '#528FF0']
-};
+
 
 async function extractLogoPixelColors(imageUrls) {
   if (!Vibrant) return [];
@@ -130,7 +93,7 @@ async function extractLogoPixelColors(imageUrls) {
       swatches.forEach(swatch => {
         if (swatch) {
           const hex = (swatch.hex || (typeof swatch.getHex === 'function' ? swatch.getHex() : '')).toUpperCase();
-          if (hex && !hexes.includes(hex) && !isGrayscaleOrNeutral(hex)) {
+          if (hex && !hexes.includes(hex)) {
             hexes.push(hex);
           }
         }
@@ -303,18 +266,73 @@ function extractSchemaJsonLd($) {
   return { schemaLogo, schemaName, schemaSlogan, schemaIndustry, schemaAddress, schemaFoundingDate, schemaSameAs };
 }
 
-async function extractAccurateBrandColors(cleanUrl, domainName, $, html, logoUrl = '', faviconUrl = '', brandName = '') {
-  const lowerBrand = (brandName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const lowerDomain = (domainName || '').toLowerCase().replace(/^(www\d*|m|store|shop|en-in)\./, '').split('.')[0];
+async function extractOfficialLogoColors(cleanUrl, brandName = '', logoUrl = '') {
+  const domainHost = (cleanUrl || '').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+  const bName = brandName || domainHost.split('.')[0].toUpperCase();
 
-  // Tier 1: Known curated brand dictionary (100% authentic ground-truth hex codes)
-  if (KNOWN_BRAND_COLORS[lowerBrand]) return KNOWN_BRAND_COLORS[lowerBrand];
-  if (KNOWN_BRAND_COLORS[lowerDomain]) return KNOWN_BRAND_COLORS[lowerDomain];
+  // 1. Dynamic AI Visual Grounding: Query Gemini to inspect live web logo & visual identity
+  try {
+    const { aiClient, globalAiClient } = require('../../config/vertex');
+    const client = globalAiClient || aiClient;
+    if (client) {
+      const prompt = `Identify the EXACT official brand color palette extracted directly from the official logo and visual brand identity for "${bName}" (${cleanUrl}).
+Inspect the official logo emblem, shield, icon, lettering, background fill, and primary brand accents.
+Return ONLY a raw JSON array of 3 to 5 hex string codes representing the exact official logo colors:
+- Primary logo color (e.g. emblem or background shield fill)
+- Secondary logo color (e.g. lettering or emblem highlight)
+- Accent color (e.g. secondary accent)
+- Neutral dark or light background color
+
+Return ONLY a raw JSON array of hex strings with no markdown formatting. Example: ["#000000", "#D8A016", "#FED260", "#9F6B08"]`;
+
+      const aiRes = await client.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: { tools: [{ googleSearch: {} }] }
+      });
+
+      const text = aiRes?.text || '';
+      const cleaned = text.replace(/```json\n?|```\n?/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      if (Array.isArray(parsed) && parsed.length >= 2) {
+        const validHexes = parsed.filter(h => typeof h === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(h.trim())).map(h => h.trim().toUpperCase());
+        if (validHexes.length >= 2) {
+          console.log(`🎨 [COLOR-SCRAPER] Live Gemini Grounded Logo Palette for "${bName}":`, validHexes);
+          return validHexes;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('⚠️ [COLOR-SCRAPER] Live AI logo color grounding note:', err.message);
+  }
+
+  // 2. Dynamic Pixel extraction from scraped logo image URL or favicon
+  const candidateImages = [
+    logoUrl,
+    `https://logo.clearbit.com/${domainHost}`,
+    `https://www.google.com/s2/favicons?domain=${domainHost}&sz=128`
+  ].filter(Boolean);
+
+  try {
+    const swatches = await extractLogoPixelColors(candidateImages);
+    if (swatches && swatches.length >= 2) {
+      console.log(`🎨 [COLOR-SCRAPER] Live Logo Swatches for "${bName}":`, swatches);
+      return swatches;
+    }
+  } catch (e) {}
+
+  return [];
+}
+
+async function extractAccurateBrandColors(cleanUrl, domainName, $, html, logoUrl = '', faviconUrl = '', brandName = '') {
+  const officialLogoColors = await extractOfficialLogoColors(cleanUrl, brandName || domainName, logoUrl);
+  if (officialLogoColors && officialLogoColors.length >= 1) {
+    return officialLogoColors;
+  }
 
   const logoBrandHexes = [];
   const tokenBrandHexes = [];
 
-  // Tier 2: Real Pixel extraction from logo image & favicon via node-vibrant
   const candidateImages = [
     logoUrl,
     faviconUrl,
@@ -323,44 +341,35 @@ async function extractAccurateBrandColors(cleanUrl, domainName, $, html, logoUrl
 
   const pixelColors = await extractLogoPixelColors(candidateImages);
   pixelColors.forEach(h => {
-    if (!logoBrandHexes.includes(h) && !isGrayscaleOrNeutral(h)) {
+    if (!logoBrandHexes.includes(h)) {
       logoBrandHexes.push(h);
     }
   });
 
-  // Tier 3: Extract Meta Theme-Color & TileColor from DOM
   if ($) {
     const metaTheme = $('meta[name="theme-color"]').attr('content') || $('meta[name="msapplication-TileColor"]').attr('content') || $('meta[name="msapplication-navbutton-color"]').attr('content');
     if (metaTheme && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(metaTheme.trim())) {
       const u = metaTheme.trim().toUpperCase();
-      if (!isGrayscaleOrNeutral(u) && !tokenBrandHexes.includes(u)) {
+      if (!tokenBrandHexes.includes(u)) {
         tokenBrandHexes.push(u);
       }
     }
   }
 
-  // Tier 4: Extract SVG Vector Fills inside Header/Nav/Logo
   if (html) {
     const svgHexes = extractSvgFills(html);
     svgHexes.forEach(h => {
-      if (!isGrayscaleOrNeutral(h) && !tokenBrandHexes.includes(h)) {
+      if (!tokenBrandHexes.includes(h)) {
         tokenBrandHexes.push(h);
       }
     });
   }
 
   const mergedChromatic = [...logoBrandHexes, ...tokenBrandHexes];
-
   if (mergedChromatic.length >= 1) {
-    const primary = mergedChromatic[0];
-    const secondary = mergedChromatic[1] || (isGrayscaleOrNeutral(primary) ? '#1E293B' : '#111827');
-    const accent = mergedChromatic[2] || '#38BDF8';
-    const dark = '#0F172A';
-    return [primary, secondary, accent, dark].slice(0, 4);
+    return mergedChromatic.slice(0, 5);
   }
 
-  // NOTE: Requirement 7 forbids injecting synthetic brand colors as actual Brand DNA.
-  // Visual evidence missing -> return empty array [].
   return [];
 }
 
@@ -1070,6 +1079,7 @@ module.exports = {
   extractCleanBrandName,
   formatCleanSpacedBrandName,
   extractAccurateBrandColors,
+  extractOfficialLogoColors,
   crawlBrandContext,
   generateDynamicBrandPalette,
   extractLogoPixelColors,

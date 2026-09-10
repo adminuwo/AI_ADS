@@ -163,6 +163,7 @@ function mapPreviewToBrandProfile(brandDna, workspaceId) {
     extractedClaims: brandDna.extractedClaims || [],
     approvedClaims: brandDna.approvedClaims || [],
     pagesEvidence: brandDna.pagesEvidence || [],
+    rawScrapedData: brandDna.rawScrapedData || null,
     analysisStatus: brandDna.analysisStatus || 'SUCCESS'
   };
 }
