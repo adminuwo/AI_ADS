@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { brandAPI } from '../../services/api';
 import { normalizeBrandDna, getProvenanceBadgeInfo } from '../../utils/normalizeBrandDna';
 import {
   Dna, Globe, CheckCircle2, Save, RefreshCw, Sparkles, Loader2, Search,
   AlertCircle, ShieldCheck, Target, MessageSquare, Zap, Layers,
-  Compass, AlertTriangle, FileText, BarChart2, Palette, Copy, Check, Edit3
+  Compass, AlertTriangle, FileText, BarChart2, Palette, Copy, Check, Edit3, Upload, ImageIcon
 } from 'lucide-react';
 
 const ProvenanceBadge = ({ provenanceObj }) => {
@@ -23,6 +23,9 @@ export const BrandDnaModule = () => {
   const [copiedColor, setCopiedColor] = useState(null);
   const [editState, setEditState] = useState({});
   const [colorDrafts, setColorDrafts] = useState(null);
+  const [logoUrlInput, setLogoUrlInput] = useState('');
+  const [showLogoInput, setShowLogoInput] = useState(false);
+  const logoFileInputRef = useRef(null);
 
   const handleFieldChangeLocal = (fieldKey, newValue) => {
     const current = profile || effectiveProfile || {};
@@ -61,6 +64,12 @@ export const BrandDnaModule = () => {
       }
 
       await updateProfileField(fieldKey, sanitizedVal);
+    }
+
+    // Reset logo upload UI when closing identity edit
+    if (fieldKey === 'identity' && editState['identity']) {
+      setShowLogoInput(false);
+      setLogoUrlInput('');
     }
 
     setEditState(prev => ({ ...prev, [fieldKey]: !prev[fieldKey] }));
@@ -531,49 +540,138 @@ export const BrandDnaModule = () => {
                 </button>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800/60 h-full">
-                <img
-                  src={
-                    (effectiveProfile.logoUrl && !effectiveProfile.logoUrl.includes('picsum.photos'))
-                      ? effectiveProfile.logoUrl
-                      : `https://www.google.com/s2/favicons?domain=${(effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0]}&sz=128`
-                  }
-                  alt={effectiveProfile.companyName}
-                  className="w-9 h-9 rounded-lg bg-white p-1 border border-slate-200 object-contain shadow-xs shrink-0"
-                  onError={(e) => {
-                    const dom = (effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
-                    e.target.src = `https://www.google.com/s2/favicons?domain=${dom}&sz=128`;
-                  }}
-                />
-                <div className="flex-1 min-w-0">
-                  {editState['identity'] ? (
-                    <div className="space-y-1.5">
-                      <input
-                        type="text"
-                        value={effectiveProfile.companyName || ''}
-                        onChange={(e) => handleFieldChangeLocal('companyName', e.target.value)}
-                        placeholder="Company Name..."
-                        className="w-full text-xs font-extrabold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-brand-500/50 rounded-md px-2 py-0.5 outline-none"
-                      />
-                      <input
-                        type="text"
-                        value={effectiveProfile.website || ''}
-                        onChange={(e) => handleFieldChangeLocal('website', e.target.value)}
-                        placeholder="Website URL..."
-                        className="w-full text-[11px] font-bold text-brand-600 dark:text-brand-400 bg-white dark:bg-slate-800 border border-brand-500/50 rounded-md px-2 py-0.5 outline-none"
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <h3 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{effectiveProfile.companyName}</h3>
-                      {effectiveProfile.website && (
-                        <a href={effectiveProfile.website} target="_blank" rel="noreferrer" className="text-[11px] text-brand-600 dark:text-brand-400 font-bold flex items-center gap-1 hover:underline truncate">
-                          <Globe className="w-3 h-3 shrink-0" /> {effectiveProfile.website}
-                        </a>
-                      )}
-                    </>
-                  )}
+              {/* Hidden file input for logo upload */}
+              <input
+                ref={logoFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = async (ev) => {
+                    const base64 = ev.target.result;
+                    handleFieldChangeLocal('logoUrl', base64);
+                    await updateProfileField('logoUrl', base64);
+                    setShowLogoInput(false);
+                  };
+                  reader.readAsDataURL(file);
+                  e.target.value = '';
+                }}
+              />
+
+              <div className="flex flex-col gap-2 p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800/60 h-full">
+                <div className="flex items-center gap-3">
+                  {/* Logo — clickable to upload when missing or in edit mode */}
+                  <div className="relative shrink-0 group">
+                    <img
+                      src={
+                        (effectiveProfile.logoUrl && !effectiveProfile.logoUrl.includes('picsum.photos'))
+                          ? effectiveProfile.logoUrl
+                          : `https://www.google.com/s2/favicons?domain=${(effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0]}&sz=128`
+                      }
+                      alt={effectiveProfile.companyName}
+                      className="w-10 h-10 rounded-lg bg-white p-1 border border-slate-200 object-contain shadow-xs"
+                      onError={(e) => {
+                        const dom = (effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+                        e.target.src = `https://www.google.com/s2/favicons?domain=${dom}&sz=128`;
+                      }}
+                    />
+                    {/* Upload overlay — shown on hover when in edit mode or logo is generic */}
+                    {editState['identity'] && (
+                      <button
+                        type="button"
+                        onClick={() => setShowLogoInput(prev => !prev)}
+                        title="Change logo"
+                        className="absolute inset-0 w-10 h-10 rounded-lg bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        <Upload className="w-4 h-4 text-white" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    {editState['identity'] ? (
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          value={effectiveProfile.companyName || ''}
+                          onChange={(e) => handleFieldChangeLocal('companyName', e.target.value)}
+                          placeholder="Company Name..."
+                          className="w-full text-xs font-extrabold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-brand-500/50 rounded-md px-2 py-0.5 outline-none"
+                        />
+                        <input
+                          type="text"
+                          value={effectiveProfile.website || ''}
+                          onChange={(e) => handleFieldChangeLocal('website', e.target.value)}
+                          placeholder="Website URL..."
+                          className="w-full text-[11px] font-bold text-brand-600 dark:text-brand-400 bg-white dark:bg-slate-800 border border-brand-500/50 rounded-md px-2 py-0.5 outline-none"
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <h3 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{effectiveProfile.companyName}</h3>
+                        {effectiveProfile.website && (
+                          <a href={effectiveProfile.website} target="_blank" rel="noreferrer" className="text-[11px] text-brand-600 dark:text-brand-400 font-bold flex items-center gap-1 hover:underline truncate">
+                            <Globe className="w-3 h-3 shrink-0" /> {effectiveProfile.website}
+                          </a>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
+
+                {/* Logo Upload Panel — shown in edit mode */}
+                {editState['identity'] && showLogoInput && (
+                  <div className="mt-1 p-2.5 rounded-xl border border-dashed border-brand-400/60 bg-brand-50/30 dark:bg-brand-900/10 space-y-2">
+                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                      <ImageIcon className="w-3 h-3" /> Upload or paste logo
+                    </p>
+                    {/* File Upload Button */}
+                    <button
+                      type="button"
+                      onClick={() => logoFileInputRef.current?.click()}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 border border-brand-400/40 text-brand-600 dark:text-brand-400 text-[11px] font-bold transition-all"
+                    >
+                      <Upload className="w-3.5 h-3.5" /> Upload from device
+                    </button>
+                    {/* URL Input */}
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        value={logoUrlInput}
+                        onChange={(e) => setLogoUrlInput(e.target.value)}
+                        placeholder="Paste image URL..."
+                        className="flex-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md px-2 py-1.5 outline-none focus:border-brand-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!logoUrlInput.trim()) return;
+                          handleFieldChangeLocal('logoUrl', logoUrlInput.trim());
+                          await updateProfileField('logoUrl', logoUrlInput.trim());
+                          setLogoUrlInput('');
+                          setShowLogoInput(false);
+                        }}
+                        className="px-2.5 py-1.5 bg-brand-500 hover:bg-brand-600 text-white text-[11px] font-bold rounded-md transition-colors"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Logo upload hint — shown when NOT in edit mode and logo is likely a favicon/generic */}
+                {!editState['identity'] && !effectiveProfile.logoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => toggleEdit('identity')}
+                    className="mt-1 w-full flex items-center justify-center gap-1.5 text-[10px] text-slate-400 hover:text-brand-500 transition-colors font-semibold"
+                  >
+                    <Upload className="w-3 h-3" /> No logo fetched — click ✎ to upload yours
+                  </button>
+                )}
               </div>
             </div>
 
