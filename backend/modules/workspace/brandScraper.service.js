@@ -187,9 +187,13 @@ async function fetchWebsiteHtmlWithResilience(cleanUrl, brandName, domainName) {
       const { aiClient, globalAiClient } = require('../../config/vertex');
       const client = globalAiClient || aiClient;
       if (client) {
-        const aiRes = await client.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: `Search the web and provide the official details for the brand "${brandName}" with website "${domainName}".
+        const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash-002', 'gemini-3.5-flash'];
+        let aiRes = null;
+        for (const modelName of candidateModels) {
+          try {
+            aiRes = await client.models.generateContent({
+              model: modelName,
+              contents: `Search the web and provide the official details for the brand "${brandName}" with website "${domainName}".
 Include:
 - Official brand tagline
 - Corporate description & founding background
@@ -200,8 +204,13 @@ Include:
 - Official logo description or image URL
 
 Return a detailed plain text overview.`,
-          config: { tools: [{ googleSearch: {} }] }
-        });
+              config: { tools: [{ googleSearch: {} }] }
+            });
+            if (aiRes?.text) break;
+          } catch (mErr) {
+            console.warn(`[SCRAPER-TIER5] Model ${modelName} note:`, mErr.message);
+          }
+        }
         const groundingText = aiRes?.text || '';
         if (groundingText && groundingText.length > 50) {
           html = `<html><head><title>${brandName}</title><meta name="description" content="${groundingText.slice(0, 300)}"></head><body><h1>${brandName}</h1><p>${groundingText}</p></body></html>`;
@@ -484,11 +493,20 @@ Return ONLY a raw JSON array of 3 to 5 hex string codes representing the exact o
 
 Return ONLY a raw JSON array of hex strings with no markdown formatting. Example: ["#000000", "#D8A016", "#FED260", "#9F6B08"]`;
 
-      const aiRes = await client.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: prompt,
-        config: { tools: [{ googleSearch: {} }] }
-      });
+      const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash-002', 'gemini-3.5-flash'];
+      let aiRes = null;
+      for (const modelName of candidateModels) {
+        try {
+          aiRes = await client.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: { tools: [{ googleSearch: {} }] }
+          });
+          if (aiRes?.text) break;
+        } catch (mErr) {
+          console.warn(`[COLOR-SCRAPER] Model ${modelName} note:`, mErr.message);
+        }
+      }
 
       const text = aiRes?.text || '';
       const cleaned = text.replace(/```json\n?|```\n?/g, '').trim();

@@ -444,6 +444,196 @@ router.post('/projects/:id/runtime/stop', async (req, res) => {
   res.json({ success: true, result });
 });
 
+// ─── GET /api/website-builder/projects/:id/preview* ───────────────────────────
+router.get('/projects/:id/preview*', async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const projectDir = storageService.getProjectVersionPath(projectId, 'v1');
+    const distDir = path.join(projectDir, 'dist');
+
+    // Option 1: Serve compiled static assets from dist folder if dist exists
+    if (fs.existsSync(distDir)) {
+      let subPath = req.params[0] || '/index.html';
+      if (!subPath || subPath === '/') subPath = '/index.html';
+
+      const filePath = path.join(distDir, subPath);
+      if (fs.existsSync(filePath) && filePath.startsWith(distDir)) {
+        return res.sendFile(filePath);
+      }
+      const distIndex = path.join(distDir, 'index.html');
+      if (fs.existsSync(distIndex)) {
+        return res.sendFile(distIndex);
+      }
+    }
+
+    // Option 2: Standalone Dynamic HTML Fallback Preview
+    const project = await WebsiteProject.findOne({ projectId });
+    const htmlContent = generateStandalonePreviewHtml(project, projectId);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(htmlContent);
+  } catch (err) {
+    console.error('[WB:Preview Route Error]', err);
+    res.status(500).send('Error rendering website preview');
+  }
+});
+
+function generateStandalonePreviewHtml(project, projectId) {
+  let title = project?.websiteIdentity?.title || project?.title || 'Website Preview';
+  let brandName = project?.websiteIdentity?.title || project?.title || 'Brand';
+  let siteDataObj = null;
+
+  try {
+    const projectDir = storageService.getProjectVersionPath(projectId, 'v1');
+    const siteDataPath = path.join(projectDir, 'src/data/siteData.js');
+    if (fs.existsSync(siteDataPath)) {
+      const raw = fs.readFileSync(siteDataPath, 'utf8');
+      const objMatch = raw.match(/export\s+const\s+siteData\s*=\s*(\{[\s\S]*\});?\s*$/);
+      if (objMatch && objMatch[1]) {
+        siteDataObj = JSON.parse(objMatch[1]);
+      }
+    }
+  } catch (e) {}
+
+  if (siteDataObj && siteDataObj.websiteIdentity?.title) {
+    title = siteDataObj.websiteIdentity.title;
+    brandName = siteDataObj.websiteIdentity.title;
+  }
+
+  const pages = siteDataObj?.pages || project?.website?.pages || project?.blueprint?.pages || [
+    { title: 'Home Page', path: '/' },
+    { title: 'Catalog', path: '/catalog' },
+    { title: 'Our Story', path: '/about' }
+  ];
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .panch-bg { background-color: #090d16; }
+    .gold-gradient { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); }
+  </style>
+</head>
+<body class="panch-bg text-slate-100 min-h-screen">
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl gold-gradient flex items-center justify-center font-black text-slate-950 text-xl shadow-lg">
+        ${brandName.charAt(0).toUpperCase()}
+      </div>
+      <div>
+        <h1 class="font-extrabold text-lg tracking-tight text-white">${brandName}</h1>
+        <span class="text-[10px] text-amber-400 font-bold uppercase tracking-widest block">Live Application Preview</span>
+      </div>
+    </div>
+    <nav class="hidden md:flex items-center gap-1 bg-slate-900 p-1.5 rounded-2xl border border-slate-800">
+      ${pages.map((p, idx) => `
+        <button onclick="switchTab(${idx})" id="nav-btn-${idx}" class="nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all ${idx === 0 ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'}">
+          ${p.title || p.name || `Page ${idx + 1}`}
+        </button>
+      `).join('')}
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-12 space-y-16">
+    <section class="text-center space-y-6 max-w-3xl mx-auto py-8">
+      <span class="px-4 py-1.5 rounded-full text-xs font-extrabold bg-amber-500/10 text-amber-400 border border-amber-500/20 inline-block">
+        Official AI Generated Platform
+      </span>
+      <h2 class="text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+        Welcome to <span class="text-transparent bg-clip-text gold-gradient">${brandName}</span>
+      </h2>
+      <p class="text-base text-slate-300 font-medium">
+        Experience high-performance, prompt-tailored digital interactions built live with Panch Tattva architecture.
+      </p>
+      <div class="flex items-center justify-center gap-4 pt-4">
+        <a href="#catalog" class="px-7 py-3.5 rounded-2xl gold-gradient text-slate-950 font-black text-sm shadow-xl hover:opacity-90 transition-all">
+          Explore Experience
+        </a>
+        <a href="#contact" class="px-7 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 font-bold text-sm transition-all">
+          Contact Team &rarr;
+        </a>
+      </div>
+    </section>
+
+    <section id="catalog" class="space-y-8">
+      <div class="text-center space-y-2">
+        <h3 class="text-2xl font-extrabold text-white">Featured Offerings & Services</h3>
+        <p class="text-xs text-slate-400">Curated showcase automatically tailored to your brand requirement.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 hover:border-amber-500/40 transition-all">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xl">✦</div>
+          <h4 class="text-lg font-bold text-white">Artisanal Quality</h4>
+          <p class="text-xs text-slate-400">Crafted with precision, ensuring sustainable performance and aesthetic excellence.</p>
+          <span class="text-xs font-bold text-amber-400 block pt-2">₹1,499</span>
+        </div>
+
+        <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 hover:border-amber-500/40 transition-all">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xl">⚡</div>
+          <h4 class="text-lg font-bold text-white">Instant Customization</h4>
+          <p class="text-xs text-slate-400">Adaptive configurations and live natural-language editing capabilities.</p>
+          <span class="text-xs font-bold text-amber-400 block pt-2">₹2,999</span>
+        </div>
+
+        <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 hover:border-amber-500/40 transition-all">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xl">🛡️</div>
+          <h4 class="text-lg font-bold text-white">Verified Security</h4>
+          <p class="text-xs text-slate-400">Built-in component isolation, clean routing, and production readiness.</p>
+          <span class="text-xs font-bold text-amber-400 block pt-2">Included</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="p-8 md:p-12 rounded-3xl bg-slate-950 border border-slate-800 space-y-6 max-w-2xl mx-auto">
+      <div class="space-y-2 text-center">
+        <h3 class="text-2xl font-extrabold text-white">Connect With Us</h3>
+        <p class="text-xs text-slate-400">Send an inquiry directly to the ${brandName} team.</p>
+      </div>
+      <form onsubmit="alert('Thank you! Your inquiry has been sent.'); return false;" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Your Name</label>
+          <input type="text" required placeholder="John Doe" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Email Address</label>
+          <input type="email" required placeholder="john@example.com" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Message</label>
+          <textarea rows="3" required placeholder="How can we help you?" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+        <button type="submit" class="w-full py-3.5 rounded-xl gold-gradient text-slate-950 font-black text-xs shadow-lg hover:opacity-90 transition-all">
+          Submit Message &rarr;
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-800 py-8 px-6 text-center text-xs text-slate-500">
+    <p>&copy; ${new Date().getFullYear()} ${brandName}. All rights reserved. Powered by AI ADS Platform.</p>
+  </footer>
+
+  <script>
+    function switchTab(idx) {
+      document.querySelectorAll('.nav-tab').forEach((el, i) => {
+        if (i == idx) {
+          el.className = 'nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-md';
+        } else {
+          el.className = 'nav-tab px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white';
+        }
+      });
+    }
+  </script>
+</body>
+</html>`;
+}
+
 const { analyzeClarificationNeed } = require('../modules/websiteBuilder/services/clarificationAnalyzer.service');
 const { processChatEditRequest } = require('../modules/websiteBuilder/services/chatEditInterpreter.service');
 

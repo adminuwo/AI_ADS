@@ -135,26 +135,24 @@ export const BuilderWorkspaceView = ({
 
   // Open Live Sandbox in New Tab
   const handleOpenSandbox = async () => {
-    let sandboxUrl = projectData?.runtime?.url || website?.runtime?.url;
+    let sandboxUrl = projectData?.runtime?.previewUrl
+      ? `${API_BASE.replace(/\/api$/, '')}${projectData.runtime.previewUrl}`
+      : (projectData?.runtime?.url || website?.runtime?.url);
 
     triggerToast('Opening live website in new tab...');
 
-    if (!sandboxUrl || !sandboxUrl.startsWith('http://127.0.0.1')) {
-      try {
-        const res = await fetch(`${API_BASE}/website-builder/projects/${projectId}/runtime`);
-        const data = await res.json();
-        if (data.success && data.runtime?.url) {
-          sandboxUrl = data.runtime.url;
-        }
-      } catch (e) {
-        console.error('Failed to fetch runtime status:', e);
-      }
+    const isProductionHost = typeof window !== 'undefined' &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1';
+
+    if (projectId && (isProductionHost || !sandboxUrl || sandboxUrl.includes('127.0.0.1'))) {
+      sandboxUrl = `${API_BASE}/website-builder/projects/${projectId}/preview/index.html`;
     }
 
     if (sandboxUrl) {
       window.open(sandboxUrl, '_blank', 'noopener,noreferrer');
     } else {
-      window.open('http://127.0.0.1:4100/', '_blank', 'noopener,noreferrer');
+      window.open(`${API_BASE}/website-builder/projects/${projectId}/preview/index.html`, '_blank', 'noopener,noreferrer');
     }
   };
 

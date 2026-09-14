@@ -64,17 +64,17 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
   }, []);
 
   const modules = [
-    { id: 'dashboard', label: t('dashboard', '1. Dashboard'), icon: LayoutGrid },
-    { id: 'brands', label: t('brands', '2. Brand DNA'), icon: Dna },
-    { id: 'seo', label: t('seo', '3. SEO Intelligence'), icon: Search },
-    { id: 'strategy', label: t('strategy', '4. Strategy'), icon: Target },
-    { id: 'campaigns', label: t('campaigns', '5. Campaigns'), icon: Layers },
-    { id: 'calendar', label: t('calendar', '6. Calendar'), icon: Calendar },
-    { id: 'studio', label: t('studio', '7. Content Studio'), icon: PenTool },
-    { id: 'approvals', label: t('approvals', '8. Approvals Desk'), icon: CheckCircle2 },
-    { id: 'creative', label: t('creative', '9. Creative Studio'), icon: Palette },
-    { id: 'assets', label: t('assets', '10. Asset Library'), icon: FolderKanban },
-    { id: 'websiteBuilder', label: t('websiteBuilder', '11. AI Website Builder'), icon: Globe },
+    { id: 'dashboard', label: t('dashboard', '1. Dashboard'), icon: LayoutGrid, color: '#EF4444' },
+    { id: 'brands', label: t('brands', '2. Brand DNA'), icon: Dna, color: '#F59E0B' },
+    { id: 'seo', label: t('seo', '3. SEO Intelligence'), icon: Search, color: '#10B981' },
+    { id: 'strategy', label: t('strategy', '4. Strategy'), icon: Target, color: '#8B5CF6' },
+    { id: 'campaigns', label: t('campaigns', '5. Campaigns'), icon: Layers, color: '#3B82F6' },
+    { id: 'calendar', label: t('calendar', '6. Calendar'), icon: Calendar, color: '#22C55E' },
+    { id: 'studio', label: t('studio', '7. Content Studio'), icon: PenTool, color: '#F97316' },
+    { id: 'approvals', label: t('approvals', '8. Approvals Desk'), icon: CheckCircle2, color: '#EAB308' },
+    { id: 'creative', label: t('creative', '9. Creative Studio'), icon: Palette, color: '#6366F1' },
+    { id: 'assets', label: t('assets', '10. Asset Library'), icon: FolderKanban, color: '#06B6D4' },
+    { id: 'websiteBuilder', label: t('websiteBuilder', '11. AI Website Builder'), icon: Globe, color: 'spectrum' },
   ];
 
   const handleNavClick = (id) => {
@@ -118,10 +118,10 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 onError={(e) => { e.target.onerror = null; e.target.src = '/logo.jpg'; }}
               />
               <div className="flex items-center font-black text-2xl tracking-tight leading-none">
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">
                   AI Ads
                 </span>
-                <sup className="text-xs font-extrabold text-cyan-400 ml-1 font-sans -mt-3 select-none">TM</sup>
+                <sup className="text-xs font-extrabold text-amber-400 ml-1 font-sans -mt-3 select-none">TM</sup>
               </div>
             </div>
 
@@ -137,8 +137,10 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
             )}
           </div>
 
+
+
           {/* Clean Navigation Item List */}
-          <nav className="px-3 py-3 space-y-1 flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <nav className="px-3 py-1 space-y-1 flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {modules.map((m) => {
               const Icon = m.icon;
               const isActive = activeModule === m.id;
@@ -152,28 +154,24 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                   onClick={() => handleNavClick(m.id)}
                   className={`w-full relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13px] transition-all duration-200 text-left group ${
                     isActive 
-                      ? 'bg-gradient-to-r from-brand-500/15 via-brand-500/10 to-blue-500/10 text-brand-600 dark:text-brand-400 font-semibold shadow-[0_4px_16px_rgba(123,97,255,0.12)] border-0' 
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-brand-500/10 hover:pl-4 font-medium'
+                      ? 'bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-white font-bold shadow-md border-l-4' 
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:pl-4 font-medium'
                   }`}
+                  style={isActive ? { borderLeftColor: m.color === 'spectrum' ? '#EF4444' : m.color } : {}}
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    {isActive && (
-                      <span className="absolute left-1 top-2 bottom-2 w-1 rounded-full bg-gradient-to-b from-cyan-400 via-brand-500 to-indigo-600 shadow-[0_0_10px_var(--brand-glow,#7B61FF)]" />
-                    )}
-                    <Icon className={`w-4 h-4 flex-shrink-0 transition-colors ${
-                      isActive 
-                        ? 'text-brand-600 dark:text-brand-400' 
-                        : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200'
-                    }`} />
+                    <Icon className="w-4 h-4 flex-shrink-0 transition-colors" style={{ color: isActive ? (m.color === 'spectrum' ? '#3B82F6' : m.color) : undefined }} />
                     <span className="truncate">{m.label}</span>
                   </div>
 
-                  {isModuleLocked && (
-                    <span className="flex items-center gap-1 text-[9.5px] font-black text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-md shrink-0 ml-1">
-                      <Lock className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400" />
-                      <span>PRO</span>
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {isModuleLocked && (
+                      <span className="flex items-center gap-1 text-[9.5px] font-black text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-md shrink-0 ml-1">
+                        <Lock className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400" />
+                        <span>PRO</span>
+                      </span>
+                    )}
+                  </div>
                 </button>
               );
             })}

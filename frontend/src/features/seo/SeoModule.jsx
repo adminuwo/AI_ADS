@@ -28,9 +28,8 @@ const Toast = ({ message, type = 'error', onClose }) => {
   }, [onClose]);
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl text-xs font-bold animate-in slide-in-from-bottom-4 ${
-      type === 'error' ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'
-    }`}>
+    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl text-xs font-bold animate-in slide-in-from-bottom-4 ${type === 'error' ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'
+      }`}>
       {type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
       {message}
     </div>
@@ -102,7 +101,7 @@ export const SeoModule = () => {
       brief: b
     };
     if (setSeoSearchData) setSeoSearchData(obj);
-    try { localStorage.setItem(storageKey, JSON.stringify(obj)); } catch (e) {}
+    try { localStorage.setItem(storageKey, JSON.stringify(obj)); } catch (e) { }
   }, [activeWorkspace, keywordsList, seedKeyword, brief, setSeoSearchData]);
 
   // ─── AI-Powered: Generate SEO Brief ───────────────────────────────────────────
@@ -127,11 +126,11 @@ export const SeoModule = () => {
       if (res.success && res.brief) {
         const b = res.brief;
         // Determine schema type dynamically based on content and intent
-        const schemaType = b.schemaType || 
+        const schemaType = b.schemaType ||
           (targetIntent === 'Transactional' ? 'Product'
-          : targetIntent === 'Informational' ? 'HowTo'
-          : targetIntent === 'Commercial' ? 'WebPage'
-          : 'WebPage');
+            : targetIntent === 'Informational' ? 'HowTo'
+              : targetIntent === 'Commercial' ? 'WebPage'
+                : 'WebPage');
 
         const finalBrief = {
           primaryKeyword: b.primaryKeyword || targetSeed,
@@ -191,7 +190,7 @@ export const SeoModule = () => {
         saveSeoData(brief, result.keywords, kw);
         setInitialized(true);
         showToast(`${result.keywords.length} keywords generated via ${result.model || 'AI'}`, 'success');
-        
+
         // Auto-generate brief on 1st time
         if (autoGenerateBrief) {
           handleGenerateBrief(kw, intent, result.keywords);
@@ -292,7 +291,7 @@ export const SeoModule = () => {
           return;
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // 3. Obsolete or No cached data — automatically generate fresh high-quality keywords & brief
     setSeedKeyword(defaultSeed);
@@ -399,7 +398,7 @@ export const SeoModule = () => {
 
             {/* Middle Section: TWO DEDICATED SECTIONS FOR KEYWORDS */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-              
+
               {/* ═════════ SECTION 1: ON-SITE ACTIVE KEYWORDS ═════════ */}
               <div className="p-5 rounded-3xl glass-card border border-emerald-500/20 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent h-full flex flex-col">
                 <div className="flex items-center justify-between mb-2">

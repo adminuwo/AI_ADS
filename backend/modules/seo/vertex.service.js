@@ -78,10 +78,10 @@ Return ONLY valid JSON.`;
   try {
     const result = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
     const aiData = result?.data || result;
-    
+
     let existing = (aiData?.existingKeywords || []).map(k => ({ ...k, source: 'existing', badge: 'On-Site (Active)' }));
     let opp = (aiData?.opportunityKeywords || []).map(k => ({ ...k, source: 'opportunity', badge: 'High-ROI Growth Target' }));
-    
+
     if (existing.length === 0 && Array.isArray(aiData?.allKeywords)) {
       existing = aiData.allKeywords.filter(k => k.source === 'existing').map(k => ({ ...k, badge: 'On-Site (Active)' }));
       opp = aiData.allKeywords.filter(k => k.source === 'opportunity').map(k => ({ ...k, badge: 'High-ROI Growth Target' }));
@@ -403,9 +403,9 @@ Return ONLY the JSON object.`;
     if (aiBrief && aiBrief.suggestedTitles) {
       console.log('✅ Gemini 3.5 Vertex AI Brief synthesized successfully.');
       // Determine schema type: use AI suggestion, or derive from intent
-      const schemaType = aiBrief.schemaType || 
-        (intent === 'Informational' ? 'HowTo' : 
-         intent === 'Transactional' ? 'Product' : 'WebPage');
+      const schemaType = aiBrief.schemaType ||
+        (intent === 'Informational' ? 'HowTo' :
+          intent === 'Transactional' ? 'Product' : 'WebPage');
       return {
         primaryKeyword: kw,
         searchIntent: intent,
@@ -443,14 +443,26 @@ Return ONLY the JSON object.`;
 }
 
 async function generateSocialPosts(params) {
-  const { topic, platform = 'LinkedIn', brandName = 'AI Ads' } = params;
+  const { topic, platform = 'LinkedIn', brandName = 'Brand', logoUrl = '', brandLogo = '', industry = '', brandColors = [] } = params;
   const cleanBrand = brandName || 'Brand';
+  const resolvedLogoUrl = logoUrl || brandLogo || '';
   const platLower = (platform || 'instagram').toLowerCase();
   const aspect = platLower === 'instagram' ? '1:1' : (platLower.includes('reel') || platLower.includes('tiktok') || platLower.includes('story')) ? '9:16' : '16:9';
-  const dimensions = aspect === '9:16' ? 'width=720&height=1280' : aspect === '16:9' ? 'width=1280&height=720' : 'width=1024&height=1024';
   const seed = Math.floor(Math.random() * 1000000);
-  const imagePrompt = `${topic} — ${cleanBrand} commercial campaign photography, high-end studio lighting, 8k resolution, photorealistic`;
-  
+
+  const { craftBrandAdPrompt } = require('../../services/brandImageAgent.service');
+  const imagePrompt = craftBrandAdPrompt({
+    brandName: cleanBrand,
+    logoUrl: resolvedLogoUrl,
+    industry,
+    brandColors,
+    topic,
+    platform,
+    style: 'Photorealistic Commercial',
+    aspect,
+    seed
+  });
+
   let imageUrl = '';
   try {
     const { resolveBrandVisualAsset } = require('../../services/brandVisualResolver');
@@ -459,7 +471,8 @@ async function generateSocialPosts(params) {
       brandName: cleanBrand,
       topic,
       style: 'Photorealistic Commercial',
-      aspect
+      aspect,
+      variationIndex: seed % 10
     });
   } catch (e) {
     imageUrl = 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80';
@@ -468,37 +481,39 @@ async function generateSocialPosts(params) {
   return {
     platform,
     topic,
-    hook: `🚀 Stop wasting 5 days per content batch. Here is how ${brandName} scaled content operations without sacrificing brand voice.`,
-    shortCaption: `Scale your ${brandName} velocity with AI-driven content strategy!`,
-    caption: `Most marketing teams suffer from fragmented software and delayed approvals. By standardizing Brand DNA memory and unifying research, strategy, and publishing, high-velocity teams achieve 4x execution speed.\n\nKey takeaways:\n1️⃣ Establish single-source brand memory\n2️⃣ Automate claim verification\n3️⃣ Repurpose 1 approved asset into 5 channels\n\nWhat is your biggest workflow bottleneck right now? Let's discuss in the comments below! 👇`,
-    longCaption: `Discover how consistent brand DNA elevates your marketing output for ${brandName}. Whether you are running social campaigns, newsletters, or ad copy, maintaining a unified tone is essential for building trust and scaling conversions. Start leveraging AI Ads today to automate your workflow without sacrificing brand quality!`,
-    hashtags: [`#${brandName.replace(/\s+/g, '')}`, `#MarketingOps`, `#SEOStrategy`, `#ContentVelocity`, `#B2BGrowth`],
-    cta: `Book your enterprise strategy demo today at link in bio!`,
+    brandName: cleanBrand,
+    logoUrl: resolvedLogoUrl,
+    hook: `🚀 ${cleanBrand} insights on ${topic}: Elevating marketing velocity without losing brand voice.`,
+    shortCaption: `Discover how ${cleanBrand} masters ${topic} with precision and speed!`,
+    caption: `Successful brands focus on consistent execution and distinct identity. By aligning your strategy on "${topic}", teams achieve maximum audience engagement.\n\nKey takeaways for ${cleanBrand}:\n1️⃣ Clear brand identity & memory\n2️⃣ High-quality visual execution\n3️⃣ Multi-platform audience reach\n\nWhat is your primary focus for ${topic}? Share your thoughts below! 👇`,
+    longCaption: `Consistency across platforms builds long-term authority. For ${cleanBrand}, focusing on ${topic} drives high-converting visual campaigns and authentic customer engagement. Discover how unified AI Ads workflows transform content production today!`,
+    hashtags: [`#${cleanBrand.replace(/\s+/g, '')}`, `#${topic.replace(/[^a-zA-Z0-9]/g, '')}`, `#ContentStrategy`, `#BrandGrowth`],
+    cta: `Explore ${cleanBrand} solutions today at link in bio!`,
     imagePrompt,
     imageUrl,
+    logoUrl: resolvedLogoUrl,
     imageStyle: 'Photorealistic Commercial',
     imageAspect: aspect,
     creativeVariations: [
       {
         type: 'STORYTELLING ANGLE',
-        text: `Every brand has a unique journey. For ${brandName}, maintaining a consistent narrative across every touchpoint is what builds lasting customer trust.`
+        text: `Every campaign tells a story. For ${cleanBrand}, focusing on "${topic}" builds customer connection and brand trust.`
       },
       {
         type: 'PROBLEM-SOLUTION',
-        text: `Tired of fragmented content creation? Unify your strategy and creative workflows with ${brandName} to scale 4x faster without losing brand voice.`
+        text: `Tired of slow content turnarounds for ${cleanBrand}? Streamline "${topic}" campaigns for 4x execution speed.`
       }
     ],
     carouselSlides: [
-      { slide: 1, title: "The Content Bottleneck", text: "Why 80% of agency teams lose momentum during human review cycles." },
-      { slide: 2, title: "Brand DNA Memory", text: "Anchor every AI draft to immutable voice, approved claims, and style rules." },
-      { slide: 3, title: "1-Click Repurposing", text: "Turn 1 pillar article into LinkedIn posts, email newsletters, and Twitter threads." },
-      { slide: 4, title: "Closed-Loop Analytics", text: "Refine future content strategies using real-time production velocity data." }
+      { slide: 1, title: topic, subtitle: `${cleanBrand} Growth Playbook` },
+      { slide: 2, title: "Brand Identity", subtitle: "Consistent Visuals & Tone" },
+      { slide: 3, title: "Execution Speed", subtitle: "Multi-Platform Reach" }
     ],
     reelScript: {
-      hookVisual: "Host pointing to a chaotic screen filled with 12 open tabs.",
-      spokenHook: "If your marketing team relies on 10 different tools to publish one blog post, you're doing it wrong.",
-      bodyShots: "Cut to smooth AI Ads unified workspace showing Brand DNA and 1-click repurpose.",
-      callToAction: "Comment 'SCALE' below for early access!"
+      hookVisual: `High-impact visual showcasing ${cleanBrand} brand logo overlay and product context for ${topic}.`,
+      spokenHook: `Here is how ${cleanBrand} masters ${topic} in 3 actionable steps.`,
+      bodyShots: `Visual overview of ${cleanBrand} strategy on ${topic}.`,
+      callToAction: `Follow ${cleanBrand} for more industry tips!`
     }
   };
 }

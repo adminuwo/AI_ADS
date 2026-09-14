@@ -184,15 +184,7 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
                 <span>Click to View Full Resolution Image</span>
               </div>
 
-              {/* Official Brand Logo Watermark Overlay */}
-              <div className="absolute top-4 left-4 z-10 flex items-center px-3 py-2 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-xl">
-                <img 
-                  src={getBrandLogoUrl({ brandName: workspace?.brandName, domainUrl: workspace?.domainUrl, logoUrl: workspace?.logoUrl, faviconUrl: workspace?.faviconUrl })} 
-                  alt={workspace?.brandName} 
-                  className="h-7 sm:h-8 w-auto max-w-[140px] object-contain" 
-                  onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${(workspace?.brandName || 'google').toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }}
-                />
-              </div>
+
 
               <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-slate-950/80 backdrop-blur-md border border-slate-800 text-xs text-slate-200 flex justify-between items-center">
                 <span className="truncate max-w-sm font-medium">"{result.prompt}"</span>

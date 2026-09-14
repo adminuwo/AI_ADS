@@ -57,17 +57,29 @@ export const VisualAssetsPreviewCard = ({
   return (
     <>
       {/* ── LOVABLE-GRADE VISUAL ASSETS CARD ── */}
-      <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-md p-3.5 space-y-3 transition-all hover:shadow-lg">
+      <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-md p-3.5 space-y-3 transition-all hover:shadow-lg relative overflow-hidden">
+        {/* Panch Tattva Top Accent Bar */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] panch-tattva-ribbon" />
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             </div>
             <div>
-              <h4 className="text-xs font-black text-slate-900 dark:text-white tracking-tight">
-                Generated Visual Assets
-              </h4>
+              <div className="flex items-center gap-1.5">
+                <h4 className="text-xs font-black text-slate-900 dark:text-white tracking-tight">
+                  Generated Visual Assets
+                </h4>
+                <div className="flex items-center gap-1 ml-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                </div>
+              </div>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                 {assets.length} studio-grade prompt assets created
               </p>

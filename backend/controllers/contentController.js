@@ -168,6 +168,7 @@ Return a JSON object with this exact structure:
         aspect
       });
       postData.imageUrl = visualRes.imageUrl;
+      postData.logoUrl = visualRes.logoUrl;
       postData.gcsPath = visualRes.gcsPath;
       postData.imagePrompt = visualRes.imagePrompt;
       postData.imageStyle = visualRes.imageStyle || 'Photorealistic Commercial';

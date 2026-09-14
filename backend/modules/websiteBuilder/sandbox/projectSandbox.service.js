@@ -98,6 +98,7 @@ class ProjectSandboxService {
       buildStatus: 'PENDING',
       port: null,
       url: null,
+      previewUrl: `/api/website-builder/projects/${projectId}/preview/index.html`,
       processId: null,
       childProcess: null,
       startedAt: null,

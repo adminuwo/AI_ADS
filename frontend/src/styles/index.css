@@ -17,6 +17,32 @@
   --brand-400-rgb: 168, 130, 255;
   --brand-300-rgb: 179, 136, 255;
   --brand-700-rgb: 86, 70, 199;
+
+  /* 🌿 Panch Tattva (Five Elements) Indian Philosophy Color Palette */
+  --tattva-prithvi: #F59E0B; /* Earth: Yellow - Stability, Grounding & Fertility */
+  --tattva-jal: #3B82F6;     /* Water: Blue/Silver - Flow, Adaptability & Purity */
+  --tattva-agni: #EF4444;    /* Fire: Red - Energy, Transformation & Power */
+  --tattva-vayu: #10B981;    /* Air: Green/Grey - Movement, Growth & Freshness */
+  --tattva-akash: #8B5CF6;   /* Space/Ether: Gold/Violet/White - Vastness & Consciousness */
+}
+
+/* 🎨 Panch Tattva Rang Biranga Animated Ribbon Bar */
+.panch-tattva-ribbon {
+  background: linear-gradient(90deg, 
+    #F59E0B 0%,   /* Prithvi (Yellow) */
+    #3B82F6 25%,  /* Jal (Blue) */
+    #EF4444 50%,  /* Agni (Red) */
+    #10B981 75%,  /* Vayu (Green) */
+    #8B5CF6 100%  /* Akash (Ether/Violet) */
+  );
+  background-size: 200% 200%;
+  animation: tattvaFlow 8s ease infinite;
+}
+
+@keyframes tattvaFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 @layer base {
@@ -73,46 +99,46 @@
 }
 
 .btn-primary {
-  background-image: linear-gradient(135deg, var(--brand-from, #6B5AED), var(--brand-to, #7B61FF)) !important;
+  background-image: linear-gradient(135deg, #EF4444 0%, #F59E0B 30%, #10B981 60%, #3B82F6 85%, #8B5CF6 100%) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 24px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)), inset 0 1px 1px rgba(255, 255, 255, 0.3);
-  @apply font-bold px-5 py-2.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 text-sm tracking-wide cursor-pointer;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 24px -4px rgba(239, 68, 68, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  @apply font-bold px-5 py-2.5 rounded-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 text-sm tracking-wide cursor-pointer;
 }
 
 .btn-primary:hover {
-  background-image: linear-gradient(135deg, var(--brand-to, #7B61FF), var(--brand-400, #A882FF)) !important;
-  box-shadow: 0 12px 28px -4px var(--brand-glow, rgba(123, 97, 255, 0.6)), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  background-image: linear-gradient(135deg, #F59E0B 0%, #10B981 30%, #3B82F6 60%, #8B5CF6 85%, #EF4444 100%) !important;
+  box-shadow: 0 12px 28px -4px rgba(59, 130, 246, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.5);
 }
 
 .btn-save {
-  background-image: linear-gradient(135deg, var(--brand-from, #6B5AED), var(--brand-to, #7B61FF)) !important;
+  background-image: linear-gradient(135deg, #EF4444, #F59E0B, #10B981, #3B82F6) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 22px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 22px -4px rgba(16, 185, 129, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
   @apply font-bold px-4 py-2 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-1.5 text-xs cursor-pointer;
 }
 
 .btn-save:hover {
-  background-image: linear-gradient(135deg, var(--brand-to, #7B61FF), var(--brand-400, #A882FF)) !important;
-  box-shadow: 0 10px 26px -4px var(--brand-glow, rgba(123, 97, 255, 0.6)), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  background-image: linear-gradient(135deg, #3B82F6, #8B5CF6, #EF4444, #F59E0B) !important;
+  box-shadow: 0 10px 26px -4px rgba(139, 92, 246, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .btn-secondary {
-  background: rgba(30, 41, 59, 0.7);
+  background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);
-  color: #e2e8f0;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  @apply font-semibold px-4 py-2 rounded-xl transition-all duration-200 hover:bg-slate-800 hover:text-white hover:border-slate-500 active:scale-95 flex items-center justify-center gap-2 text-sm cursor-pointer;
+  color: #f8fafc;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  @apply font-semibold px-4 py-2 rounded-xl transition-all duration-200 hover:bg-slate-800 hover:text-white hover:border-amber-400 active:scale-95 flex items-center justify-center gap-2 text-sm cursor-pointer;
 }
 
 .light .btn-secondary {
   background: #ffffff;
-  color: #334155;
-  border: 1px solid rgba(0, 0, 0, 0.03);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
-  @apply hover:bg-slate-50 hover:text-slate-900 hover:shadow transition-all;
+  color: #1e293b;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+  @apply hover:bg-slate-50 hover:text-slate-900 hover:border-blue-500 hover:shadow transition-all;
 }
 
 /* Custom Scrollbar */
@@ -134,16 +160,23 @@
   background: rgba(148, 163, 184, 0.4);
 }
 
-/* AISA Cinematic Neural Radial Background */
+/* AISA Cinematic Neural & Panch Tattva Multi-Color Radial Background */
 .aisa-dashboard-bg {
-  background: radial-gradient(ellipse at 15% 20%, rgba(123,97,255,0.12) 0%, transparent 55%),
-              radial-gradient(ellipse at 85% 80%, rgba(59,130,246,0.10) 0%, transparent 55%),
-              radial-gradient(ellipse at 50% 50%, rgba(245,158,11,0.03) 0%, transparent 70%),
+  background: radial-gradient(ellipse at 10% 15%, rgba(245, 158, 11, 0.08) 0%, transparent 45%), /* Prithvi: Yellow */
+              radial-gradient(ellipse at 85% 20%, rgba(59, 130, 246, 0.09) 0%, transparent 45%), /* Jal: Blue */
+              radial-gradient(ellipse at 80% 85%, rgba(239, 68, 68, 0.07) 0%, transparent 45%),  /* Agni: Red */
+              radial-gradient(ellipse at 15% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 45%), /* Vayu: Green */
+              radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.07) 0%, transparent 55%), /* Akash: Ether */
               linear-gradient(160deg, #060913 0%, #090e24 50%, #060a1b 100%);
 }
 
 .light .aisa-dashboard-bg {
-  background: #ffffff !important;
+  background: radial-gradient(ellipse at 10% 15%, rgba(254, 240, 138, 0.35) 0%, transparent 45%),
+              radial-gradient(ellipse at 85% 20%, rgba(219, 234, 254, 0.40) 0%, transparent 45%),
+              radial-gradient(ellipse at 80% 85%, rgba(254, 226, 226, 0.35) 0%, transparent 45%),
+              radial-gradient(ellipse at 15% 80%, rgba(209, 250, 229, 0.35) 0%, transparent 45%),
+              radial-gradient(ellipse at 50% 50%, rgba(237, 233, 254, 0.30) 0%, transparent 55%),
+              #F8FAFC !important;
 }
 
 /* Sidebar Dark AISA Gradient */

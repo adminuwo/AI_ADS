@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../../config/api';
 import {
   Monitor, Tablet, Smartphone, CheckCircle2, XCircle, ShieldCheck,
   Sparkles, Loader2, ArrowRight, RefreshCw, Send, PhoneCall, ExternalLink,
@@ -74,7 +75,20 @@ const WebsitePreviewContent = ({ website, blueprint, phaseState, progressStep, e
   const [activePageIndex, setActivePageIndex] = useState(0);
 
   const runtime = website?.runtime || null;
-  const isRuntimeRunning = runtime && runtime.status === 'RUNNING' && runtime.url;
+  const projectId = website?.projectId || website?.id || blueprint?.projectId;
+  const isProductionHost = typeof window !== 'undefined' &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1';
+
+  let effectivePreviewUrl = runtime?.previewUrl
+    ? `${API_BASE.replace(/\/api$/, '')}${runtime.previewUrl}`
+    : runtime?.url;
+
+  if (projectId && (isProductionHost || !runtime?.url || runtime?.url?.includes('127.0.0.1'))) {
+    effectivePreviewUrl = `${API_BASE}/website-builder/projects/${projectId}/preview/index.html`;
+  }
+
+  const isRuntimeRunning = (runtime && runtime.status === 'RUNNING') || Boolean(effectivePreviewUrl);
 
   const [viewMode, setViewMode] = useState(isRuntimeRunning ? 'live_sandbox' : 'model_preview');
 
@@ -283,14 +297,14 @@ const WebsitePreviewContent = ({ website, blueprint, phaseState, progressStep, e
               </div>
               <div className="bg-slate-950 px-3 py-1 rounded-lg text-[10px] font-mono text-slate-400 border border-slate-800/80 flex items-center gap-1.5">
                 <span className="text-emerald-400 font-bold">● LIVE</span>
-                <span className="text-slate-200 font-semibold">{runtime?.url || 'http://127.0.0.1:4112'}</span>
+                <span className="text-slate-200 font-semibold">{effectivePreviewUrl || runtime?.url || 'http://127.0.0.1:4112'}</span>
               </div>
             </div>
             
             <div className="flex items-center gap-3">
-              {runtime?.url && (
+              {effectivePreviewUrl && (
                 <a
-                  href={runtime.url}
+                  href={effectivePreviewUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 transition-all hover:bg-emerald-500/20"
@@ -302,11 +316,11 @@ const WebsitePreviewContent = ({ website, blueprint, phaseState, progressStep, e
             </div>
           </div>
 
-          {runtime?.url ? (
+          {effectivePreviewUrl ? (
             <div className="w-full bg-slate-950 relative min-h-[750px] flex flex-col">
               <iframe
-                key={runtime.url}
-                src={runtime.url}
+                key={effectivePreviewUrl}
+                src={effectivePreviewUrl}
                 title="Live Application"
                 className="w-full flex-1 border-none min-h-[750px] bg-white dark:bg-slate-950"
                 style={{ width: '100%', height: '750px', display: 'block' }}

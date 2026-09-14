@@ -501,24 +501,25 @@ Return ONLY a raw valid JSON object with NO markdown:
     throw new Error('Google Cloud Vertex / Gemini client is not configured for search grounding');
   }
 
-  try {
-    gRes = await client.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: { tools: [{ googleSearch: {} }] }
-    });
-  } catch (e1) {
-    console.warn('[SCRAPER-GOOGLE-GROUNDING] gemini-2.5-flash failed, trying gemini-2.0-flash:', e1.message);
+  const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash-002', 'gemini-3.5-flash'];
+  for (const modelName of candidateModels) {
     try {
       gRes = await client.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: modelName,
         contents: prompt,
         config: { tools: [{ googleSearch: {} }] }
       });
-    } catch (e2) {
-      console.warn('[SCRAPER-GOOGLE-GROUNDING] Grounding call failed:', e2.message);
-      throw e2;
+      if (gRes?.text) {
+        console.log(`✅ [SCRAPER-GOOGLE-GROUNDING] Grounding search successful using model: "${modelName}"`);
+        break;
+      }
+    } catch (e1) {
+      console.warn(`[SCRAPER-GOOGLE-GROUNDING] Model "${modelName}" failed:`, e1.message);
     }
+  }
+
+  if (!gRes) {
+    console.warn('[SCRAPER-GOOGLE-GROUNDING] All Grounding search models failed.');
   }
 
   const rawText = gRes?.text || '';

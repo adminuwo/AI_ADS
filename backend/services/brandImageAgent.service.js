@@ -27,9 +27,14 @@ function inferBrandColors(brandName = '', companyDesc = '') {
  * Ad Visual Prompt Engineering Agent
  * Creates commercial photography prompts deeply aligned with Brand DNA.
  */
+/**
+ * Ad Visual Prompt Engineering Agent
+ * Analyzes topic deeply and creates commercial photography prompts aligned with Brand DNA and Logo Integration.
+ */
 function craftBrandAdPrompt({
   brandName = 'Brand',
-  industry = 'Technology',
+  logoUrl = '',
+  industry = '',
   tagline = '',
   companyDescription = '',
   brandColors = [],
@@ -37,56 +42,64 @@ function craftBrandAdPrompt({
   postType = 'image',
   platform = 'instagram',
   style = 'Photorealistic Commercial',
-  aspect = '1:1'
+  aspect = '1:1',
+  seed
 }) {
   const colorsList = brandColors && brandColors.length > 0 ? brandColors.join(', ') : inferBrandColors(brandName, companyDescription).join(', ');
   const cleanBrand = brandName.trim();
+  const cleanLogoUrl = logoUrl ? logoUrl.trim() : '';
+
+  // ─── 1. DEEP TOPIC ANALYSIS ───────────────────────────────────────────────
+  const rawTopic = (topic || 'Commercial Brand Campaign').trim();
+  const topicLower = rawTopic.toLowerCase();
+  const textContext = `${cleanBrand} ${industry} ${companyDescription} ${rawTopic}`.toLowerCase();
 
   let sceneDetails = '';
-  const textContext = `${cleanBrand} ${industry} ${companyDescription} ${topic}`.toLowerCase();
-
-  // Strategy Sub-Topic Intent Detection (Evaluated ONLY on topic & action prompt, not company description)
-  const topicText = `${topic} ${companyDescription && companyDescription.length < 50 ? companyDescription : ''}`.toLowerCase();
-
-  const isOfferSale = /offer|discount|deal|countdown|sale|special|coupon|promo|limited|exclusive/i.test(topicText);
-  const isFamilyPhoto = /family photo|vintage family|family picture|family portrait|ancestor|grandma|grandfather|family member|origin story/i.test(topicText);
-  const isBehindTheScenes = /behind the scenes|maker|craft|kitchen|bottling|factory|team|production|making|handcrafted|floor|unboxing/i.test(topicText);
-  const isIngredientFarm = /ingredient|farm|harvest|chili|datil|fresh tomatoes|field|grow|farmer/i.test(topicText);
-  const isRecipeDish = /recipe|dish|plate|meal|wing|burger|pairing|cooking|culinary|brunch|chef/i.test(topicText);
-  const isProductBottle = /bottle|packaging|product|shelf|label|display|introduction/i.test(topicText);
+  const isOfferSale = /offer|discount|deal|countdown|sale|special|coupon|promo|limited|exclusive/i.test(topicLower);
+  const isFamilyPhoto = /family photo|vintage family|family picture|family portrait|ancestor|grandma|grandfather|family member|origin story/i.test(topicLower);
+  const isBehindTheScenes = /behind the scenes|maker|craft|kitchen|bottling|factory|team|production|making|handcrafted|floor|unboxing/i.test(topicLower);
+  const isIngredientFarm = /ingredient|farm|harvest|chili|datil|fresh tomatoes|field|grow|farmer|organic/i.test(topicLower);
+  const isRecipeDish = /recipe|dish|plate|meal|wing|burger|pairing|cooking|culinary|brunch|chef|taste/i.test(topicLower);
+  const isProductHero = /bottle|packaging|product|shelf|label|display|introduction|launch|collection/i.test(topicLower);
   const isHeritageOrigin = /heritage|origin|history|throwback|family recipe|30-year|traditional/i.test(textContext);
-  const isTestimonialChallenge = /testimonial|customer|challenge|fan|community|patio|friends|lifestyle|review|appreciation/i.test(topicText);
-  const isFoodTourLocal = /food tour|st\. augustine|exploring|local spots|community|partnership|local love/i.test(topicText);
+  const isTestimonial = /testimonial|customer|review|challenge|fan|community|patio|friends|lifestyle|story/i.test(topicLower);
+  const isFoodTourLocal = /food tour|st\. augustine|exploring|local spots|community|partnership|local love/i.test(topicLower);
+  const isTechSaas = /saas|software|app|ai|platform|analytics|dashboard|tech|digital|automation|cloud/i.test(textContext);
+  const isFashionApparel = /fashion|apparel|clothing|wear|style|boutique|outfit|footwear|sneaker/i.test(textContext);
+  const isHealthWellness = /health|fitness|wellness|workout|gym|clinic|care|skin|beauty/i.test(textContext);
 
   if (isOfferSale) {
-    sceneDetails = `High-impact commercial promotional offer display for ${cleanBrand}, sleek announcement banner, luxury presentation, vibrant brand colors (${colorsList}), polished studio commercial advertising photography`;
+    sceneDetails = `High-impact commercial promotional offer display for ${cleanBrand} focusing on "${rawTopic}", sleek announcement presentation, brand color accents (${colorsList}), polished studio commercial advertising photography`;
   } else if (isFamilyPhoto) {
-    sceneDetails = `Authentic warm family photo portrait for ${cleanBrand}, sepia-toned film photography, emotional storytelling and heritage connection, 35mm film commercial visual`;
+    sceneDetails = `Authentic warm family photo portrait for ${cleanBrand} illustrating "${rawTopic}", sepia-toned film photography, emotional storytelling and heritage connection, 35mm film commercial visual`;
   } else if (isBehindTheScenes) {
-    sceneDetails = `Authentic behind-the-scenes craft production for ${cleanBrand}, small-batch artisanal team in clean modern workspace, authentic craftsmanship commercial photography`;
+    sceneDetails = `Authentic behind-the-scenes craft production for ${cleanBrand} highlighting "${rawTopic}", small-batch artisanal team in modern workspace, authentic craftsmanship photography`;
   } else if (isIngredientFarm) {
-    sceneDetails = `Vibrant close-up macro photography of fresh natural ingredients and raw materials for ${cleanBrand}, rustic wooden surface with morning dew drops, farm-to-table natural lighting`;
-  } else if (isProductBottle) {
-    sceneDetails = `Sleek product hero presentation for ${cleanBrand}, prominently displayed on an elegant tabletop with brand color accents (${colorsList}), commercial product advertising shot`;
+    sceneDetails = `Vibrant close-up macro photography of fresh natural ingredients focusing on "${rawTopic}" for ${cleanBrand}, rustic wooden surface with morning dew drops, farm-to-table natural lighting`;
+  } else if (isProductHero) {
+    sceneDetails = `Sleek product hero presentation for ${cleanBrand} highlighting "${rawTopic}", prominently displayed on an elegant reflective tabletop with brand color accents (${colorsList}), commercial product advertising shot`;
   } else if (isFoodTourLocal) {
-    sceneDetails = `Sunlit historic street scene with outdoor cafe dining patio featuring ${cleanBrand}, warm travel lifestyle photography`;
+    sceneDetails = `Sunlit historic street scene with outdoor dining patio featuring ${cleanBrand} for "${rawTopic}", warm travel lifestyle photography`;
   } else if (isRecipeDish) {
-    sceneDetails = `Mouth-watering gourmet dish presentation for ${cleanBrand}, highlighting ${topic}, rich aroma steam, warm bistro lighting, macro food photography`;
+    sceneDetails = `Mouth-watering gourmet dish presentation for ${cleanBrand} showcasing "${rawTopic}", rich aroma steam, warm bistro lighting, macro food photography`;
   } else if (isHeritageOrigin) {
-    sceneDetails = `Nostalgic vintage editorial scene celebrating ${cleanBrand}'s heritage and origin story, warm morning sunbeams, editorial commercial photography`;
-  } else if (isTestimonialChallenge) {
-    sceneDetails = `High-energy outdoor lifestyle scene with satisfied customers and community enjoying ${cleanBrand}, golden hour natural light, vibrant social ad visual`;
-  } else if (textContext.includes('food') || textContext.includes('dining') || textContext.includes('restaurant') || textContext.includes('cafe')) {
-    sceneDetails = `Mouth-watering gourmet culinary presentation for ${cleanBrand}, highlighting ${topic}, elegant plating setup, fresh organic ingredients, warm bistro lighting, macro food photography`;
-  } else if (textContext.includes('saas') || textContext.includes('software') || textContext.includes('analytics') || textContext.includes('app') || textContext.includes('tech')) {
-    sceneDetails = `Clean modern glass tech headquarters for ${cleanBrand}, highlighting ${topic}, sleek minimalist desk with high-tech workspace environment, soft studio lighting, executive aesthetic`;
-  } else if (textContext.includes('fashion') || textContext.includes('apparel') || textContext.includes('clothing')) {
-    sceneDetails = `High-end fashion editorial scene for ${cleanBrand}, highlighting ${topic}, sunlit studio setting, elegant apparel display, Vogue editorial photography`;
+    sceneDetails = `Nostalgic vintage editorial scene celebrating ${cleanBrand}'s heritage and origin story around "${rawTopic}", warm morning sunbeams, editorial commercial photography`;
+  } else if (isTestimonial) {
+    sceneDetails = `High-energy outdoor lifestyle scene with satisfied customers enjoying ${cleanBrand} ("${rawTopic}"), golden hour natural light, vibrant social ad visual`;
+  } else if (isTechSaas) {
+    sceneDetails = `Clean modern glass tech headquarters for ${cleanBrand} illustrating "${rawTopic}", sleek minimalist desk with high-tech workspace environment, soft studio lighting, executive aesthetic`;
+  } else if (isFashionApparel) {
+    sceneDetails = `High-end fashion editorial scene for ${cleanBrand} showcasing "${rawTopic}", sunlit studio setting, elegant apparel display, Vogue editorial photography`;
+  } else if (isHealthWellness) {
+    sceneDetails = `Clean refreshing wellness lifestyle visual for ${cleanBrand} illustrating "${rawTopic}", bright serene daylight, natural botanical elements, high-end healthcare visual`;
   } else {
-    sceneDetails = `Commercial advertising studio setup for ${cleanBrand}, highlighting ${topic}, modern architectural interior, brand colors (${colorsList}), subtle ambient lighting, pristine focus, premium commercial ad aesthetic`;
+    sceneDetails = `Commercial advertising studio setup for ${cleanBrand} deeply analyzing "${rawTopic}", modern architectural interior, brand colors (${colorsList}), subtle ambient lighting, pristine focus, premium commercial ad aesthetic`;
   }
 
-  // Style Modifiers
+  // ─── 2. BRAND LOGO INTEGRATION DIRECTIVE ─────────────────────────────────
+  const logoDirective = `with the official logo mark and brand name for "${cleanBrand}" naturally integrated directly inside the image scene architecture (such as an elegant illuminated wall sign, background neon brand emblem, polished office desk plaque, subtle product packaging mark, or engraved environmental branding), appearing completely native and seamless as part of the photograph`;
+
+  // ─── 3. STYLE MODIFIERS ───────────────────────────────────────────────────
   let styleDirective = 'commercial advertising photography, 8k resolution, photorealistic, professional studio lighting, Hasselblad H6D-100c, masterwork';
   if (style === 'Glassmorphic Modern 3D') {
     styleDirective = '3D glassmorphic octane render, frosted acrylic glass elements, glowing neon illumination, cinematic depth, Behance trending 3D commercial art';
@@ -100,7 +113,6 @@ function craftBrandAdPrompt({
     styleDirective = 'ultra-luxury dark studio editorial, rich obsidian textures, polished metallic reflections, subtle gold accents, high-end commercial ad';
   }
 
-  // Random perspective rotation for fresh regenerated variations on every click
   const seedNum = typeof seed === 'number' ? seed : Math.floor(Math.random() * 1000000);
   const angles = [
     'hero product perspective with dramatic studio lighting',
@@ -111,18 +123,19 @@ function craftBrandAdPrompt({
   ];
   const selectedAngle = angles[seedNum % angles.length];
 
-  // Clean image directive to ensure AI generators produce clean commercial visual shots without drawing fake mangled text or artificial logos into the image
-  const cleanImageDirective = 'clean commercial photography, no rendered text, no fake logos, no artificial typography, no watermarks';
+  const cleanImageDirective = 'clean commercial photography, crisp focus, no distorted text, no mangled typography, professional advertising finish';
 
-  const finalPrompt = `${sceneDetails}, ${selectedAngle}, authentic brand essence of ${cleanBrand} ("${tagline || topic}"), brand color harmony (${colorsList}), ${styleDirective}, ${cleanImageDirective}`;
+  const finalPrompt = `${sceneDetails}, ${selectedAngle}, deep topic alignment: "${rawTopic}", authentic brand identity of ${cleanBrand} ("${tagline || rawTopic}"), brand color harmony (${colorsList}), ${logoDirective}, ${styleDirective}, ${cleanImageDirective}`;
   return finalPrompt;
 }
 
 /**
  * Generate Brand Vector / 3D Canvas Graphic (Tier 3 Zero-Latency Synthesizer)
+ * Integrates real brand logo image dynamically.
  */
 function generateBrand3DSvg({
   brandName = 'Brand',
+  logoUrl = '',
   brandColors = [],
   topic = 'Marketing Campaign',
   style = 'Glassmorphic Modern 3D',
@@ -142,6 +155,7 @@ function generateBrand3DSvg({
   const height = is169 ? 720 : is916 ? 1280 : is45 ? 1350 : 1080;
 
   const displayTopic = topic.length > 48 ? topic.slice(0, 45) + '...' : topic;
+  const cleanLogoUrl = logoUrl ? logoUrl.trim() : '';
 
   const svg = `
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
@@ -175,12 +189,17 @@ function generateBrand3DSvg({
     <circle cx="${width * 0.25}" cy="${height * 0.25}" r="${width * 0.35}" fill="${primaryColor}" opacity="0.25" filter="url(#glow)"/>
     <circle cx="${width * 0.8}" cy="${height * 0.75}" r="${width * 0.35}" fill="${accentColor}" opacity="0.2" filter="url(#glow)"/>
 
-    <!-- Brand Header Pill -->
+    <!-- Brand Header Pill with Integrated Logo -->
     <g transform="translate(${width * 0.08}, ${height * 0.08})">
-      <rect width="240" height="48" rx="24" fill="rgba(255,255,255,0.08)" stroke="url(#glassBorder)" stroke-width="1.5"/>
-      <circle cx="28" cy="24" r="11" fill="${primaryColor}"/>
+      <rect width="${cleanLogoUrl ? 280 : 240}" height="48" rx="24" fill="rgba(255,255,255,0.1)" stroke="url(#glassBorder)" stroke-width="1.5"/>
+      ${cleanLogoUrl ? `
+        <circle cx="28" cy="24" r="14" fill="#FFFFFF"/>
+        <image href="${cleanLogoUrl}" x="14" y="10" width="28" height="28" preserveAspectRatio="xMidYMid meet"/>
+      ` : `<circle cx="28" cy="24" r="11" fill="${primaryColor}"/>`}
       <text x="50" y="30" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="14" font-weight="900" letter-spacing="2">${bName.toUpperCase()}</text>
     </g>
+
+
 
     <g transform="translate(${width * 0.62}, ${height * 0.08})">
       <rect width="210" height="48" rx="24" fill="rgba(255,255,255,0.06)" stroke="${primaryColor}" stroke-width="1.5"/>
@@ -281,6 +300,8 @@ async function generateBrandAdImage(params = {}) {
 async function _executeBrandAdImageGeneration({
   workspaceId,
   brandName,
+  logoUrl,
+  brandLogo,
   brandColors,
   industry,
   tagline,
@@ -294,12 +315,14 @@ async function _executeBrandAdImageGeneration({
   aspect = '1:1',
   seed
 }) {
-  // 1. Resolve full Brand DNA context (from DB if workspaceId provided)
+  // 1. Resolve full Brand DNA context & Brand Logo (from DB if workspaceId provided)
   let resolvedBrandName = brandName;
   let resolvedColors = brandColors;
   let resolvedIndustry = industry;
   let resolvedTagline = tagline;
   let resolvedDescription = companyDescription;
+  let resolvedLogoUrl = logoUrl || brandLogo || '';
+  let domainUrl = '';
 
   if (workspaceId) {
     try {
@@ -309,12 +332,15 @@ async function _executeBrandAdImageGeneration({
         resolvedColors = (resolvedColors && resolvedColors.length > 0) ? resolvedColors : ws.brandColors;
         resolvedIndustry = resolvedIndustry || ws.industryCategory || ws.niche;
         resolvedDescription = resolvedDescription || ws.metaDescription || ws.positioningSummary;
+        resolvedLogoUrl = resolvedLogoUrl || ws.logoUrl || ws.logo;
+        domainUrl = ws.domainUrl || ws.website || '';
       }
       const bp = await BrandProfile.findOne({ workspaceId });
       if (bp) {
         resolvedTagline = resolvedTagline || bp.tagline;
         resolvedIndustry = resolvedIndustry || bp.industry;
         resolvedDescription = resolvedDescription || bp.companyDescription;
+        resolvedLogoUrl = resolvedLogoUrl || bp.logoUrl || bp.logo;
       }
     } catch (e) {
       console.warn('[BrandImageAgent] DB context load note:', e.message);
@@ -324,9 +350,19 @@ async function _executeBrandAdImageGeneration({
   resolvedBrandName = resolvedBrandName || 'Brand';
   resolvedColors = (resolvedColors && resolvedColors.length > 0) ? resolvedColors : inferBrandColors(resolvedBrandName, resolvedDescription);
 
-  // 2. Ad Visual Prompt Engineering
+  if (!resolvedLogoUrl && (domainUrl || resolvedBrandName)) {
+    const cleanDomain = (domainUrl || resolvedBrandName).replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0].split('?')[0].trim();
+    if (cleanDomain && cleanDomain.includes('.')) {
+      resolvedLogoUrl = `https://logo.clearbit.com/${cleanDomain}`;
+    } else if (resolvedBrandName && resolvedBrandName !== 'Brand') {
+      resolvedLogoUrl = `https://www.google.com/s2/favicons?domain=${resolvedBrandName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=128`;
+    }
+  }
+
+  // 2. Deep Topic Analysis & Ad Visual Prompt Engineering with Brand Logo Integration
   const imagePrompt = (prompt || customPrompt) ? (prompt || customPrompt).trim() : craftBrandAdPrompt({
     brandName: resolvedBrandName,
+    logoUrl: resolvedLogoUrl,
     industry: resolvedIndustry,
     tagline: resolvedTagline,
     companyDescription: resolvedDescription,
@@ -335,7 +371,8 @@ async function _executeBrandAdImageGeneration({
     postType,
     platform,
     style,
-    aspect
+    aspect,
+    seed
   });
 
   const generatedSeed = seed || Math.floor(Math.random() * 1000000);
@@ -358,7 +395,7 @@ async function _executeBrandAdImageGeneration({
         console.log('\n==================================================');
         console.log(`🎨 [GENERATED VISUAL IMAGE PROMPT] (${modelName})`);
         console.log('==================================================');
-        console.log(`Brand: "${resolvedBrandName}" | Aspect: ${targetAspect}`);
+        console.log(`Brand: "${resolvedBrandName}" | Logo: ${resolvedLogoUrl ? 'YES' : 'NONE'} | Aspect: ${targetAspect}`);
         console.log(`Prompt: "${imagePrompt}"`);
         console.log('==================================================\n');
 
@@ -405,7 +442,7 @@ async function _executeBrandAdImageGeneration({
     }
   }
 
-  // Tier 2: Curated Brand Studio Visual Resolution (Zero Pollination - High Resolution Commercial Photography)
+  // Tier 2: Curated Brand Studio Visual Resolution
   if (!imageUrl) {
     const { resolveBrandVisualAsset } = require('./brandVisualResolver');
     imageUrl = resolveBrandVisualAsset({
@@ -422,6 +459,7 @@ async function _executeBrandAdImageGeneration({
   return {
     success: true,
     imageUrl,
+    logoUrl: resolvedLogoUrl,
     gcsPath,
     imagePrompt,
     imageStyle: style,
@@ -431,6 +469,7 @@ async function _executeBrandAdImageGeneration({
     engine: engineUsed,
     svgFallback: generateBrand3DSvg({
       brandName: resolvedBrandName,
+      logoUrl: resolvedLogoUrl,
       brandColors: resolvedColors,
       topic,
       style,

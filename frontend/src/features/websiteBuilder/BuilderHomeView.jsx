@@ -136,9 +136,18 @@ export const BuilderHomeView = ({
     <div className="max-w-5xl mx-auto py-10 px-4 md:px-8 space-y-10 animate-in fade-in">
       {/* ── HERO HEADER & COMPOSER ── */}
       <div className="text-center space-y-3 max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 font-extrabold text-xs">
-          <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
-          <span>AI ADS™ Application Studio</span>
+        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/90 dark:bg-slate-950/90 border border-slate-700/60 text-white font-extrabold text-xs shadow-lg">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-amber-500 ring-2 ring-amber-500/20" />
+            <span className="w-2 h-2 rounded-full bg-blue-500 ring-2 ring-blue-500/20" />
+            <span className="w-2 h-2 rounded-full bg-red-500 ring-2 ring-red-500/20" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20" />
+            <span className="w-2 h-2 rounded-full bg-purple-500 ring-2 ring-purple-500/20" />
+          </span>
+          <span className="bg-gradient-to-r from-amber-400 via-rose-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent font-black">
+            AI ADS™ Application Studio
+          </span>
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
         </div>
 
         <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">

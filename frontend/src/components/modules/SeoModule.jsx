@@ -93,7 +93,7 @@ export const SeoModule = () => {
 
           <div>
             <label className="block text-xs font-bold text-slate-300 mb-1">Seed Keyword</label>
-            <input 
+            <input
               type="text"
               value={seedKeyword}
               onChange={(e) => setSeedKeyword(e.target.value)}
@@ -103,7 +103,7 @@ export const SeoModule = () => {
 
           <div>
             <label className="block text-xs font-bold text-slate-300 mb-1">Search Intent</label>
-            <select 
+            <select
               value={intent}
               onChange={(e) => setIntent(e.target.value)}
               className="w-full glass-input text-xs"
@@ -152,7 +152,7 @@ export const SeoModule = () => {
               Structured 8-Step SEO Brief Output
             </h2>
             {brief && (
-              <button 
+              <button
                 onClick={() => setActiveModule('studio')}
                 className="btn-primary text-xs py-1.5 px-3"
               >

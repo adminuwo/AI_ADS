@@ -551,7 +551,7 @@ app.get('/api/download-image', async (req, res) => {
   try {
     const imageUrl = req.query.url;
     let fileName = req.query.filename || `ai_ads_visual_${Date.now()}.jpg`;
-    
+
     // Sanitize filename to ASCII for Content-Disposition header compliance
     const safeFileName = fileName
       .replace(/[^\x20-\x7E]/g, '') // remove non-ASCII characters like ™, ®, ©
@@ -1695,6 +1695,7 @@ app.post('/api/creative/visual/generate', async (req, res) => {
       prompt,
       customPrompt: prompt,
       brandName: brandName || brand || 'Brand',
+      logoUrl: req.body.logoUrl || req.body.brandLogo || req.body.logo,
       brandColors,
       industry,
       tagline,
@@ -1714,6 +1715,7 @@ app.post('/api/creative/visual/generate', async (req, res) => {
       remainingCredits: deduction.newBalance,
       asset: {
         imageUrl: visualRes.imageUrl,
+        logoUrl: visualRes.logoUrl,
         gcsPath: visualRes.gcsPath,
         imagePrompt: visualRes.imagePrompt,
         brand: visualRes.brandName,

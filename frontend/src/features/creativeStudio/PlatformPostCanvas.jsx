@@ -756,15 +756,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
               <div className="aspect-square relative bg-slate-900 overflow-hidden">
                 <img src={slide.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80"} alt={"Slide "+(activeSlide+1)} className="w-full h-full object-cover opacity-70" />
                 
-                {/* Official Brand Logo Watermark Overlay */}
-                <div className="absolute top-3 left-3 z-10 flex items-center px-3 py-1.5 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-lg">
-                  <img 
-                    src={getBrandLogoUrl({ brandName: brand, domainUrl: workspace?.domainUrl, logoUrl: workspace?.logoUrl, faviconUrl: workspace?.faviconUrl })} 
-                    alt={brand} 
-                    className="h-6 w-auto max-w-[120px] object-contain" 
-                    onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${brand.toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }}
-                  />
-                </div>
+
 
                 <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-[9px] font-black">{activeSlide+1} / {carouselSlides.length}</div>
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-5 space-y-2">
@@ -874,15 +866,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
               <div className="aspect-video relative overflow-hidden">
                 <img src={visualUrl} alt={topic} className="w-full h-full object-cover" />
                 
-                {/* Official Brand Logo Watermark Overlay */}
-                <div className="absolute top-4 left-4 z-10 flex items-center px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-xl">
-                  <img 
-                    src={getBrandLogoUrl({ brandName: brand, domainUrl: workspace?.domainUrl, logoUrl: workspace?.logoUrl, faviconUrl: workspace?.faviconUrl })} 
-                    alt={brand} 
-                    className="h-7 sm:h-8 w-auto max-w-[140px] object-contain" 
-                    onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${brand.toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }}
-                  />
-                </div>
+
 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 to-transparent flex items-end p-6">
                   <div className="space-y-1">
@@ -1037,15 +1021,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
             <span>Click to View Full Resolution Image</span>
           </div>
 
-          {/* Official Brand Logo Watermark Overlay (Top Left Corner) */}
-          <div className="absolute top-4 left-4 z-10 flex items-center px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-950/85 backdrop-blur-md border border-white/40 dark:border-slate-800 shadow-xl">
-            <img 
-              src={getBrandLogoUrl({ brandName: brand, domainUrl: workspace?.domainUrl, logoUrl: workspace?.logoUrl, faviconUrl: workspace?.faviconUrl })} 
-              alt={brand} 
-              className="h-7 sm:h-8 w-auto max-w-[140px] object-contain" 
-              onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${brand.toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }}
-            />
-          </div>
+
 
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent flex flex-col sm:flex-row justify-between sm:items-end gap-2 z-10">
             <div className="space-y-0.5">
