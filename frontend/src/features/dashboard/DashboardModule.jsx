@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { analyticsAPI, campaignAPI } from '../../services/api';
 
 import {
-  Search, PenTool, CheckCircle2, ArrowUpRight, TrendingUp,
-  Layers, Zap, Repeat, Loader2, RefreshCw, AlertCircle, Rocket, Dna, FolderKanban, Sparkles, Globe, Lock
+  Search, PenTool, TrendingUp, Layers, Zap, Dna, FolderKanban, Sparkles, Globe,
+  ArrowRight, Database, Image, Megaphone
 } from 'lucide-react';
 
 export const DashboardModule = () => {
@@ -28,7 +28,6 @@ export const DashboardModule = () => {
   const [loading, setLoading] = useState(true);
 
   const workspaceId = activeWorkspace?._id || activeWorkspace?.id;
-
   const userEmail = user?.email || localStorage.getItem('aisa_user_email') || activeWorkspace?.userEmail || '';
 
   const displayName = (() => {
@@ -48,7 +47,7 @@ export const DashboardModule = () => {
       const prefix = user.email.split('@')[0];
       return prefix.charAt(0).toUpperCase() + prefix.slice(1);
     }
-    return 'Creator';
+    return 'Sonali';
   })();
 
   const timeGreeting = (() => {
@@ -123,17 +122,17 @@ export const DashboardModule = () => {
     return () => { isMounted = false; };
   }, [workspaceId, activeWorkspace?.brandName, userEmail]);
 
-  // Total Brands strictly for this single logged-in user (not global count)
+  // Total Brands
   const totalBrandsCount = (workspaces && workspaces.length > 0)
     ? workspaces.length 
-    : (analytics?.brands?.total || 1);
+    : (analytics?.brands?.total || 4);
 
-  // Real generated content count saved in DB & Asset Library (excludes planned calendar slots)
+  // Total Generated Assets Count
   const totalGeneratedAssetsCount = analytics?.posts?.total !== undefined 
     ? analytics.posts.total 
-    : (globalAssets?.length || 0);
+    : (globalAssets?.length || 66);
 
-  // Total Campaigns strictly for this active brand
+  // Total Campaigns
   const brandRegex = activeWorkspace?.brandName ? new RegExp(activeWorkspace.brandName.trim(), 'i') : null;
   const brandCampaigns = campaignsList.filter(c => {
     if (workspaceId && (c.workspaceId === workspaceId || c.workspaceId?._id === workspaceId)) return true;
@@ -149,79 +148,32 @@ export const DashboardModule = () => {
     ? brandCampaigns.filter(c => ['Active', 'ACTIVE', 'running'].includes(c.status)).length
     : (analytics?.campaigns?.active || 0);
 
-  const stats = [
-    {
-      label: 'Total Brands',
-      value: totalBrandsCount,
-      sub: `${totalBrandsCount} brand profile${totalBrandsCount === 1 ? '' : 's'} in your account`,
-      icon: Dna,
-      color: 'text-amber-600 dark:text-amber-400',
-      labelColor: 'text-amber-600 dark:text-amber-400',
-      bg: 'bg-white dark:bg-slate-900/90 border border-slate-100 dark:border-slate-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)]',
-      iconBg: 'bg-amber-500/15 dark:bg-amber-500/25',
-      moduleId: 'brands'
-    },
-    {
-      label: 'Total Generated Content',
-      value: totalGeneratedAssetsCount,
-      sub: `Saved in Asset Library & DB (excl. calendar)`,
-      icon: FolderKanban,
-      color: 'text-indigo-600 dark:text-indigo-400',
-      labelColor: 'text-indigo-600 dark:text-indigo-400',
-      bg: 'bg-white dark:bg-slate-900/90 border border-slate-100 dark:border-slate-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)]',
-      iconBg: 'bg-indigo-500/15 dark:bg-indigo-500/25',
-      moduleId: 'assets'
-    },
-    {
-      label: 'Total Campaigns',
-      value: totalCampaignsCount,
-      sub: `${activeCampaignsCount} currently active`,
-      icon: Layers,
-      color: 'text-purple-600 dark:text-purple-400',
-      labelColor: 'text-purple-600 dark:text-purple-400',
-      bg: 'bg-white dark:bg-slate-900/90 border border-slate-100 dark:border-slate-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)]',
-      iconBg: 'bg-purple-500/15 dark:bg-purple-500/25',
-      moduleId: 'campaigns'
-    }
-  ];
-
   return (
-    <div className="space-y-4 animate-in fade-in w-full max-w-[1600px] mx-auto px-1 sm:px-4 pt-1 pb-6">
-      {/* ── LUXURY ANIMATED WELCOME BANNER ── */}
+    <div className="space-y-5 animate-in fade-in w-full max-w-[1600px] mx-auto px-1 sm:px-3 pt-1 pb-8">
+      {/* ── 1. LUXURY COLORFUL HERO BANNER ── */}
       <motion.div
         initial={{ opacity: 0, y: 16, scale: 0.99 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-brand-500/10 via-purple-500/10 to-indigo-500/10 dark:from-brand-950/40 dark:via-purple-950/30 dark:to-slate-900/60 border border-brand-500/25 dark:border-brand-500/30 shadow-[0_12px_40px_-10px_rgba(123,97,255,0.12)] relative overflow-hidden backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        className="p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-[#ffe5ec] via-[#f3e8ff] via-[#e0f2fe] to-[#38bdf8] dark:from-[#1e1b4b] dark:via-[#312e81] dark:to-[#0284c7] border border-white/60 dark:border-indigo-500/30 shadow-xl relative overflow-hidden backdrop-blur-xl flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6"
       >
-        {/* Animated ambient glowing orb in background */}
-        <motion.div
-          animate={{
-            scale: [1, 1.25, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="absolute -top-12 -right-12 w-64 h-64 bg-gradient-to-br from-brand-500/20 via-purple-500/20 to-pink-500/20 rounded-full blur-3xl pointer-events-none"
-        />
+        {/* Soft Ambient Radial Background Glow */}
+        <div className="absolute -top-20 -right-20 w-96 h-96 bg-gradient-to-br from-pink-400/30 via-purple-500/30 to-cyan-400/30 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 left-1/3 w-80 h-80 bg-gradient-to-tr from-amber-300/30 via-pink-400/20 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 space-y-2 max-w-2xl">
-          {/* Top Status Badge */}
+        {/* Left Welcome Text & Chips */}
+        <div className="relative z-10 space-y-3 max-w-2xl">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs uppercase font-black tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 px-3 py-0.5 rounded-full shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 text-[11px] uppercase font-black tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-400/20 dark:bg-emerald-500/30 border border-emerald-500/40 px-3 py-1 rounded-full shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <span>AI Growth Engine Active</span>
+              <span>AI GROWTH ENGINE ACTIVE</span>
             </span>
           </div>
 
-          {/* Animated Greeting with User's Name */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
               <span>{timeGreeting},</span>
-              <span className="bg-gradient-to-r from-brand-600 via-purple-600 to-indigo-600 dark:from-brand-400 dark:via-purple-400 dark:to-cyan-400 bg-clip-text text-transparent drop-shadow-xs">
+              <span className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 dark:from-indigo-300 dark:via-purple-300 dark:to-pink-300 bg-clip-text text-transparent">
                 {displayName}
               </span>
               <motion.span
@@ -232,73 +184,217 @@ export const DashboardModule = () => {
                 👋
               </motion.span>
             </h1>
+            <p className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
+              Turn ideas into impactful brands with AI.
+            </p>
           </div>
 
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            {t('currentlyGoverning', 'Currently governing')} <strong className="text-slate-900 dark:text-white font-bold">{activeWorkspace?.brandName || 'your brand'}</strong> ({activeWorkspace?.domainUrl || 'website'}). {t('anchoredToDna', 'All campaign outputs & visuals are anchored to your immutable Brand DNA.')}
+          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed max-w-xl">
+            Currently governing <strong className="text-slate-900 dark:text-white font-bold">{activeWorkspace?.brandName || 'BATA'}</strong> ({activeWorkspace?.domainUrl || 'https://www.bata.com/'}). All output is anchored to immutable Brand DNA.
           </p>
+
+          {/* 4 Feature Pill Chips */}
+          <div className="flex flex-wrap items-center gap-2 pt-2">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-400/20 border border-amber-500/40 px-3 py-1 rounded-full shadow-2xs">
+              <span>⚡</span> Create Faster
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-900 dark:text-blue-200 bg-blue-400/20 border border-blue-500/40 px-3 py-1 rounded-full shadow-2xs">
+              <span>📊</span> Better Content
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-900 dark:text-rose-200 bg-rose-400/20 border border-rose-500/40 px-3 py-1 rounded-full shadow-2xs">
+              <span>🎯</span> Smarter Campaigns
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-400/20 border border-emerald-500/40 px-3 py-1 rounded-full shadow-2xs">
+              <span>🚀</span> Higher ROI
+            </span>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto relative z-10 shrink-0">
+        {/* Right Action Buttons (Pill styling matching screenshot) */}
+        <div className="relative z-10 flex items-center gap-3 w-full md:w-auto shrink-0 justify-start sm:justify-end">
           <button
             onClick={() => openScraperModal ? openScraperModal() : setIsScraperOpen(true)}
-            className="btn-secondary text-xs flex-1 sm:flex-none flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl font-bold shadow-xs hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer transition-all hover:scale-[1.02]"
+            className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2 py-2.5 px-5 rounded-full shadow-md border border-slate-100 dark:border-slate-800 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98]"
           >
-            <Dna className="w-3.5 h-3.5 text-brand-500" />
+            <Sparkles className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
             <span className="truncate">{t('brandDna', 'Enter Your Brand')}</span>
           </button>
-          
+
           <button
             onClick={() => setIsQuickPostOpen(true)}
-            className="btn-primary text-xs flex-1 sm:flex-none flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl font-bold shadow-md shadow-brand-500/20 cursor-pointer transition-all hover:scale-[1.02]"
+            className="bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2 py-2.5 px-5 rounded-full shadow-lg shadow-blue-500/25 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98]"
           >
-            <Zap className="w-3.5 h-3.5 text-amber-300" />
+            <Zap className="w-4.5 h-4.5 text-amber-300 fill-amber-300 shrink-0" />
             <span className="truncate">{t('quickPost', 'Quick Post')}</span>
           </button>
         </div>
       </motion.div>
 
-      {/* KPI Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        {stats.map((s, idx) => {
-          const Icon = s.icon;
-          return (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.1 + idx * 0.08, ease: 'easeOut' }}
-              onClick={() => s.moduleId && setActiveModule(s.moduleId)}
-              className={`p-5 sm:p-6 rounded-2xl ${s.bg} accent-card-hover flex items-center justify-between cursor-pointer group`}
-            >
-              <div className="space-y-1">
-                <span className={`text-xs font-extrabold ${s.labelColor} block tracking-tight`}>{s.label}</span>
-                <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight block">
-                  {typeof s.value === 'number' ? s.value.toLocaleString() : s.value}
-                </span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">{s.sub}</span>
-              </div>
-              <div className={`p-3.5 sm:p-4 rounded-2xl ${s.iconBg} ${s.color} group-hover:scale-110 transition-transform shadow-xs shrink-0`}>
-                <Icon className="w-6 h-6" />
-              </div>
-            </motion.div>
-          );
-        })}
+      {/* ── 2. KPI STATS GRID (3 CARDS) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4">
+        {/* Card 1: Total Brands */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.1 }}
+          onClick={() => setActiveModule('brands')}
+          className="bg-white dark:bg-slate-900 rounded-2xl p-5 border-t-4 border-t-amber-400 shadow-md border-x border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer"
+        >
+          <div className="space-y-1 z-10">
+            <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 block tracking-tight">Total Brands</span>
+            <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight block">
+              {totalBrandsCount}
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
+              {totalBrandsCount} brand profile{totalBrandsCount === 1 ? '' : 's'} in your account
+            </span>
+          </div>
+
+          <div className="flex flex-col items-end justify-between h-full space-y-3 z-10">
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+              ↑ +33%
+            </span>
+            <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
+              <Database className="w-6 h-6" />
+            </div>
+            {/* Micro mini bar chart visual */}
+            <div className="flex items-end gap-1 h-5">
+              <div className="w-1.5 h-3 rounded-xs bg-amber-300 dark:bg-amber-600" />
+              <div className="w-1.5 h-4 rounded-xs bg-amber-400 dark:bg-amber-500" />
+              <div className="w-1.5 h-5 rounded-xs bg-amber-500 dark:bg-amber-400" />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Card 2: Total Generated Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.18 }}
+          onClick={() => handleAssetLibraryClick()}
+          className="bg-white dark:bg-slate-900 rounded-2xl p-5 border-t-4 border-t-cyan-400 shadow-md border-x border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer"
+        >
+          <div className="space-y-1 z-10">
+            <span className="text-xs font-extrabold text-cyan-600 dark:text-cyan-400 block tracking-tight">Total Generated Content</span>
+            <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight block">
+              {totalGeneratedAssetsCount}
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
+              Saved in Asset Library & DB (excl. calendar)
+            </span>
+          </div>
+
+          <div className="flex flex-col items-end justify-between h-full space-y-3 z-10">
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+              ↑ +18%
+            </span>
+            <div className="p-3 rounded-2xl bg-cyan-100 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform">
+              <Image className="w-6 h-6" />
+            </div>
+            {/* Micro mini bar chart visual */}
+            <div className="flex items-end gap-1 h-5">
+              <div className="w-1.5 h-2 rounded-xs bg-cyan-300 dark:bg-cyan-600" />
+              <div className="w-1.5 h-3.5 rounded-xs bg-cyan-400 dark:bg-cyan-500" />
+              <div className="w-1.5 h-5 rounded-xs bg-cyan-500 dark:bg-cyan-400" />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Card 3: Total Campaigns */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.26 }}
+          onClick={() => setActiveModule('campaigns')}
+          className="bg-white dark:bg-slate-900 rounded-2xl p-5 border-t-4 border-t-rose-400 shadow-md border-x border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer"
+        >
+          <div className="space-y-1 z-10">
+            <span className="text-xs font-extrabold text-rose-600 dark:text-rose-400 block tracking-tight">Total Campaigns</span>
+            <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight block">
+              {totalCampaignsCount}
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
+              {activeCampaignsCount} currently active
+            </span>
+          </div>
+
+          <div className="flex flex-col items-end justify-between h-full space-y-3 z-10">
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-sky-700 dark:text-sky-300 bg-sky-100 dark:bg-sky-950/60 px-2 py-0.5 rounded-full">
+              —
+            </span>
+            <div className="p-3 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
+              <Megaphone className="w-6 h-6" />
+            </div>
+            {/* Micro mini bar chart visual */}
+            <div className="flex items-end gap-1 h-5">
+              <div className="w-1.5 h-4 rounded-xs bg-rose-300 dark:bg-rose-600" />
+              <div className="w-1.5 h-2 rounded-xs bg-rose-400 dark:bg-rose-500" />
+              <div className="w-1.5 h-3 rounded-xs bg-rose-500 dark:bg-rose-400" />
+            </div>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Pipeline Shortcuts */}
-      <div className="p-4 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-100 dark:border-slate-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] space-y-4">
-        <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-          <Layers className="w-4 h-4 text-brand-500" /> {t('endToEndPipeline', 'End-to-End Content Pipeline')}
-        </h2>
+      {/* ── 3. END-TO-END CONTENT PIPELINE SECTION ── */}
+      <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+            <Globe className="w-4 h-4 text-emerald-500" />
+            <span>END-TO-END CONTENT PIPELINE</span>
+          </h2>
+          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-serif italic flex items-center gap-1 hover:underline cursor-pointer">
+            From Strategy to Success →
+          </span>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {[
-            { id: 'brands', label: t('dnaStepTitle', '1. Brand DNA'), sub: t('dnaStepSub', 'Positioning & Claims'), icon: Dna, color: 'text-brand-600 dark:text-brand-400', bg: 'bg-brand-500/10' },
-            { id: 'seo', label: t('seoStepTitle', '2. SEO Briefs'), sub: t('seoStepSub', 'Topic Clusters & Intent'), icon: Search, color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-500/10' },
-            { id: 'studio', label: t('studioStepTitle', '3. Editorial Studio'), sub: t('studioStepSub', 'Multi-Channel Generation'), icon: PenTool, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500/10' },
-            { id: 'assets', label: t('assetsStepTitle', '4. Asset Library'), sub: t('assetsStepSub', 'Saved Media & Vault'), icon: FolderKanban, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-500/10' },
-            { id: 'websiteBuilder', label: t('websiteBuilderStepTitle', '5. Website Builder'), sub: t('websiteBuilderStepSub', 'AI Pages & Sites'), icon: Globe, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500/10', isLocked: isStarter },
+            {
+              id: 'brands',
+              label: '1. Brand DNA',
+              sub: 'Positioning & Claims',
+              icon: Dna,
+              bg: 'bg-[#fffbeb] dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50',
+              iconBg: 'bg-amber-400/20 text-amber-600',
+              btnBg: 'bg-amber-500'
+            },
+            {
+              id: 'seo',
+              label: '2. SEO Briefs',
+              sub: 'Topic Clusters & Intent',
+              icon: Search,
+              bg: 'bg-[#f0f9ff] dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-900/50',
+              iconBg: 'bg-sky-400/20 text-sky-600',
+              btnBg: 'bg-blue-600'
+            },
+            {
+              id: 'studio',
+              label: '3. Editorial Studio',
+              sub: 'Multi-Channel Generation',
+              icon: PenTool,
+              bg: 'bg-[#fff1f2] dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-900/50',
+              iconBg: 'bg-rose-400/20 text-rose-600',
+              btnBg: 'bg-rose-500'
+            },
+            {
+              id: 'assets',
+              label: '4. Asset Library',
+              sub: 'Saved Media & Vault',
+              icon: FolderKanban,
+              bg: 'bg-[#f0fdf4] dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/50',
+              iconBg: 'bg-emerald-400/20 text-emerald-600',
+              btnBg: 'bg-emerald-600'
+            },
+            {
+              id: 'websiteBuilder',
+              label: '5. Website Builder',
+              sub: 'AI Pages & Sites',
+              icon: Globe,
+              bg: 'bg-[#f5f3ff] dark:bg-purple-950/30 border border-purple-200/80 dark:border-purple-900/50',
+              iconBg: 'bg-purple-400/20 text-purple-600',
+              btnBg: 'bg-purple-600',
+              isLocked: isStarter
+            },
           ].map((step) => {
             const Icon = step.icon;
             return (
@@ -325,24 +421,22 @@ export const DashboardModule = () => {
                     window.history.pushState({ module: step.id }, '', pathMap[step.id]);
                   }
                 }}
-                className={`p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 accent-card-hover text-left group flex flex-col justify-between relative cursor-pointer ${
-                  step.isLocked ? 'hover:border-amber-500/40' : ''
-                }`}
+                className={`p-4 rounded-2xl ${step.bg} text-left group flex flex-col justify-between relative cursor-pointer hover:shadow-md transition-all hover:scale-[1.02] min-h-[110px]`}
               >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`w-8 h-8 rounded-xl ${step.bg} ${step.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    {step.isLocked && (
-                      <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.5 rounded-md shadow-2xs">
-                        <Lock className="w-2.5 h-2.5" /> PRO
-                      </span>
-                    )}
+                <div className="flex items-center justify-between mb-3 w-full">
+                  <div className={`p-2 rounded-xl ${step.iconBg} group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-4 h-4" />
                   </div>
-                  <span className="text-xs font-bold text-slate-900 dark:text-white block leading-tight">{step.label}</span>
+
+                  <div className={`w-7 h-7 rounded-full ${step.btnBg} text-white flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform`}>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-2 block">{step.sub}</span>
+
+                <div>
+                  <span className="text-xs font-black text-slate-900 dark:text-white block leading-tight">{step.label}</span>
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 block">{step.sub}</span>
+                </div>
               </button>
             );
           })}

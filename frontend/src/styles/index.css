@@ -162,21 +162,21 @@
 
 /* AISA Cinematic Neural & Panch Tattva Multi-Color Radial Background */
 .aisa-dashboard-bg {
-  background: radial-gradient(ellipse at 10% 15%, rgba(245, 158, 11, 0.08) 0%, transparent 45%), /* Prithvi: Yellow */
-              radial-gradient(ellipse at 85% 20%, rgba(59, 130, 246, 0.09) 0%, transparent 45%), /* Jal: Blue */
-              radial-gradient(ellipse at 80% 85%, rgba(239, 68, 68, 0.07) 0%, transparent 45%),  /* Agni: Red */
-              radial-gradient(ellipse at 15% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 45%), /* Vayu: Green */
-              radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.07) 0%, transparent 55%), /* Akash: Ether */
-              linear-gradient(160deg, #060913 0%, #090e24 50%, #060a1b 100%);
+  background: radial-gradient(circle at 10% 10%, rgba(254, 215, 170, 0.55) 0%, transparent 40%),
+              radial-gradient(circle at 90% 15%, rgba(224, 231, 255, 0.7) 0%, transparent 45%),
+              radial-gradient(circle at 85% 85%, rgba(252, 231, 243, 0.6) 0%, transparent 45%),
+              radial-gradient(circle at 15% 85%, rgba(209, 250, 229, 0.6) 0%, transparent 45%),
+              radial-gradient(circle at 50% 50%, rgba(238, 242, 255, 0.5) 0%, transparent 50%),
+              linear-gradient(135deg, #fff7ed 0%, #f3e8ff 35%, #e0f2fe 70%, #fff0f5 100%) !important;
 }
 
-.light .aisa-dashboard-bg {
-  background: radial-gradient(ellipse at 10% 15%, rgba(254, 240, 138, 0.35) 0%, transparent 45%),
-              radial-gradient(ellipse at 85% 20%, rgba(219, 234, 254, 0.40) 0%, transparent 45%),
-              radial-gradient(ellipse at 80% 85%, rgba(254, 226, 226, 0.35) 0%, transparent 45%),
-              radial-gradient(ellipse at 15% 80%, rgba(209, 250, 229, 0.35) 0%, transparent 45%),
-              radial-gradient(ellipse at 50% 50%, rgba(237, 233, 254, 0.30) 0%, transparent 55%),
-              #F8FAFC !important;
+.dark .aisa-dashboard-bg {
+  background: radial-gradient(circle at 10% 10%, rgba(245, 158, 11, 0.20) 0%, transparent 45%),
+              radial-gradient(circle at 90% 15%, rgba(59, 130, 246, 0.22) 0%, transparent 45%),
+              radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.20) 0%, transparent 45%),
+              radial-gradient(circle at 15% 85%, rgba(16, 185, 129, 0.20) 0%, transparent 45%),
+              radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.20) 0%, transparent 50%),
+              linear-gradient(160deg, #090d1f 0%, #0d122b 50%, #080c1d 100%) !important;
 }
 
 /* Sidebar Dark AISA Gradient */
