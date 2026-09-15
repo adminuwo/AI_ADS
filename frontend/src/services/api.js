@@ -118,7 +118,7 @@ export const chatAPI = {
     return apiFetch(`/chat/sessions${qs ? `?${qs}` : ''}`);
   },
   getSession: (sessionId) => apiFetch(`/chat/sessions/${sessionId}`),
-  sendMessage: (body) => apiFetch('/chat', { method: 'POST', body }),
+  sendMessage: (body, options = {}) => apiFetch('/chat', { method: 'POST', body, ...options }),
   deleteSession: (sessionId) => apiFetch(`/chat/sessions/${sessionId}`, { method: 'DELETE' }),
   renameSession: (sessionId, title) => apiFetch(`/chat/sessions/${sessionId}/title`, { method: 'PATCH', body: { title } }),
 };

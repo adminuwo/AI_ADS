@@ -458,7 +458,7 @@ export const BrandDnaModule = () => {
           <button
             onClick={handleRunAiAnalysis}
             disabled={analyzing}
-            className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-500/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer"
+            className="px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 text-white font-black text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer"
           >
             {analyzing ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Sparkles className="w-4 h-4 shrink-0" />}
             <span>{analyzing ? 'Re-Scraping Intelligence...' : t('runDeepAiAnalysis', 'Run Deep AI Analysis')}</span>
@@ -1006,7 +1006,7 @@ export const BrandDnaModule = () => {
                     autoFocus
                   />
                 ) : Array.isArray(effectiveProfile?.targetAudience) && effectiveProfile.targetAudience.length > 0 ? (
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {effectiveProfile.targetAudience.map((aud, i) => {
                       const badgeGradients = [
                         'from-emerald-500/15 to-teal-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-300/50',
@@ -1020,10 +1020,10 @@ export const BrandDnaModule = () => {
                       return (
                         <div 
                           key={i} 
-                          className={`p-2.5 rounded-xl bg-gradient-to-r ${grad} border font-bold text-xs flex items-center gap-2.5 shadow-2xs hover:scale-[1.01] transition-transform`}
+                          className={`p-2.5 rounded-xl bg-gradient-to-r ${grad} border font-bold text-xs flex items-center gap-2 shadow-2xs hover:scale-[1.01] transition-transform`}
                         >
-                          <span className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0 animate-ping" />
-                          <span>{aud}</span>
+                          <span className="w-2 h-2 rounded-full bg-rose-500/80 shrink-0" />
+                          <span className="break-words leading-tight min-w-0">{aud}</span>
                         </div>
                       );
                     })}
@@ -1158,7 +1158,7 @@ export const BrandDnaModule = () => {
                 if (setBrandDnaData) setBrandDnaData(effectiveProfile);
                 if (setActiveModule) setActiveModule('seo');
               }}
-              className="flex items-center gap-3 px-8 py-3.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white rounded-full font-black text-sm transition-all duration-300 shadow-2xl shadow-teal-500/40 hover:shadow-teal-500/60 hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap border-2 border-white/30 backdrop-blur-xl group"
+              className="flex items-center gap-3 px-8 py-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 text-white rounded-full font-black text-sm transition-all duration-300 shadow-2xl shadow-purple-500/40 hover:shadow-purple-500/60 hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap border-2 border-white/30 backdrop-blur-xl group"
               title="Continue to SEO Intelligence"
             >
               <Search className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
