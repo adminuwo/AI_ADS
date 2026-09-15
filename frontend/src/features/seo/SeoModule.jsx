@@ -272,7 +272,7 @@ export const SeoModule = () => {
           </span>
           <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            SEO OPPORTUNITY
+            AI OPPORTUNITY
           </span>
         </div>
       </div>
@@ -400,7 +400,7 @@ export const SeoModule = () => {
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-amber-400" />
-              4. SEO Opportunities ({opportunityKeywords.length})
+              4. AI Opportunities ({opportunityKeywords.length})
             </button>
 
             {keywordClusters.length > 0 && (
@@ -662,7 +662,7 @@ export const SeoModule = () => {
                         Competitor Keyword Gaps
                       </h2>
                       <span className="text-[10px] text-purple-600 dark:text-purple-400 font-bold block">
-                        Where competitors outrank you
+                        Where competitors outrank target domain
                       </span>
                     </div>
                   </div>
@@ -674,7 +674,7 @@ export const SeoModule = () => {
                 <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[500px] pr-1">
                   {competitorGaps.length === 0 ? (
                     <div className="text-center py-12 text-slate-400 text-xs">
-                      No competitor gaps discovered yet. Click Audit to analyze market rivals.
+                      No verified competitor gaps discovered for this domain.
                     </div>
                   ) : (
                     competitorGaps.map((kw, idx) => (
@@ -708,14 +708,21 @@ export const SeoModule = () => {
                           <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
 
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-medium mt-1">
-                          <span>You: <strong className="text-rose-500">{kw.userPosition || 'Not Ranking'}</strong></span>
-                          <span>Competitor: <strong className="text-emerald-500">{kw.competitor} ({kw.competitorPosition || 'Pos 1-3'})</strong></span>
+                        {/* Evidence Chain: Keyword → Competitor → Competitor Position → Target Position/Status → Ranking URL */}
+                        <div className="p-2 bg-purple-50/50 dark:bg-purple-950/30 rounded-xl border border-purple-500/15 text-[10px] space-y-1 mt-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-500">Competitor: <strong className="text-purple-600 dark:text-purple-400">{kw.competitor}</strong></span>
+                            <span className="text-emerald-600 font-bold">{kw.competitorPosition || 'Pos 1-3'}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-500">
+                            <span>Target Status: <strong className="text-rose-500">{kw.userPosition || 'Not Ranking'}</strong></span>
+                            <span className="text-[9px] text-slate-400 truncate max-w-[120px]" title={kw.rankingUrl}>{kw.rankingUrl}</span>
+                          </div>
                         </div>
 
                         {kw.gapReason && (
-                          <p className="text-[10px] text-purple-600 dark:text-purple-300 mt-1 leading-snug font-medium">
-                            🎯 Gap: {kw.gapReason}
+                          <p className="text-[10px] text-purple-700 dark:text-purple-300 mt-1.5 leading-snug font-medium">
+                            🎯 Reason: {kw.gapReason}
                           </p>
                         )}
                       </div>
@@ -727,7 +734,7 @@ export const SeoModule = () => {
 
           </div>
 
-          {/* ═════════ SECTION 4: SEO OPPORTUNITY KEYWORDS & ACTION ITEMS ═════════ */}
+          {/* ═════════ SECTION 4: AI OPPORTUNITY KEYWORDS & ACTION ITEMS ═════════ */}
           {(activeTab === 'all' || activeTab === 'opportunities') && opportunityKeywords.length > 0 && (
             <div className="p-6 rounded-3xl glass-card border border-amber-500/30 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/[0.02] to-transparent space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-amber-500/20">
@@ -736,16 +743,19 @@ export const SeoModule = () => {
                     4
                   </div>
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
-                      SEO Opportunity Keywords & Recommended Actions
+                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                      <span>AI Opportunity Keywords & Recommended Actions</span>
+                      <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                        AI-generated recommendation
+                      </span>
                     </h3>
                     <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold block">
-                      Targeted recommendations derived from competitor gaps & search intent
+                      Recommendations synthesized from website content, ranking data & competitor gaps
                     </span>
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 border border-amber-500/30">
-                  {opportunityKeywords.length} High-ROI Targets
+                  {opportunityKeywords.length} AI Opportunities
                 </span>
               </div>
 
@@ -758,7 +768,7 @@ export const SeoModule = () => {
                   >
                     <div className="flex items-center justify-between">
                       <span className="px-2 py-0.5 rounded font-black text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                        SEO OPPORTUNITY
+                        AI OPPORTUNITY
                       </span>
                       <span className="text-[9px] font-bold text-slate-400">
                         {opp.difficulty || 'Medium'}
@@ -794,7 +804,7 @@ export const SeoModule = () => {
               <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <Users className="w-4 h-4 text-purple-500" />
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
-                  Discovered SEO Search Competitors
+                  Discovered Search & SEO Competitors
                 </h3>
               </div>
 
@@ -805,8 +815,12 @@ export const SeoModule = () => {
                       <span className="font-extrabold text-xs text-purple-600 dark:text-purple-400">
                         🌐 {comp.competitorDomain}
                       </span>
-                      <span className="text-[9px] font-bold text-slate-400 bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded">
-                        SERP Rival
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${
+                        comp.competitorType === 'SEO Competitor'
+                          ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                          : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                      }`}>
+                        {comp.competitorType || 'SERP Competitor'}
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">
