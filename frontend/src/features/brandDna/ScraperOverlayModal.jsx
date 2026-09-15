@@ -332,17 +332,17 @@ export const ScraperOverlayModal = () => {
                     />
                   </div>
 
-                  {/* HEADQUARTERS */}
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
+                  {/* HEADQUARTERS / ADDRESS */}
+                  <div className="sm:col-span-2 p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">HEADQUARTERS</span>
+                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">HEADQUARTERS / ADDRESS</span>
                       <Edit3 className="w-3 h-3 text-slate-400" />
                     </div>
                     <input
                       type="text"
                       value={result.headquarters || ''}
                       onChange={(e) => setResult(prev => ({ ...prev, headquarters: e.target.value }))}
-                      placeholder="Enter headquarters location..."
+                      placeholder="Enter headquarters location / address..."
                       className="w-full font-bold text-slate-900 text-xs bg-transparent border-none outline-none p-0"
                     />
                   </div>

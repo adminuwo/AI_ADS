@@ -1,11 +1,11 @@
 import React from 'react';
 import SectionRenderer from '../components/SectionRenderer';
 
-export default function ShopCatalogPage({ page, setActivePage, siteData }) {
+export default function OurCraftPage({ page, setActivePage, siteData }) {
   const sections = page?.sections || [];
 
   return (
-    <div className="page-container page-page_shop_catalog">
+    <div className="page-container page-page_our_craft">
       {sections.map((section) => (
         <SectionRenderer
           key={section.id || Math.random().toString()}

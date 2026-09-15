@@ -164,7 +164,7 @@ export const AISAAssistantDrawer = () => {
           if (u.email) currentUserEmail = u.email;
           if (u.name) currentUserName = u.name;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       const result = await chatAPI.sendMessage({
         message: promptText,
@@ -246,21 +246,21 @@ Keep your response short, concise, and to the point. DO NOT give long detailed r
 
         {/* Quick Action Chips */}
         <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex gap-2 overflow-x-auto no-scrollbar">
-          <button 
+          <button
             onClick={() => handleSend("Summarize Brand DNA and voice guidelines")}
             className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-brand-500/10 text-slate-700 dark:text-slate-200 hover:text-brand-500 border border-slate-200 dark:border-slate-700 shadow-sm whitespace-nowrap flex items-center gap-1.5 transition-all"
           >
             <Dna className="w-3 h-3 text-brand-500" />
             Brand DNA Summary
           </button>
-          <button 
+          <button
             onClick={() => handleSend("Generate 3 LinkedIn Post Hooks")}
             className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-brand-500/10 text-slate-700 dark:text-slate-200 hover:text-brand-500 border border-slate-200 dark:border-slate-700 shadow-sm whitespace-nowrap flex items-center gap-1.5 transition-all"
           >
             <PenTool className="w-3 h-3 text-brand-500" />
             LinkedIn Hooks
           </button>
-          <button 
+          <button
             onClick={() => handleSend("Audit content against restricted claims")}
             className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-brand-500/10 text-slate-700 dark:text-slate-200 hover:text-brand-500 border border-slate-200 dark:border-slate-700 shadow-sm whitespace-nowrap flex items-center gap-1.5 transition-all"
           >
@@ -281,11 +281,10 @@ Keep your response short, concise, and to the point. DO NOT give long detailed r
                   <img src="/brain-icon-dark.jpg" alt="AI Brain" className="w-full h-full object-cover rounded-lg" />
                 </div>
               )}
-              <div className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed font-medium ${
-                m.sender === 'user'
+              <div className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed font-medium ${m.sender === 'user'
                   ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-tr-none shadow-md'
                   : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-tl-none shadow-sm'
-              }`}>
+                }`}>
                 {m.sender === 'assistant' ? renderFormattedText(m.text) : m.text}
                 <div className="text-[9px] opacity-60 text-right mt-1.5">{m.time}</div>
               </div>
@@ -305,7 +304,7 @@ Keep your response short, concise, and to the point. DO NOT give long detailed r
 
         {/* Input Box (Auto-Expanding Multi-Row Textarea) */}
         <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <form 
+          <form
             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
             className="flex items-end gap-2"
           >
@@ -318,7 +317,7 @@ Keep your response short, concise, and to the point. DO NOT give long detailed r
               placeholder={`Ask AI Ads™ for ${activeWorkspace?.brandName || 'Brand'}...`}
               className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-3.5 py-2.5 text-xs resize-none max-h-32 min-h-[40px] leading-relaxed scrollbar-thin font-medium"
             />
-            <button 
+            <button
               type="submit"
               disabled={loading || !input.trim()}
               className="btn-primary px-4 py-2.5 h-[40px] rounded-xl flex-shrink-0 flex items-center justify-center gap-1.5 font-extrabold text-xs tracking-wide shadow-md transition-all active:scale-95 disabled:opacity-50"

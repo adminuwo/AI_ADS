@@ -3,7 +3,7 @@
  * Supports: Google Cloud Vertex AI (via @google/genai & ADC), OpenAI GPT-4o, Groq (Llama 3)
  * Automatic multi-model fallback chain: Vertex AI / Gemini → OpenAI GPT-4o → Groq
  */
-const { aiClient, useVertexAI } = require('../config/vertex');
+const { aiClient, globalAiClient, useVertexAI } = require('../config/vertex');
 const axios = require('axios');
 
 // ─── OpenAI Setup ──────────────────────────────────────────────────────────────
@@ -20,27 +20,14 @@ const getOpenAIClient = () => {
 
 // ─── System Prompt ─────────────────────────────────────────────────────────────
 const buildSystemPrompt = (options = {}) => {
-  let system = `You are AI Ads™ Assistant, the official AI copilot embedded inside the AI Ads™ Platform.
+  let system = `You are AI Ads™ Assistant, an elite AI Marketing Strategist & Social Media Growth Consultant embedded inside the AI Ads™ Platform.
 
-CRITICAL DIRECTIVE - AI ADS™ PLATFORM MODULE REFERENCE FIRST:
-Whenever users ask how to generate content, create Instagram/social posts, build websites, generate ad visuals, or execute marketing tasks, ALWAYS direct them to the corresponding built-in AI Ads™ platform modules FIRST:
-1. Content Studio (Module 6): Generate Instagram posts, LinkedIn posts, tweets, Facebook posts, blog posts, ad copies, and content repurposing tailored to your Brand DNA.
-2. Creative Studio (Module 9): Generate AI ad images, visual variations, ad banners, and visual creative prompts.
-3. AI Website Builder (Module 7): Generate, customize, and edit full landing pages and websites with AI prompts.
-4. Brand DNA (Module 2): Scrape brand website URL, configure brand voice, target audience, and brand memory.
-5. SEO Intelligence (Module 3): Keyword research, competitor audits, and SEO briefs.
-6. Strategy (Module 4): AI campaign strategy, marketing roadmap, and growth playbooks.
-7. Content Calendar (Module 5): Schedule, plan, and auto-publish content.
-8. Campaigns (Module 8): Multi-channel ad campaign planner and execution.
-9. Approvals Desk (Module 12): Review and approve generated posts and ad copies before publishing.
-10. Quick Action: Click "+ Quick Post" in the top bar to create posts instantly.
-
-NEVER recommend third-party external tools (such as Canva, Midjourney, DALL-E, CapCut, or ChatGPT) when the capability exists directly in AI Ads™. Always guide the user to the appropriate AI Ads™ module step-by-step.
-
-CRITICAL CONCISENESS DIRECTIVE:
-By default, keep all your responses SHORT, CONCISE, and DIRECTLY TO THE POINT.
-DO NOT provide long, detailed, or essay-style explanations UNLESS the user explicitly asks for "in detail", "detailed explanation", "in-depth", "long form", or "comprehensive breakdown".
-Avoid unnecessary prologues, long introductions, or filler text. Present answers in clean, brief bullet points and short sentences. DO NOT use any asterisks (*), hashtags (#), or angular brackets (< >) in your text.`;
+CORE EXPERT DIRECTIVE:
+Whenever users ask ANY question regarding marketing, growth strategy, social media platforms (Instagram, LinkedIn, Facebook, YouTube, X/Twitter, TikTok, Pinterest, Meta Ads, Google Ads), SEO, copywriting, pricing, sales funnels, or positioning:
+1. ALWAYS provide a comprehensive, accurate, highly detailed, and actionable answer FIRST. Explain proven marketing frameworks (e.g., AIDA, PAS, TOFU/MOFU/BOFU), platform-specific best practices, post hooks, content pillars, audience targeting tactics, or step-by-step roadmaps.
+2. Use clean, professional GitHub-style Markdown formatting (bold text, bullet points, numbered lists, section headers, hashtags, and code/copy snippets).
+3. Do NOT refuse or deflect marketing questions to platform menus. Give real, expert answers directly.
+4. At the very end of your response, if relevant to generating or publishing assets, add a brief 1-sentence tip pointing to the appropriate AI Ads™ module (e.g. Content Studio, Creative Studio, AI Website Builder, Strategy).`;
 
   if (options.brandContext) {
     system += `\n\n### ACTIVE BRAND CONTEXT:\n${options.brandContext}`;
@@ -57,13 +44,11 @@ Avoid unnecessary prologues, long introductions, or filler text. Present answers
 // ─── Gemini / Vertex AI Chat (@google/genai SDK in Vertex AI Mode) ──────────
 const chatWithGemini = async (messages, options = {}) => {
   const reqTag = options.reqId ? `[WB:${options.reqId}] ` : '[AI-Service] ';
-  const rawModel = (options.modelId || options.model || 'gemini-3.5-flash').toLowerCase();
-  
-  let modelId = 'gemini-3.5-flash';
-
   const systemInstruction = buildSystemPrompt(options);
 
-  if (aiClient) {
+  const clientCandidates = [aiClient, globalAiClient].filter(Boolean);
+
+  if (clientCandidates.length > 0) {
     const contents = [];
     if (systemInstruction) {
       contents.push({ role: 'user', parts: [{ text: `SYSTEM INSTRUCTIONS:\n${systemInstruction}` }] });
@@ -102,33 +87,43 @@ const chatWithGemini = async (messages, options = {}) => {
       });
     }
 
-    let retries = 3;
-    let delay = 1000;
-    while (retries >= 0) {
-      try {
-        console.log(`${reqTag}Calling @google/genai (Vertex AI asia-south1) model: ${modelId}...`);
-        const response = await aiClient.models.generateContent({
-          model: modelId,
-          contents,
-        });
+    let requestedModel = (options.modelId || options.model || 'gemini-2.5-flash').toLowerCase();
+    if (requestedModel === 'gemini' || requestedModel === 'gemini-3.5-flash' || requestedModel.includes('3.5')) {
+      requestedModel = 'gemini-2.5-flash';
+    }
 
-        const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        console.log(`${reqTag}@google/genai Vertex AI (${modelId}) response received successfully.`);
-        return { text, model: `vertex-ai (${modelId})` };
-      } catch (modelErr) {
-        const errMsg = modelErr.message || '';
-        const isNetworkErr = errMsg.includes('fetch failed') || errMsg.includes('ENOTFOUND') || errMsg.includes('ETIMEDOUT') || errMsg.includes('429') || errMsg.includes('503');
-        if (isNetworkErr && retries > 0) {
-          console.warn(`${reqTag}Vertex AI connection glitch (${errMsg}). Retrying in ${delay}ms... (${retries} retries left)`);
-          await new Promise((r) => setTimeout(r, delay));
-          delay *= 1.5;
-          retries--;
-        } else {
-          console.warn(`${reqTag}Primary @google/genai model ${modelId} failed: ${errMsg}`);
-          throw modelErr;
+    const modelSequence = Array.from(new Set([
+      requestedModel,
+      'gemini-2.5-flash',
+      'gemini-1.5-flash-002',
+      'gemini-2.0-flash',
+      'gemini-1.5-pro-002',
+      'gemini-1.5-flash'
+    ]));
+
+    let lastError = null;
+    for (const client of clientCandidates) {
+      for (const mId of modelSequence) {
+        try {
+          console.log(`${reqTag}Calling @google/genai model: ${mId}...`);
+          const response = await client.models.generateContent({
+            model: mId,
+            contents,
+          });
+
+          const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (text) {
+            console.log(`${reqTag}@google/genai (${mId}) response received successfully.`);
+            return { text, model: `vertex-ai (${mId})` };
+          }
+        } catch (modelErr) {
+          lastError = modelErr;
+          console.warn(`${reqTag}Model ${mId} attempt note: ${modelErr.message?.slice(0, 150)}`);
         }
       }
     }
+
+    if (lastError) throw lastError;
   }
 
   throw new Error('Google Cloud Vertex AI (@google/genai) is not initialized with Application Default Credentials (ADC).');
@@ -301,78 +296,147 @@ const generateSmartFallbackResponse = (messages, options = {}) => {
   const brandName = resolveBrandName(options);
 
   // 1. Check for casual/conversational questions (Hindi, Hinglish, English)
-  const isCasualOrFoodQuery = /khana|khaya|khaye|food|lunch|dinner|eat|ate|breakfast|chai|nashta|kaise ho|kya haal|kya kar|hello|hi\b|hey\b|namaste|who are you|kon ho|kaun ho|kaun hai/i.test(queryLower);
+  const isCasualOrFoodQuery = /khana|khaya|khaye|\bfood\b|\blunch\b|\bdinner\b|\beat\b|\bate\b|\bbreakfast\b|chai|nashta|kaise ho|kya haal|kya kar|hello|hi\b|hey\b|namaste|who are you|kon ho|kaun ho|kaun hai/i.test(queryLower);
   
   if (isCasualOrFoodQuery) {
-    if (/khana|khaya|khaye|eat|food|dinner|lunch/i.test(queryLower)) {
+    if (/khana|khaya|khaye|\beat\b|\bfood\b|\bdinner\b|\blunch\b/i.test(queryLower)) {
       return {
-        text: `Main ek AI Ads™ Assistant hu, toh main khana nahi khata! Lekin main bilkul 100% active hu aur ${brandName} ke marketing, social media posts, aur ad campaigns scale karne ke liye ready hu. Aap bataiye, aaj aapke brand ke liye kya create karein?`,
+        text: `Main ek AI Ads™ Assistant hu, toh main khana nahi khata! Lekin main 100% active hu aur **${brandName}** ke marketing strategies, social media posts, Meta & Google ads, aur sales funnels scale karne ke liye ready hu.\n\nAap bataiye, aaj aapke brand ke liye konsa marketing target achieve karein?`,
         model: 'AI Ads™ Intelligence Engine',
         fallback: true
       };
     }
     return {
-      text: `Hello! Main AI Ads™ Assistant hu, aapka official AI marketing copilot for ${brandName}. Main aapke ad campaigns, high-converting social posts, SEO strategy, aur landing pages me madad kar sakta hu. Bataiye, aaj hum kis par kaam karein?`,
+      text: `Hello! Main AI Ads™ Assistant hu, aapka expert AI marketing copilot for **${brandName}**.\n\nMain aapke brand ke liye:\n- **Instagram & Social Growth Strategies**\n- **High-Converting Ad Copywriting (PAS / AIDA)**\n- **LinkedIn B2B Thought Leadership**\n- **SEO & Search Keyword Targeting**\n- **Full-Funnel Growth Roadmaps (TOFU / MOFU / BOFU)**\n\nBataiye, aaj hum kis marketing strategy ya platform par kaam karein?`,
       model: 'AI Ads™ Intelligence Engine',
       fallback: true
     };
   }
 
-  // 2. Check for Social Media / Post Generation queries
-  const isSocialQuery = /post|instagram|caption|linkedin|hook|tweet|facebook|social/i.test(queryLower);
-  if (isSocialQuery) {
+  // 2. Check for Instagram / Reels / Carousel / Visual Content queries
+  const isInstagramQuery = /instagram|reel|carousel|story|grid|ig\b/i.test(queryLower);
+  if (isInstagramQuery) {
     return {
-      text: `Here is a high-converting social post hook for ${brandName}:\n\n` +
-            `🚀 Transform your brand strategy today with ${brandName}!\n\n` +
-            `Want to generate ready-to-publish Instagram posts, LinkedIn hooks, and multi-channel content?\n` +
-            `Open Content Studio (Module 6) or click "+ Quick Post" in the top bar to create posts tailored to your Brand DNA.`,
+      text: `### 📸 High-Converting Instagram Growth Strategy for ${brandName}\n\n` +
+            `To build an engaging, viral, and revenue-generating Instagram presence for **${brandName}**, implement this 4-pillar strategy:\n\n` +
+            `#### 1. The 3-Second Hook Formula (Reels & Carousels)\n` +
+            `- **Visual Hook:** First 3 seconds must feature movement, text overlay, or an intriguing problem statement.\n` +
+            `- **Text Hook Examples:**\n` +
+            `  * *"3 mistakes most brands make with ${brandName} strategy..."*\n` +
+            `  * *"The secret framework behind 10x engagement for ${brandName}..."*\n\n` +
+            `#### 2. The 70-20-10 Content Rule\n` +
+            `- **70% Value & Education:** Tips, tutorials, industry insights, and relatable carousels.\n` +
+            `- **20% Social Proof & Behind the Scenes:** Customer reviews, case studies, and brand story.\n` +
+            `- **10% Direct Sales & Offers:** High-urgency CTAs leading to your landing page or shop.\n\n` +
+            `#### 3. Hashtag & Distribution Framework\n` +
+            `- Use 5–8 focused hashtags: 2 Niche Broad (` + `\`#MarketingStrategy\`` + `), 3 Specific (` + `\`#${brandName.replace(/\s+/g, '')}Growth\`` + `), 2 Target Audience focused.\n` +
+            `- Best Posting Times: 9:00 AM – 11:00 AM and 6:00 PM – 8:00 PM EST.\n\n` +
+            `💡 *Pro-Tip: You can use **Content Studio (Module 6)** or click **"+ Quick Post"** in the top bar to generate ready-to-publish Instagram posts, carousels, and captions tailored to your Brand DNA!*`,
       model: 'AI Ads™ Intelligence Engine',
       fallback: true
     };
   }
 
-  // 3. Check for Visuals / Image / Ad Creation queries
-  const isVisualQuery = /image|visual|creative|banner|ad image|photo|graphic|design/i.test(queryLower);
-  if (isVisualQuery) {
+  // 3. Check for LinkedIn / B2B Growth queries
+  const isLinkedInQuery = /linkedin|b2b|thought leadership|outreach|professional|connection/i.test(queryLower);
+  if (isLinkedInQuery) {
     return {
-      text: `For high-resolution AI ad visual generation and banners tailored to ${brandName}:\n\n` +
-            `- Recommended Image Prompt: Professional commercial photography representing ${brandName}, 8k resolution, modern studio lighting.\n` +
-            `- Quick Access: Open Creative Studio (Module 9) from the left sidebar to generate visual variations and ad banners instantly.`,
+      text: `### 💼 LinkedIn B2B Authority & Organic Growth Strategy for ${brandName}\n\n` +
+            `LinkedIn requires a value-first, personal authority approach to convert connection views into high-paying client inquiries:\n\n` +
+            `#### 1. Content Pillars for ${brandName}\n` +
+            `- **Industry Frameworks:** Step-by-step guides breakdown of how ${brandName} solves market bottlenecks.\n` +
+            `- **Case Studies & Results:** *"How we achieved 3x ROI using this exact framework..."*\n` +
+            `- **Contrarian Industry Opinions:** Challenge outdated industry myths to spark comments.\n\n` +
+            `#### 2. High-Engagement Post Structure\n` +
+            `- **Line 1 (The Scroll-Stopper):** Single short sentence that creates curiosity.\n` +
+            `- **Body (Whitespace Formatting):** Short 1-2 line paragraphs with bullet points.\n` +
+            `- **Bottom Call to Action:** *"What is your experience with this? Drop your thoughts below 👇"*\n\n` +
+            `#### 3. Growth Tactics\n` +
+            `- Leave 5 insightful comments on key decision-makers' posts daily.\n` +
+            `- Repurpose key insights into downloadable PDF document carousels.\n\n` +
+            `💡 *Pro-Tip: Open **Content Studio (Module 6)** to auto-generate LinkedIn text posts and professional carousels formatted for maximum reach!*`,
       model: 'AI Ads™ Intelligence Engine',
       fallback: true
     };
   }
 
-  // 4. Check for Website / Landing Page queries
-  const isWebQuery = /website|landing page|builder|hero section|page/i.test(queryLower);
-  if (isWebQuery) {
+  // 4. Check for Facebook / Meta Ads / Copywriting queries
+  const isAdCopyQuery = /facebook|meta ad|ad copy|headline|copywriting|pas|aida|ad campaign|creative ad/i.test(queryLower);
+  if (isAdCopyQuery) {
     return {
-      text: `To build or edit high-converting landing pages for ${brandName}:\n\n` +
-            `Open AI Website Builder (Module 7) from the left sidebar. You can generate complete responsive websites using conversational AI prompts and customize your layout in real-time.`,
+      text: `### 🎯 High-Converting Facebook & Meta Ad Strategy for ${brandName}\n\n` +
+            `To achieve optimal ROAS (Return On Ad Spend), structure your ad creative and copy around proven psychological frameworks:\n\n` +
+            `#### 1. PAS Copywriting Framework (Problem - Agitate - Solve)\n` +
+            `- **Problem:** *"Struggling to scale your marketing efficiency for ${brandName}?"*\n` +
+            `- **Agitate:** *"Wasting budget on low-converting ads and manual design work?"*\n` +
+            `- **Solve:** *"Meet ${brandName}: Automated AI visual creation and high-converting ad copy in 1 click."*\n\n` +
+            `#### 2. Ad Creative Best Practices\n` +
+            `- **Primary Text:** Keep under 125 characters or use structured long-form bullet points.\n` +
+            `- **Headline:** 4-7 words highlighting instant benefit (*"Scale ${brandName} Marketing Today"*).\n` +
+            `- **CTA Button:** Use *"Learn More"* for cold audiences or *"Get Offer"* for retargeting.\n\n` +
+            `#### 3. Audience Funnel Split\n` +
+            `- **TOFU (Cold Audience):** Broad interest targeting focused on video hooks & educational pain points.\n` +
+            `- **BOFU (Retargeting):** Offer discounts, testimonials, and 1-on-1 guarantee CTAs.\n\n` +
+            `💡 *Pro-Tip: Navigate to **Creative Studio (Module 9)** to generate high-converting AI ad banners and visual ad variations instantly!*`,
       model: 'AI Ads™ Intelligence Engine',
       fallback: true
     };
   }
 
-  // 5. Default intelligent response for general marketing queries
-  const isDetailed = /detail|in-depth|comprehensive|explain/i.test(queryLower);
-  if (!isDetailed) {
+  // 5. Check for YouTube / Video Content queries
+  const isYouTubeQuery = /youtube|video|shorts|vtuber|thumbnail|script/i.test(queryLower);
+  if (isYouTubeQuery) {
     return {
-      text: `AI Ads™ Strategy Guide for ${brandName}:\n\n` +
-            `- For Instagram & Social Posts: Go to Content Studio (Module 6) or click "+ Quick Post" in the top bar.\n` +
-            `- For AI Ad Visuals & Banners: Go to Creative Studio (Module 9).\n` +
-            `- For Websites & Landing Pages: Use AI Website Builder (Module 7).\n` +
-            `- For Strategy & SEO: Visit Strategy (Module 4) or SEO Intelligence (Module 3).`,
+      text: `### 🎥 YouTube & Short-Form Video Growth Blueprint for ${brandName}\n\n` +
+            `#### 1. The 5-Second Video Retention Formula\n` +
+            `- **0–5 Seconds:** Deliver on the video title immediately. No long intro logos.\n` +
+            `- **5–30 Seconds:** Outline the 3 main takeaways the viewer will gain.\n` +
+            `- **Body Content:** Deliver actionable value with screen transitions every 4–6 seconds.\n\n` +
+            `#### 2. YouTube Shorts Tactics\n` +
+            `- Keep duration between 25 and 45 seconds for maximum completion rate.\n` +
+            `- Loop the ending sentence back to the opening hook for seamless repeat plays.\n\n` +
+            `#### 3. Thumbnail & Title Optimization\n` +
+            `- Use high-contrast colors (Yellow/Red text on Dark Backgrounds).\n` +
+            `- Limit thumbnail text to 3 strong words.\n\n` +
+            `💡 *Pro-Tip: Use **Content Studio (Module 6)** to script complete YouTube video outlines and short scripts tailored to your brand!*`,
       model: 'AI Ads™ Intelligence Engine',
       fallback: true
     };
   }
 
+  // 6. Check for SEO / Search Engine Optimization queries
+  const isSeoQuery = /seo|keyword|search engine|google rank|meta description|backlink/i.test(queryLower);
+  if (isSeoQuery) {
+    return {
+      text: `### 🔍 Comprehensive SEO & Search Growth Strategy for ${brandName}\n\n` +
+            `#### 1. Search Intent Targeting\n` +
+            `- **Informational Keywords:** How-to guides, tutorials, and comparison articles.\n` +
+            `- **Commercial Keywords:** *"Best tools for ${brandName}"*, reviews, and comparison matrices.\n` +
+            `- **Transactional Keywords:** *"Buy ${brandName} services"*, pricing plans.\n\n` +
+            `#### 2. On-Page SEO Checklist\n` +
+            `- Include primary keyword in H1 tag, URL slug, and first 100 words.\n` +
+            `- Write compelling meta descriptions (150-160 characters) with direct CTAs.\n` +
+            `- Ensure internal linking between blog articles and service/landing pages.\n\n` +
+            `💡 *Pro-Tip: Go to **SEO Intelligence (Module 3)** to perform automated keyword cluster analysis and generate instant SEO briefs for ${brandName}!*`,
+      model: 'AI Ads™ Intelligence Engine',
+      fallback: true
+    };
+  }
+
+  // 7. General Marketing & Growth Funnel Response
   return {
-    text: `AI Ads™ Platform Guide for ${brandName}:\n\n` +
-          `1. Content & Post Generation: Open Content Studio (Module 6) to generate social copy, captions, and hashtags.\n` +
-          `2. Visual Ad Creation: Open Creative Studio (Module 9) to generate high-converting ad images.\n` +
-          `3. Website Building: Open AI Website Builder (Module 7) to generate responsive landing pages.`,
+    text: `### 🚀 Growth Strategy & Marketing Roadmap for ${brandName}\n\n` +
+          `To build a sustainable, high-converting marketing engine for **${brandName}**, implement this full-funnel framework:\n\n` +
+          `#### 1. Top of Funnel (TOFU) – Awareness & Reach\n` +
+          `- **Social Media Distribution:** Consistent short-form video reels, LinkedIn posts, and Instagram carousels focused on audience pain points.\n` +
+          `- **SEO Content:** High-intent blog posts answering key industry search queries.\n\n` +
+          `#### 2. Middle of Funnel (MOFU) – Lead Nurturing & Trust\n` +
+          `- **Lead Magnets:** Free checklists, templates, or ROI calculators in exchange for email signups.\n` +
+          `- **Social Proof:** Case studies, customer testimonials, and visual product demonstrations.\n\n` +
+          `#### 3. Bottom of Funnel (BOFU) – High Conversion\n` +
+          `- **Dedicated Landing Pages:** High-speed, mobile-optimized landing pages with clear CTAs.\n` +
+          `- **Retargeting Ads & Email Sequences:** Abandoned funnel follow-ups and limited-time incentives.\n\n` +
+          `💡 *Need to execute this strategy? Open **Strategy (Module 4)** for custom campaign roadmaps, or **Content Studio (Module 6)** to create assets instantly!*`,
     model: 'AI Ads™ Intelligence Engine',
     fallback: true
   };
@@ -427,16 +491,16 @@ const generate = async (prompt, options = {}) => {
 const generateJSON = async (prompt, options = {}) => {
   const reqTag = options.reqId ? `[WB:${options.reqId}] ` : '[AI-Service] ';
   const jsonInstruction = `\n\nIMPORTANT: Respond ONLY with valid JSON. No markdown, no code blocks, no explanation. Just raw JSON.`;
-  
+
   console.log(`${reqTag}AI generateJSON started...`);
-  
+
   let result = null;
   try {
     result = await generate(prompt + jsonInstruction, options);
   } catch (genErr) {
     console.warn(`${reqTag}AI generate threw error (${genErr.message}). Using Smart Fallback JSON.`);
   }
-  
+
   if (!result || !result.text || result.fallback) {
     console.log(`${reqTag}Using Smart Fallback JSON structure.`);
     const fallbackData = generateSmartFallbackJSON(prompt, options);
