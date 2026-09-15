@@ -61,10 +61,11 @@
 }
 
 .light .glass-card {
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 0, 0, 0.02);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 2px 8px -2px rgba(0, 0, 0, 0.02);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 30px -5px rgba(123, 97, 255, 0.08), 0 2px 8px -2px rgba(0, 0, 0, 0.03);
 }
 
 .glass-input {
@@ -186,5 +187,43 @@
   box-shadow: 8px 0 32px rgba(0, 0, 0, 0.4) !important;
   backdrop-filter: blur(20px) !important;
 }
+
+/* 🔄 Infinite Continuous Marquee Animation */
+@keyframes continuousMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-infinite {
+  display: flex;
+  width: max-content;
+  animation: continuousMarquee 18s linear infinite !important;
+  will-change: transform;
+}
+
+/* 🧠 Floating Brain Chatbot Pulse Animation */
+@keyframes brainFloatPulse {
+  0% {
+    transform: translateY(0px) scale(1);
+    filter: drop-shadow(0 4px 12px rgba(123, 97, 255, 0.4));
+  }
+  50% {
+    transform: translateY(-8px) scale(1.06);
+    filter: drop-shadow(0 12px 24px rgba(168, 130, 255, 0.75));
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+    filter: drop-shadow(0 4px 12px rgba(123, 97, 255, 0.4));
+  }
+}
+
+.animate-brain-float {
+  animation: brainFloatPulse 3.5s ease-in-out infinite !important;
+}
+
 
 

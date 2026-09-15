@@ -163,12 +163,7 @@ export const DashboardModule = () => {
 
         {/* Left Welcome Text & Chips */}
         <div className="relative z-10 space-y-3 max-w-2xl">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 text-[11px] uppercase font-black tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-400/20 dark:bg-emerald-500/30 border border-emerald-500/40 px-3 py-1 rounded-full shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <span>AI GROWTH ENGINE ACTIVE</span>
-            </span>
-          </div>
+
 
           <div className="space-y-1">
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">

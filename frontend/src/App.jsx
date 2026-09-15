@@ -190,19 +190,14 @@ const MainContent = () => {
       {!isAISAAssistantOpen && (
         <button
           onClick={() => setIsAISAAssistantOpen(true)}
-          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-black shadow-2xl shadow-cyan-500/30 border-2 border-cyan-500/60 hover:border-cyan-400 p-0.5 transition-all hover:scale-110 active:scale-95 group overflow-hidden"
+          className="fixed bottom-6 right-8 sm:bottom-8 sm:right-12 z-40 w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 cursor-pointer group"
           title="Open AI Ads™ Chatbot Assistant"
         >
           <img
-            src="/brain-icon-dark.jpg"
-            alt="AI Ads™ Assistant"
-            className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform"
+            src="/aisa_brain_logo_hd.png?v=3"
+            alt="AI Ads™ Chatbot Assistant"
+            className="w-full h-full object-contain animate-brain-float transition-all"
           />
-          {/* Live Pulsing Glow Ring */}
-          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-cyan-500 border-2 border-black"></span>
-          </span>
         </button>
       )}
     </div>

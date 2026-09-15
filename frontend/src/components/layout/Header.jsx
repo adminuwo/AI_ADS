@@ -174,7 +174,7 @@ export const Header = () => {
                   className="w-full py-2 px-3 flex items-center gap-2 text-xs font-medium text-brand-500 hover:bg-brand-500/10 rounded-xl transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  {t('autoScrapeNewBrandDna', '+ Auto Scrape New Brand DNA')}
+                  {t('autoScrapeNewBrandDna', 'Auto Scrape New Brand DNA')}
                 </button>
               </div>
             </div>
@@ -184,6 +184,18 @@ export const Header = () => {
 
       {/* Right Controls */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto sm:ml-0">
+        {/* Chatbot Assistant Brain Button */}
+        <button
+          onClick={() => setIsAISAAssistantOpen(true)}
+          className="group flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/30 dark:border-purple-500/40 hover:border-purple-500/60 transition-all shadow-2xs hover:shadow-md cursor-pointer shrink-0"
+          title="Open AI Ads™ Chatbot Assistant"
+        >
+          <img src="/aisa_brain_logo_hd.png?v=3" alt="AI Ads™ Chatbot Assistant" className="w-5 h-5 sm:w-6 sm:h-6 object-contain group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-extrabold text-purple-700 dark:text-purple-300 hidden md:inline">
+            AI Chatbot
+          </span>
+        </button>
+
         {/* User Current Plan Badge */}
         <button
           onClick={() => {

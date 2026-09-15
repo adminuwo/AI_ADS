@@ -803,33 +803,33 @@ export const StrategyModule = () => {
       )}
 
       {/* ══════════ HEADER ══════════ */}
-      <div className="relative overflow-hidden p-6 rounded-3xl border border-slate-200 dark:border-slate-800 glass-card">
+      <div className="relative overflow-hidden p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-purple-500/8 via-indigo-500/5 to-pink-500/8 dark:from-purple-950/30 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-800/40 shadow-md backdrop-blur-xl">
         {/* Decorative background orbs */}
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-gradient-to-br from-brand-500/10 to-purple-500/5 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-gradient-to-br from-emerald-500/10 to-blue-500/5 blur-3xl pointer-events-none" />
+        <div className="absolute -top-10 -right-10 w-56 h-56 rounded-full bg-gradient-to-br from-brand-500/10 to-purple-500/8 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-gradient-to-br from-emerald-500/10 to-cyan-500/8 blur-3xl pointer-events-none" />
 
         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
           {/* Left: Title block */}
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
-                <Target className="w-5 h-5 text-white" />
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-500 via-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-brand-500/20 text-white shrink-0">
+                <Target className="w-6 h-6" />
               </div>
               <div>
-                <h1 className="text-xl font-extrabold text-slate-900 dark:text-white leading-none">
+                <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-brand-600 via-purple-600 to-indigo-600 dark:from-brand-300 dark:via-purple-300 dark:to-indigo-300 bg-clip-text text-transparent leading-none tracking-tight">
                   {t('strategyTitle', 'Marketing Strategy & Roadmap')}
                 </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-semibold">
                   AI-generated 30-day growth blueprint for{' '}
-                  <span className="font-bold text-slate-800 dark:text-white">{activeWorkspace.brandName}</span>
+                  <span className="font-black text-brand-600 dark:text-brand-300 px-1.5 py-0.5 rounded-md bg-brand-500/10 border border-brand-500/20">{activeWorkspace.brandName}</span>
                 </p>
                 {activeWorkspace.currentStrategy?.campaignName && (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold mt-1">
-                    <Target className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-200 text-xs font-black mt-1.5 shadow-sm">
+                    <Target className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span>Campaign Focus: <strong>{activeWorkspace.currentStrategy.campaignName}</strong></span>
                     <button
                       onClick={() => setActiveModule('campaigns')}
-                      className="ml-1 text-[10.5px] underline hover:text-emerald-900 dark:hover:text-emerald-100 font-semibold"
+                      className="ml-1 text-[11px] underline hover:text-emerald-950 dark:hover:text-emerald-100 font-extrabold"
                     >
                       Back to Campaign →
                     </button>
@@ -840,7 +840,7 @@ export const StrategyModule = () => {
 
             {/* Tabs */}
             {generatedDoc && (
-              <div className="flex items-center gap-1 mt-1 bg-slate-100 dark:bg-slate-800/70 rounded-xl p-1 w-fit flex-wrap">
+              <div className="flex items-center gap-1 mt-2 bg-white/60 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-1.5 w-fit flex-wrap border border-purple-200/50 dark:border-purple-800/40 shadow-inner">
                 {[
                   { id: 'overview',   label: t('overviewTab', 'Overview'),   icon: BarChart2 },
                   { id: 'campaigns',  label: t('campaignsTab', 'Campaigns'),  icon: Megaphone },
@@ -850,16 +850,16 @@ export const StrategyModule = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all duration-200 ${
                       activeTab === tab.id
-                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-600'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                    } ${tab.isCustom ? 'text-purple-600 dark:text-purple-400' : ''}`}
+                        ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white shadow-md'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-white hover:bg-white/50'
+                    } ${tab.isCustom ? 'text-purple-700 dark:text-purple-300' : ''}`}
                   >
-                    <tab.icon className={`w-3.5 h-3.5 ${tab.isCustom ? 'text-purple-500' : ''}`} />
+                    <tab.icon className="w-3.5 h-3.5" />
                     {tab.label}
                     {tab.isCustom && (
-                      <span className="px-1.5 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-300 text-[8px] font-black uppercase ml-0.5">AI</span>
+                      <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[8px] font-black uppercase ml-0.5">AI</span>
                     )}
                   </button>
                 ))}
@@ -933,27 +933,32 @@ export const StrategyModule = () => {
             {/* Left: 3 Objective Cards */}
             <div className="lg:col-span-3 space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-                    <TrendingUp className="w-3 h-3 text-white" />
+                <h2 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+                    <TrendingUp className="w-3.5 h-3.5" />
                   </div>
                   {t('objectivesPathTitle', 'Objectives & Conversion Path')}
                 </h2>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {objectiveCards.map(card => {
                   const IconComp  = card.icon;
                   const isEditing = editingField === card.key;
+                  const cardGradients = {
+                    businessGoal: 'from-violet-500/5 via-indigo-500/3 to-purple-500/5 dark:from-violet-950/30 dark:to-slate-900/90 border-violet-200/60 dark:border-violet-900/40',
+                    leadMagnet: 'from-amber-500/5 via-orange-500/3 to-yellow-500/5 dark:from-amber-950/30 dark:to-slate-900/90 border-amber-200/60 dark:border-amber-900/40',
+                    primaryCta: 'from-emerald-500/5 via-teal-500/3 to-cyan-500/5 dark:from-emerald-950/30 dark:to-slate-900/90 border-emerald-200/60 dark:border-emerald-900/40',
+                  };
                   return (
-                    <div key={card.key} className="group relative p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-lg transition-all duration-300 flex gap-4">
-                      <div className={`shrink-0 w-10 h-10 rounded-xl ${card.iconBg} flex items-center justify-center shadow-md ring-4 ring-slate-50 dark:ring-slate-900`}>
-                        <IconComp className="w-4 h-4 text-white" />
+                    <div key={card.key} className={`group relative p-5 rounded-2xl bg-gradient-to-br ${cardGradients[card.key]} border backdrop-blur-md hover:shadow-md transition-all duration-300 flex gap-4`}>
+                      <div className={`shrink-0 w-11 h-11 rounded-2xl ${card.iconBg} flex items-center justify-center shadow-sm ring-4 ring-white/40 dark:ring-slate-900/50`}>
+                        <IconComp className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1 min-w-0 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className={`text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full ${card.tagColor}`}>{card.tag}</span>
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{card.label}</span>
+                          <span className={`text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-2xs ${card.tagColor}`}>{card.tag}</span>
+                          <span className="text-[11px] text-slate-600 dark:text-slate-400 font-extrabold uppercase tracking-wider">{card.label}</span>
                         </div>
                         {isEditing ? (
                           <input
@@ -961,15 +966,15 @@ export const StrategyModule = () => {
                             onChange={e => card.setter(e.target.value)}
                             onBlur={() => { handleSave(); setEditingField(null); }}
                             onKeyDown={e => { if (e.key === 'Enter') { handleSave(); setEditingField(null); }}}
-                            autoFocus className="flex-1 glass-input text-sm font-semibold py-2.5 w-full"
+                            autoFocus className="flex-1 glass-input text-xs font-bold py-2.5 w-full bg-white/80 dark:bg-slate-800"
                           />
                         ) : (
-                          <div onClick={() => setEditingField(card.key)} className="cursor-pointer flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors -ml-3">
-                            <p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-relaxed">{card.value}</p>
-                            <Edit3 className="w-3.5 h-3.5 text-slate-300 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div onClick={() => setEditingField(card.key)} className="cursor-pointer flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-white/60 dark:hover:bg-slate-800/50 transition-colors -ml-3">
+                            <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white leading-relaxed">{card.value}</p>
+                            <Edit3 className="w-4 h-4 text-slate-400 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
                         )}
-                        <p className="text-[10px] text-slate-400 pl-3 border-l-2 border-slate-100 dark:border-slate-800 font-medium">{card.sublabel}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-3 border-l-2 border-slate-300 dark:border-slate-700 font-medium">{card.sublabel}</p>
                       </div>
                     </div>
                   );
@@ -979,20 +984,20 @@ export const StrategyModule = () => {
 
             {/* Right: Channel Mix */}
             <div className="lg:col-span-2">
-              <div className="h-full p-6 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 flex flex-col">
+              <div className="h-full p-6 rounded-2xl bg-gradient-to-br from-blue-500/6 via-cyan-500/4 to-indigo-500/6 dark:from-blue-950/30 dark:to-slate-900/90 border border-blue-200/60 dark:border-blue-900/40 shadow-sm backdrop-blur-md flex flex-col">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                      <PieChart className="w-3 h-3 text-white" />
+                  <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-sm">
+                      <PieChart className="w-3.5 h-3.5" />
                     </div>
                     Channel Mix
                   </h2>
-                  <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold px-2 py-0.5 rounded-full">{totalPct}% Total</span>
+                  <span className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold px-2.5 py-0.5 rounded-full border border-blue-200/50">{totalPct}% Total</span>
                 </div>
 
                 {/* Donut */}
                 <div className="flex justify-center mb-5">
-                  <div className="relative w-32 h-32">
+                  <div className="relative w-36 h-36">
                     <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
                       {(() => {
                         let offset = 0;
@@ -1021,8 +1026,8 @@ export const StrategyModule = () => {
                       })()}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-extrabold text-slate-900 dark:text-white leading-none">{channelMix.length}</span>
-                      <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Channels</span>
+                      <span className="text-3xl font-black text-slate-900 dark:text-white leading-none">{channelMix.length}</span>
+                      <span className="text-[9px] text-slate-600 dark:text-slate-300 font-black uppercase tracking-wider">Channels</span>
                     </div>
                   </div>
                 </div>
@@ -1036,16 +1041,16 @@ export const StrategyModule = () => {
                     if (ch.icon === 'Instagram')  Icon = Instagram;
                     const colors = channelColors[ch.icon] || channelColors.Globe;
                     return (
-                      <div key={ch.label} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <div key={ch.label} className="flex items-center gap-3 p-3 rounded-xl bg-white/40 dark:bg-slate-900/50 border border-blue-400/20 hover:bg-white/60 transition-colors">
                         <div className={`shrink-0 w-9 h-9 rounded-lg ${colors.bg} flex items-center justify-center ring-2 ${colors.ring}`}>
                           <Icon className={`w-4 h-4 ${colors.text}`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{ch.label}</span>
-                            <span className="text-sm font-extrabold text-slate-900 dark:text-white ml-2">{ch.pct}%</span>
+                            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 truncate">{ch.label}</span>
+                            <span className="text-sm font-black text-slate-900 dark:text-white ml-2">{ch.pct}%</span>
                           </div>
-                          <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                          <div className="h-2 w-full rounded-full bg-slate-200/60 dark:bg-slate-800 overflow-hidden">
                             <div className={`h-full rounded-full bg-gradient-to-r ${colors.bar} transition-all duration-1000`} style={{ width: `${ch.pct}%` }} />
                           </div>
                         </div>
@@ -1061,19 +1066,19 @@ export const StrategyModule = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
             {/* Best Platforms */}
-            <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-500/6 via-purple-500/4 to-violet-500/6 dark:from-indigo-950/30 dark:to-slate-900/90 border border-indigo-200/60 dark:border-indigo-900/40 backdrop-blur-md shadow-sm space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                  <Globe className="w-3.5 h-3.5 text-white" />
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm">
+                  <Globe className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest">Best Platforms</h3>
+                <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Best Platforms</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {bestPlatforms.map((p, i) => {
                   const PIcon = getPlatformIcon(p);
                   return (
-                    <span key={i} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold ring-1 ${getPlatformColor(p)}`}>
-                      <PIcon className="w-3 h-3" /> {p}
+                    <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold ring-1 shadow-2xs ${getPlatformColor(p)}`}>
+                      <PIcon className="w-3.5 h-3.5" /> {p}
                     </span>
                   );
                 })}
@@ -1084,40 +1089,40 @@ export const StrategyModule = () => {
             </div>
 
             {/* Posting Frequency */}
-            <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500/6 via-teal-500/4 to-cyan-500/6 dark:from-emerald-950/30 dark:to-slate-900/90 border border-emerald-200/60 dark:border-emerald-900/40 backdrop-blur-md shadow-sm space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                  <Clock className="w-3.5 h-3.5 text-white" />
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-sm">
+                  <Clock className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest">Posting Frequency</h3>
+                <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Posting Frequency</h3>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 flex items-center justify-center">
-                  <Flame className="w-6 h-6 text-emerald-500" />
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-300/40 dark:border-emerald-800/40 flex items-center justify-center shadow-xs">
+                  <Flame className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-extrabold text-slate-900 dark:text-white">{postingFrequency}</p>
-                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">AI Recommended</p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-white">{postingFrequency}</p>
+                  <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase tracking-wider">AI Recommended</p>
                 </div>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
                 Consistent publishing schedule optimized for {activeWorkspace.brandName}'s growth targets.
               </p>
             </div>
 
             {/* Budget */}
-            <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-500/6 via-orange-500/4 to-yellow-500/6 dark:from-amber-950/30 dark:to-slate-900/90 border border-amber-200/60 dark:border-amber-900/40 backdrop-blur-md shadow-sm space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                  <DollarSign className="w-3.5 h-3.5 text-white" />
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-sm">
+                  <DollarSign className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest">Budget Strategy</h3>
+                <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Budget Strategy</h3>
               </div>
               <div className="space-y-2">
                 {budgetSuggestions.split('/').map((part, i) => (
                   <div key={i} className="flex items-start gap-2">
-                    <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${i === 0 ? 'bg-brand-500' : 'bg-amber-500'}`} />
-                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-snug">{part.trim()}</p>
+                    <div className={`mt-1 w-2.5 h-2.5 rounded-full shrink-0 ${i === 0 ? 'bg-brand-500' : 'bg-amber-500'}`} />
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold leading-snug">{part.trim()}</p>
                   </div>
                 ))}
               </div>
@@ -1128,30 +1133,30 @@ export const StrategyModule = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
             {/* Content Pillars */}
-            <div className="p-6 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
-              <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-brand-500" /> Content Pillars
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-rose-500/6 via-pink-500/4 to-purple-500/6 dark:from-rose-950/30 dark:to-slate-900/90 border border-rose-200/60 dark:border-rose-900/40 backdrop-blur-md shadow-sm space-y-4">
+              <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-rose-500 dark:text-rose-400" /> Content Pillars
               </h2>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-1 gap-2.5">
                 {contentPillars.map((pillar, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-brand-500/20 to-purple-500/20 flex items-center justify-center text-brand-600 dark:text-brand-400 text-[10px] font-extrabold shrink-0">{i + 1}</div>
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{pillar}</span>
+                  <div key={i} className="flex items-center gap-3 p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-rose-200/50 dark:border-rose-900/30 text-slate-900 dark:text-white font-bold text-xs shadow-2xs">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-2xs">{i + 1}</div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">{pillar}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Target Audience */}
-            <div className="p-6 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
-              <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                <Users className="w-4 h-4 text-brand-500" /> Target Audience
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/6 via-indigo-500/4 to-pink-500/6 dark:from-purple-950/30 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-900/40 backdrop-blur-md shadow-sm space-y-4">
+              <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                <Users className="w-4 h-4 text-purple-500 dark:text-purple-400" /> Target Audience
               </h2>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-1 gap-2.5">
                 {(audience.length > 0 ? audience : (activeWorkspace.targetAudience || []).slice(0, 4)).map((persona, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center text-brand-600 dark:text-brand-400 text-[10px] font-extrabold shrink-0">{i + 1}</div>
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-snug">{persona}</span>
+                  <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-purple-200/50 dark:border-purple-900/30 text-slate-900 dark:text-white font-bold text-xs shadow-2xs">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-2xs mt-0.5">{i + 1}</div>
+                    <span className="text-xs font-semibold text-slate-800 dark:text-white leading-snug">{persona}</span>
                   </div>
                 ))}
               </div>
@@ -1159,24 +1164,24 @@ export const StrategyModule = () => {
           </div>
 
           {/* ROW 3.5: Custom Visual Directives & Uploaded Images */}
-          <div className="p-6 rounded-2xl glass-card border border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-slate-900/5 to-transparent space-y-4">
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/6 via-indigo-500/4 to-cyan-500/6 dark:from-purple-950/30 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-900/40 backdrop-blur-md shadow-sm space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-                    <ImageIcon className="w-3 h-3 text-white" />
+                <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-xs">
+                    <ImageIcon className="w-3.5 h-3.5" />
                   </div>
                   Custom Visual Directives &amp; Uploaded Assets
                 </h2>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
                   Reference images and specific visual instructions provided for strategy and visual asset creation
                 </p>
               </div>
               <button
                 onClick={() => setShowImageBriefModal(true)}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
               >
-                <UploadCloud className="w-3.5 h-3.5" />
+                <UploadCloud className="w-4 h-4" />
                 <span>Upload Image Brief</span>
               </button>
             </div>
@@ -1184,9 +1189,9 @@ export const StrategyModule = () => {
             {customImageBriefs && customImageBriefs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                 {customImageBriefs.map((brief) => (
-                  <div key={brief.id} className="group relative p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 flex items-start gap-4 hover:border-purple-500/40 transition-all">
+                  <div key={brief.id} className="group relative p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-purple-200/50 flex items-start gap-4 hover:border-purple-400 transition-all shadow-2xs">
                     {brief.imageUrl ? (
-                      <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-700 shrink-0 flex items-center justify-center">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-950 border border-purple-200/60 shrink-0 flex items-center justify-center">
                         <img src={brief.imageUrl} alt={brief.fileName} className="w-full h-full object-cover" />
                       </div>
                     ) : (
@@ -1196,7 +1201,7 @@ export const StrategyModule = () => {
                     )}
                     <div className="flex-1 min-w-0 space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{brief.fileName}</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{brief.fileName}</span>
                         <button
                           onClick={() => handleDeleteImageBrief(brief.id)}
                           className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-all cursor-pointer"
@@ -1205,17 +1210,17 @@ export const StrategyModule = () => {
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 italic leading-snug">
+                      <p className="text-xs text-slate-700 dark:text-slate-300 line-clamp-2 italic leading-snug font-medium">
                         "{brief.directive || 'No specific text instruction provided.'}"
                       </p>
-                      <span className="inline-block text-[10px] text-slate-400 font-semibold">{brief.timestamp}</span>
+                      <span className="inline-block text-[10px] text-purple-600 dark:text-purple-400 font-bold">{brief.timestamp}</span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-6 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center space-y-2 bg-slate-50/40 dark:bg-slate-800/20">
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <div className="p-6 rounded-2xl border border-dashed border-purple-200 dark:border-purple-800/40 bg-purple-500/5 text-center space-y-2">
+                <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
                   No image reference briefs uploaded yet. Click <strong>Upload Image Brief</strong> to upload product photos or layout reference images and tell AI how to use them.
                 </p>
               </div>
@@ -1223,27 +1228,27 @@ export const StrategyModule = () => {
           </div>
 
           {/* ROW 4: Funnel Architecture */}
-          <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-5">
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-rose-500/6 via-purple-500/4 to-emerald-500/6 dark:from-slate-900/90 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-900/40 shadow-sm backdrop-blur-md space-y-5">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                <Layers className="w-4 h-4 text-brand-500" /> Marketing Funnel Architecture
+              <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                <Layers className="w-4 h-4 text-purple-500 dark:text-purple-400" /> Marketing Funnel Architecture
               </h2>
-              <span className="text-[10px] text-slate-400">Auto-mapped from {activeWorkspace.brandName}'s brand pillars</span>
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Auto-mapped from {activeWorkspace.brandName}'s brand pillars</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {funnelStages.map((stage, i) => (
-                <div key={stage.label} className={`p-5 rounded-2xl border ${stage.border} ${stage.bg} space-y-3 relative overflow-hidden`}>
-                  <span className="absolute top-3 right-4 text-[40px] font-extrabold leading-none text-slate-200 dark:text-slate-800/60 select-none">{i+1}</span>
+                <div key={stage.label} className={`p-5 rounded-2xl border ${stage.border} ${stage.bg} space-y-3 relative overflow-hidden backdrop-blur-md shadow-2xs`}>
+                  <span className="absolute top-3 right-4 text-[40px] font-black leading-none text-purple-900/10 dark:text-white/10 select-none">{i+1}</span>
                   <div className="relative space-y-1.5">
                     <span className={`text-xs font-extrabold ${stage.text} block`}>{stage.label}</span>
-                    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${stage.badge}`}>{stage.mix} Content Mix</span>
+                    <span className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full ${stage.badge}`}>{stage.mix} Content Mix</span>
                   </div>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed relative">{stage.desc}</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed relative">{stage.desc}</p>
                   <div className="space-y-1">
-                    <div className="h-1 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                    <div className="h-1.5 w-full rounded-full bg-slate-200/60 dark:bg-slate-800 overflow-hidden">
                       <div className={`h-full rounded-full ${stage.bar} ${stage.barW}`} />
                     </div>
-                    <span className="text-[10px] text-slate-400 font-semibold">Goal: {stage.goal}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">Goal: {stage.goal}</span>
                   </div>
                 </div>
               ))}
@@ -1266,13 +1271,13 @@ export const StrategyModule = () => {
                     onClick={() => setSelectedWeek(selectedWeek === String(ws.week) ? 'ALL' : String(ws.week))}
                     className={`cursor-pointer p-4 rounded-2xl border transition-all duration-200 ${
                       selectedWeek === String(ws.week)
-                        ? 'border-brand-500 bg-brand-500/5 dark:bg-brand-500/10'
-                        : 'border-slate-200 dark:border-slate-800 glass-card hover:border-slate-300'
+                        ? 'border-brand-500 bg-brand-500/10 dark:bg-brand-500/20 shadow-xs'
+                        : 'border-purple-200/50 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 hover:border-purple-300 backdrop-blur-md'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Week {ws.week}</span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedWeek === String(ws.week) ? 'bg-brand-500/15 text-brand-600 dark:text-brand-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{ws.count} days</span>
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-300">Week {ws.week}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedWeek === String(ws.week) ? 'bg-brand-500/15 text-brand-700 dark:text-brand-300' : 'bg-purple-500/10 text-purple-600 dark:text-purple-300'}`}>{ws.count} days</span>
                     </div>
                     <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-snug line-clamp-2">{ws.theme}</p>
                   </div>
@@ -1281,10 +1286,10 @@ export const StrategyModule = () => {
 
               {/* Filter Bar */}
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                <h2 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-brand-500" />
                   {selectedWeek === 'ALL' ? '30-Day Marketing Calendar' : `Week ${selectedWeek} Plan`}
-                  <span className="text-[10px] bg-brand-500/15 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{filteredPlan.length} days</span>
+                  <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{filteredPlan.length} days</span>
                 </h2>
                 <div className="flex items-center gap-1.5">
                   <Filter className="w-3.5 h-3.5 text-slate-400" />
@@ -1294,8 +1299,8 @@ export const StrategyModule = () => {
                       onClick={() => setSelectedWeek(w)}
                       className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all duration-150 ${
                         selectedWeek === w
-                          ? 'bg-brand-500 text-white shadow-sm'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200'
+                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
+                          : 'bg-purple-500/8 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-500/15'
                       }`}
                     >
                       {w === 'ALL' ? 'All' : `W${w}`}
@@ -1379,12 +1384,12 @@ export const StrategyModule = () => {
 
                       setActiveModule('studio');
                     }}
-                    className="group relative p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 hover:border-brand-500/50 dark:hover:border-brand-500/50 hover:shadow-xl transition-all duration-300 space-y-3 cursor-pointer"
+                    className="group relative p-5 rounded-2xl bg-white/80 dark:bg-slate-900/85 border border-purple-200/60 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-md transition-all duration-300 space-y-3 cursor-pointer"
                   >
                     {/* Day badge & Action Buttons */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${weekColors[week-1]} flex items-center justify-center shadow-sm text-white text-xs font-extrabold shrink-0`}>
+                        <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${weekColors[week-1]} flex items-center justify-center shadow-xs text-white text-xs font-extrabold shrink-0`}>
                           {item.day}
                         </div>
                         <div>
@@ -1406,7 +1411,7 @@ export const StrategyModule = () => {
                           }}
                           className={`text-[9px] font-bold px-2 py-0.5 rounded-full transition-all flex items-center gap-1 border ${
                             openRegenDays[item.day]
-                              ? 'bg-brand-500 text-white border-brand-500 shadow-sm'
+                              ? 'bg-brand-500 text-white border-brand-500 shadow-xs'
                               : 'text-brand-600 dark:text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 border-brand-500/20'
                           }`}
                           title="Regenerate strategy content for this card"
@@ -1434,7 +1439,7 @@ export const StrategyModule = () => {
 
                     {/* Action item */}
                     {item.actionItem && !loadingRegenDays[item.day] && (
-                      <div className="flex items-start gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                      <div className="flex items-start gap-2 p-2.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/50 dark:border-purple-900/30">
                         <Play className="w-3 h-3 text-brand-500 shrink-0 mt-0.5" />
                         <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">{item.actionItem}</p>
                       </div>
@@ -1487,7 +1492,7 @@ export const StrategyModule = () => {
                             type="button"
                             disabled={loadingRegenDays[item.day]}
                             onClick={(e) => handleRegenerateCardItem(item, e)}
-                            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white text-xs font-extrabold transition-all shadow-sm flex items-center gap-1 shrink-0 disabled:opacity-50"
+                            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white text-xs font-extrabold transition-all shadow-xs flex items-center gap-1 shrink-0 disabled:opacity-50"
                           >
                             {loadingRegenDays[item.day] ? (
                               <>
@@ -1520,12 +1525,12 @@ export const StrategyModule = () => {
 
           {/* Campaign Ideas */}
           <div className="space-y-4">
-            <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+            <h2 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
               <Megaphone className="w-4 h-4 text-brand-500" /> Campaign Ideas
-              <span className="text-[10px] bg-brand-500/15 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{campaignIdeas.length}</span>
+              <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{campaignIdeas.length}</span>
             </h2>
             {campaignIdeas.length === 0 && (
-              <div className="text-center py-16 rounded-3xl glass-card border border-dashed border-slate-200 dark:border-slate-700">
+              <div className="text-center py-16 rounded-3xl bg-white/70 dark:bg-slate-900/80 border border-dashed border-purple-200 dark:border-slate-700">
                 <Lightbulb className="w-10 h-10 text-amber-400 mx-auto mb-3" />
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white mb-2">No Campaign Ideas Yet</h3>
                 <p className="text-sm text-slate-500 mb-4">Generate your master strategy to get AI-powered campaign concepts.</p>
@@ -1545,9 +1550,9 @@ export const StrategyModule = () => {
                   'from-purple-500 to-pink-500',
                 ];
                 return (
-                  <div key={i} className="group relative p-6 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-lg transition-all duration-300 space-y-3">
+                  <div key={i} className="group relative p-6 rounded-2xl bg-white/80 dark:bg-slate-900/85 border border-purple-200/60 dark:border-slate-800 hover:border-purple-400 shadow-sm hover:shadow-md transition-all duration-300 space-y-3">
                     <div className="flex items-start gap-4">
-                      <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center shadow-md shrink-0`}>
+                      <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center shadow-xs shrink-0`}>
                         <Megaphone className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1">
@@ -1574,8 +1579,8 @@ export const StrategyModule = () => {
           </div>
 
           {/* Funnel (repeated here for campaign context) */}
-          <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-5">
-            <h2 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-rose-500/6 via-purple-500/4 to-emerald-500/6 dark:from-slate-900/90 dark:to-slate-900/90 border border-purple-200/60 dark:border-slate-800 space-y-5">
+            <h2 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
               <Layers className="w-4 h-4 text-brand-500" /> Campaign Funnel Strategy
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
