@@ -100,6 +100,8 @@ export const seoAPI = {
   generateBrief: (body) => apiFetch('/seo/brief/generate', { method: 'POST', body }),
   clusterKeywords: (body) => apiFetch('/seo/keywords/cluster', { method: 'POST', body }),
   regenerateKeyword: (body) => apiFetch('/seo/keywords/regenerate', { method: 'POST', body }),
+  generateArticle: (body) => apiFetch('/seo/article/generate', { method: 'POST', body }),
+  repurposeContent: (body) => apiFetch('/seo/repurpose', { method: 'POST', body }),
 };
 
 // ─── Creative Studio API ──────────────────────────────────────────────────────
