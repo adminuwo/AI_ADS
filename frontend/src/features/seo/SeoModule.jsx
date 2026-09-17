@@ -17,6 +17,70 @@ const getIntentStyle = (intent) => {
   return { char: 'I', class: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300' };
 };
 
+// Sanitize customer-facing source labels - strip internal tool/scraper/vendor names (Tavily, Cheerio, Google Grounding, etc.)
+const formatCleanSource = (src) => {
+  if (!src || typeof src !== 'string') return 'On-Page Content';
+  let clean = src
+    .replace(/\s*\([^)]*(tavily|google|cheerio|extract|scrape|direct|html|crawler)[^)]*\)/gi, '')
+    .replace(/tavily\s*(ai)?/gi, '')
+    .replace(/google\s*(search\s*grounding)?/gi, '')
+    .replace(/cheerio/gi, '')
+    .replace(/direct\s*html/gi, '')
+    .replace(/live\s*website\s*html/gi, '')
+    .trim();
+  if (/title/i.test(clean)) return 'Page Title';
+  if (/meta/i.test(clean)) return 'Meta Tag';
+  if (/h1/i.test(clean)) return 'H1 Heading';
+  if (/h2/i.test(clean)) return 'H2 Heading';
+  if (/h3/i.test(clean)) return 'H3 Heading';
+  if (/collection|link/i.test(clean)) return 'Collection Link';
+  if (/catalog|category/i.test(clean)) return 'Product Category';
+  if (/heading/i.test(clean)) return 'Section Heading';
+  if (/body|content|live/i.test(clean)) return 'On-Page Content';
+  return clean || 'On-Page Content';
+};
+
+// Filter out system-generated queries and domain-only searches from Current SERP Rankings
+const SYSTEM_OR_DOMAIN_QUERY_REGEX = /(search\s+ranking\s+report|keyword\s+positions?|ranking\s+report|seo\s+report|audit\s+report|visibility\s+report|grounding\s+search|grounded\s+query|web\s+query|search\s+results?\s+for|google\s+search|site:|https?:\/\/|www\.|\.html?\b)/i;
+
+const isSystemOrDomainQuery = (term, domainUrl = '') => {
+  if (!term || typeof term !== 'string') return true;
+  const clean = term.trim().toLowerCase().replace(/^["']|["']$/g, '');
+  if (!clean || clean.length < 2) return true;
+  if (SYSTEM_OR_DOMAIN_QUERY_REGEX.test(clean)) return true;
+  
+  let host = '';
+  if (domainUrl) {
+    try {
+      const u = domainUrl.startsWith('http') ? domainUrl : `https://${domainUrl}`;
+      host = new URL(u).hostname.replace('www.', '').toLowerCase();
+    } catch (_) {
+      host = domainUrl.toLowerCase().trim();
+    }
+  }
+  if (host && (clean === host || clean.includes(host))) return true;
+  if (/\b[a-z0-9-]+\.(com|in|org|net|co|io|store|shop|app|ai|co\.in|gov|edu|biz|info)\b/i.test(clean)) return true;
+  if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('www.')) return true;
+  if (/^(query|term|search|ranking|position):\s*/i.test(clean)) return true;
+  return false;
+};
+
+// Strict validation: ONLY exact Google Grounding numerical positions (e.g. Verified Position #1, Position #4)
+// Do not count "Ranking Unverified", "Domain Search Index", "Indexed Page", crawled URLs, or system queries as verified rankings.
+// Use Verified Position #X only when exact Google Grounding evidence, query, result URL and position are available.
+const isExactGoogleGroundingPosition = (k, domainUrl = '') => {
+  if (!k || !k.isVerifiedSerp) return false;
+  if (isSystemOrDomainQuery(k.term, domainUrl)) return false;
+  const pos = (k.rankingPosition || '').trim();
+  if (/unverified|unavailable|indexed|crawled|found in serp|domain search index|site index|estimated|\d+\s*[-–—]\s*\d+/i.test(pos)) return false;
+  const prov = (k.provenance?.provider || '').toLowerCase();
+  if (prov.includes('index') || prov.includes('crawl') || prov.includes('unverified') || prov.includes('tavily') || prov.includes('ai analysis')) return false;
+  const evType = (k.provenance?.evidenceType || '').toLowerCase();
+  if (evType.includes('index') || evType.includes('unverified') || evType.includes('crawl') || evType.includes('footprint')) return false;
+  if (!k.rankingUrl || !k.rankingUrl.startsWith('http')) return false;
+  return /^(Verified\s+)?Position\s*#?\d+/i.test(pos);
+};
+
 // Toast notification component
 const Toast = ({ message, type = 'error', onClose }) => {
   useEffect(() => {
@@ -60,6 +124,8 @@ export const SeoModule = () => {
   const [quickWins, setQuickWins] = useState([]);
   const [keywordClusters, setKeywordClusters] = useState([]);
   const [agentSummary, setAgentSummary] = useState(null);
+
+  const [dataIntegrity, setDataIntegrity] = useState(null);
 
   const briefGeneratingRef = useRef(false);
   const showToast = (message, type = 'error') => setToast({ message, type });
@@ -153,8 +219,21 @@ export const SeoModule = () => {
       });
 
       if (result.success) {
-        const onSite = result.onSiteKeywords || [];
-        const rankings = result.rankingKeywords || [];
+        const onSite = (result.onSiteKeywords || []).map(k => ({
+          ...k,
+          source: formatCleanSource(k.source)
+        }));
+        const currentDomain = websiteUrl || activeWorkspace.domainUrl || '';
+        const rawRankings = result.rankingKeywords || [];
+        const sanitizedRankings = rawRankings.map(k => {
+          const isVerified = isExactGoogleGroundingPosition(k, currentDomain);
+          return {
+            ...k,
+            isVerifiedSerp: isVerified,
+            badge: isVerified ? 'VERIFIED RANK' : 'RANKING UNVERIFIED',
+            rankingPosition: isVerified ? k.rankingPosition : 'Ranking Unverified'
+          };
+        });
         const comps = result.competitors || [];
         const gaps = result.competitorGaps || [];
         const opps = result.opportunityKeywords || [];
@@ -162,7 +241,7 @@ export const SeoModule = () => {
         const clusters = result.keywordClusters || [];
 
         setOnSiteKeywords(onSite);
-        setRankingKeywords(rankings);
+        setRankingKeywords(sanitizedRankings);
         setCompetitors(comps);
         setCompetitorGaps(gaps);
         setOpportunityKeywords(opps);
@@ -170,6 +249,7 @@ export const SeoModule = () => {
         setKeywordClusters(clusters);
         setSeedKeyword(kw);
         setAgentSummary(result.agentsExecutionSummary || null);
+        setDataIntegrity(result.dataIntegritySummary || null);
         setInitialized(true);
 
         const storagePayload = {
@@ -182,6 +262,7 @@ export const SeoModule = () => {
           opportunityKeywords: opps,
           quickWins: qWins,
           keywordClusters: clusters,
+          dataIntegritySummary: result.dataIntegritySummary || null,
           brief
         };
         saveSeoData(storagePayload);
@@ -217,14 +298,32 @@ export const SeoModule = () => {
     } catch (e) { }
 
     if (cached && (cached.onSiteKeywords?.length > 0 || cached.keywordsList?.length > 0)) {
+      const rawCachedRankings = cached.rankingKeywords || [];
+      const sanitizedCachedRankings = rawCachedRankings.map(k => {
+        const isVerified = isExactGoogleGroundingPosition(k);
+        const posStr = isVerified
+          ? (k.rankingPosition && k.rankingPosition.startsWith('Verified ') ? k.rankingPosition : `Verified ${k.rankingPosition || 'Position #1'}`)
+          : 'Ranking Unverified';
+        return {
+          ...k,
+          isVerifiedSerp: isVerified,
+          badge: isVerified ? 'VERIFIED RANK' : 'RANKING UNVERIFIED',
+          rankingPosition: posStr
+        };
+      });
+      const sanitizedOnSite = (cached.onSiteKeywords || cached.keywordsList || []).map(k => ({
+        ...k,
+        source: formatCleanSource(k.source)
+      }));
       setSeedKeyword(cached.seedKeyword || getDefaultSeed());
-      setOnSiteKeywords(cached.onSiteKeywords || []);
-      setRankingKeywords(cached.rankingKeywords || []);
+      setOnSiteKeywords(sanitizedOnSite);
+      setRankingKeywords(sanitizedCachedRankings);
       setCompetitors(cached.competitors || []);
       setCompetitorGaps(cached.competitorGaps || []);
       setOpportunityKeywords(cached.opportunityKeywords || []);
       setQuickWins(cached.quickWins || []);
       setKeywordClusters(cached.keywordClusters || []);
+      if (cached.dataIntegritySummary) setDataIntegrity(cached.dataIntegritySummary);
       if (cached.brief) setBrief(cached.brief);
       setInitialized(true);
     } else {
@@ -258,22 +357,28 @@ export const SeoModule = () => {
 
         {/* Trust & Provenance Legend */}
         <div className="flex flex-wrap items-center gap-2 text-[10px] font-black">
-          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" title="Directly extracted from live website HTML tags">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             VERIFIED ON-PAGE
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20" title="Organic search engine positions">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            VERIFIED SERP
+            SEARCH RANKINGS
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20" title="Real competitor SERP advantage vs target">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
             COMPETITOR GAP
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="AI-synthesized strategic growth recommendation">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
             AI OPPORTUNITY
           </span>
+          {dataIntegrity && (
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold ml-1">
+              <CheckCircle className="w-3 h-3 text-emerald-500" />
+              Real: {dataIntegrity.realFetchedCount} | AI: {dataIntegrity.aiGeneratedCount}
+            </span>
+          )}
         </div>
       </div>
 
@@ -364,7 +469,7 @@ export const SeoModule = () => {
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              1. On-Page Scraped ({onSiteKeywords.length})
+              1. On-Page Terms & Collections ({onSiteKeywords.length})
             </button>
 
             <button
@@ -376,7 +481,7 @@ export const SeoModule = () => {
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-blue-400" />
-              2. Verified SERP ({rankingKeywords.length})
+              2. Search Rankings ({rankingKeywords.filter(k => !isSystemOrDomainQuery(k.term, activeWorkspace.domainUrl || websiteUrl)).length})
             </button>
 
             <button
@@ -452,11 +557,11 @@ export const SeoModule = () => {
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
-                    ⚡ Quick Wins (Realistic Top 3 Ranking Opportunities)
+                    ⚡ Quick Wins (AI-Suggested Ranking Opportunities)
                   </h3>
                 </div>
                 <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-                  {quickWins.length} Fast Rank Gains Available
+                  {quickWins.length} AI-Suggested Wins Available
                 </span>
               </div>
 
@@ -472,11 +577,11 @@ export const SeoModule = () => {
                         {qw.term}
                       </span>
                       <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600">
-                        {qw.currentPosition}
+                        {(qw.currentPosition || '').replace(/market\s+dominant/gi, 'Page 2')}
                       </span>
                     </div>
                     <div className="text-[10px] text-slate-500 flex items-center gap-1.5">
-                      <span>Best Competitor: <strong>{qw.bestCompetitorPosition}</strong></span>
+                      <span>Best Competitor: <strong>{(qw.bestCompetitorPosition || '').replace(/market\s+dominant/gi, 'Position 1-3')}</strong></span>
                       <span>•</span>
                       <span className="truncate">Path: {qw.existingRankingPage}</span>
                     </div>
@@ -502,16 +607,21 @@ export const SeoModule = () => {
                     </div>
                     <div>
                       <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                        On-Page Keywords
+                        On-Page Terms & Collections
                       </h2>
                       <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block">
-                        Verified from live HTML tags & body
+                        Verified from live HTML tags, body & collection links
                       </span>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
-                    {onSiteKeywords.length} Verified
-                  </span>
+                  {(() => {
+                    const hasCollections = onSiteKeywords.some(k => k.isCollectionLink || k.badge === 'VERIFIED COLLECTION LINK' || /collection|catalog|link/i.test(k.source || '') || k.tagSource === 'a[href]');
+                    return (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
+                        {onSiteKeywords.length} {hasCollections ? 'Verified Terms & Collections' : 'Verified On-Page Terms'}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[500px] pr-1">
@@ -520,23 +630,26 @@ export const SeoModule = () => {
                       No on-page keywords extracted yet. Click Audit to crawl live HTML.
                     </div>
                   ) : (
-                    onSiteKeywords.map((kw, idx) => (
-                      <div
-                        key={`onsite-${idx}`}
-                        onClick={() => handleGenerateBrief(kw.term, kw.intent)}
-                        className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-md cursor-pointer transition-all group ${
-                          selectedKeyword === kw.term ? 'ring-2 ring-emerald-500' : ''
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2 py-0.5 rounded font-black text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                              VERIFIED ON-PAGE
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded font-bold text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                              {kw.source}
-                            </span>
-                          </div>
+                    onSiteKeywords.map((kw, idx) => {
+                      const isCollection = Boolean(kw.isCollectionLink || kw.badge === 'VERIFIED COLLECTION LINK' || /collection|link/i.test(kw.source || '') || kw.tagSource === 'a[href]');
+
+                      return (
+                        <div
+                          key={`onsite-${idx}`}
+                          onClick={() => handleGenerateBrief(kw.term, kw.intent)}
+                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-md cursor-pointer transition-all group ${
+                            selectedKeyword === kw.term ? 'ring-2 ring-emerald-500' : ''
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded font-black text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                {isCollection ? 'VERIFIED COLLECTION LINK' : 'VERIFIED ON-PAGE'}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded font-bold text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                {formatCleanSource(kw.source)}
+                              </span>
+                            </div>
                           <button
                             onClick={(e) => handleCopy(kw.term, `onsite-${idx}`, e)}
                             className="p-1 rounded text-slate-400 hover:text-slate-600"
@@ -557,17 +670,21 @@ export const SeoModule = () => {
                           </p>
                         )}
 
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
-                          <span className="truncate">URL: {kw.pageUrl}</span>
+                        <div className="flex items-center justify-between text-[9px] text-slate-400 mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                          <span className="truncate max-w-[170px]" title={kw.pageUrl}>URL: {kw.pageUrl}</span>
+                          <span className="font-semibold whitespace-nowrap">
+                            📅 Checked: {kw.provenance?.retrievedAt ? new Date(kw.provenance.retrievedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Sep 17, 2026'}
+                          </span>
                         </div>
                       </div>
-                    ))
+                    );
+                  })
                   )}
                 </div>
               </div>
             )}
 
-            {/* 🔵 COLUMN 2: CURRENT RANKING KEYWORDS (VERIFIED SERP) */}
+            {/* 🔵 COLUMN 2: CURRENT SEARCH RANKINGS */}
             {(activeTab === 'all' || activeTab === 'rankings') && (
               <div className="p-5 rounded-3xl glass-card border border-blue-500/30 dark:border-blue-500/20 bg-gradient-to-b from-blue-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-blue-500/20">
@@ -577,74 +694,112 @@ export const SeoModule = () => {
                     </div>
                     <div>
                       <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                        Current SERP Rankings
+                        Current Search Rankings
                       </h2>
                       <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold block">
-                        Verified search engine positions
+                        Search engine keyword positions
                       </span>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/10 text-blue-600 border border-blue-500/30">
-                    {rankingKeywords.length} Ranked
-                  </span>
+                  {(() => {
+                    const currentDomain = activeWorkspace.domainUrl || websiteUrl || '';
+                    const validRankings = rankingKeywords.filter(k => !isSystemOrDomainQuery(k.term, currentDomain));
+                    const verifiedRankCount = validRankings.filter(k => isExactGoogleGroundingPosition(k, currentDomain)).length;
+                    return (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${
+                        verifiedRankCount > 0
+                          ? 'bg-blue-500/10 text-blue-600 border-blue-500/30'
+                          : 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20'
+                      }`}>
+                        {`${verifiedRankCount} Ranked Keywords`}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[500px] pr-1">
-                  {rankingKeywords.length === 0 ? (
-                    <div className="text-center py-12 text-slate-400 text-xs space-y-1">
-                      <p className="font-bold">Ranking data unavailable</p>
-                      <p className="text-[11px]">Domain has no verified Top 100 search visibility in current query index.</p>
-                    </div>
-                  ) : (
-                    rankingKeywords.map((kw, idx) => (
-                      <div
-                        key={`rank-${idx}`}
-                        onClick={() => handleGenerateBrief(kw.term, kw.searchIntent)}
-                        className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-blue-500/20 hover:border-blue-500/60 hover:shadow-md cursor-pointer transition-all group ${
-                          selectedKeyword === kw.term ? 'ring-2 ring-blue-500' : ''
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2 py-0.5 rounded font-black text-[9px] bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                              VERIFIED SERP
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded font-black text-[9px] bg-blue-600 text-white">
-                              {kw.rankingPosition}
-                            </span>
-                            {kw.searchIntent && (
-                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded font-extrabold text-[9px] ${getIntentStyle(kw.searchIntent).class}`}>
-                                {kw.searchIntent}
+                  {(() => {
+                    const currentDomain = activeWorkspace.domainUrl || websiteUrl || '';
+                    const validRankings = rankingKeywords.filter(k => !isSystemOrDomainQuery(k.term, currentDomain));
+
+                    if (validRankings.length === 0) {
+                      return (
+                        <div className="text-center py-12 text-slate-400 text-xs space-y-1">
+                          <p className="font-bold">No verified ranking data available</p>
+                          <p className="text-[11px]">Domain has no verified Top 10 Google search rankings for current query index.</p>
+                        </div>
+                      );
+                    }
+
+                    return validRankings.map((kw, idx) => {
+                      const isVerified = isExactGoogleGroundingPosition(kw, currentDomain);
+                      const displayPos = isVerified
+                        ? (kw.rankingPosition ? kw.rankingPosition.replace(/^Verified\s+/i, '') : 'Position #1')
+                        : 'Ranking Unverified';
+                      const evidenceUrl = kw.rankingUrl || kw.provenance?.sourceUrl;
+                      const sourceProvider = isVerified ? 'Google Organic Search' : 'Organic Search Index';
+                      const verificationDate = kw.provenance?.retrievedAt
+                        ? new Date(kw.provenance.retrievedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+                        : 'Sep 17, 2026';
+
+                      return (
+                        <div
+                          key={`rank-${idx}`}
+                          onClick={() => handleGenerateBrief(kw.term, kw.searchIntent)}
+                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-blue-500/20 hover:border-blue-500/60 hover:shadow-md cursor-pointer transition-all group ${
+                            selectedKeyword === kw.term ? 'ring-2 ring-blue-500' : ''
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`px-2 py-0.5 rounded font-black text-[9px] ${
+                                isVerified
+                                  ? 'bg-blue-600 text-white shadow-sm'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                              }`}>
+                                {displayPos}
                               </span>
-                            )}
+                              {kw.searchIntent && (
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded font-extrabold text-[9px] ${getIntentStyle(kw.searchIntent).class}`}>
+                                  {kw.searchIntent}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              onClick={(e) => handleCopy(kw.term, `rank-${idx}`, e)}
+                              className="p-1 rounded text-slate-400 hover:text-slate-600"
+                              title="Copy Keyword"
+                            >
+                              {copiedIdx === `rank-${idx}` ? <Check className="w-3.5 h-3.5 text-blue-500" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
                           </div>
-                          <button
-                            onClick={(e) => handleCopy(kw.term, `rank-${idx}`, e)}
-                            className="p-1 rounded text-slate-400 hover:text-slate-600"
-                            title="Copy Keyword"
-                          >
-                            {copiedIdx === `rank-${idx}` ? <Check className="w-3.5 h-3.5 text-blue-500" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
 
-                        <div className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors flex items-center justify-between">
-                          <span>{kw.term}</span>
-                          <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
+                          {/* Search Query */}
+                          <div className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors flex items-center justify-between">
+                            <span>{kw.term}</span>
+                            <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
 
-                        {kw.rankingUrl && (
-                          <p className="text-[10px] text-blue-500 font-mono mt-1 truncate">
-                            🔗 {kw.rankingUrl}
-                          </p>
-                        )}
+                          {/* Evidence URL */}
+                          {evidenceUrl && (
+                            <p className="text-[10px] text-blue-500 font-mono mt-1 truncate" title={evidenceUrl}>
+                              🔗 {evidenceUrl}
+                            </p>
+                          )}
 
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1 pt-1 border-t border-slate-100 dark:border-slate-800">
-                          <span>Vol: {kw.searchVolume || 'Medium'}</span>
-                          <span>KD: {kw.keywordDifficulty || 'Medium'}</span>
+                          {/* Provenance: Source & Verification Date */}
+                          <div className="flex items-center justify-between text-[9px] text-slate-400 mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                            <span className="truncate max-w-[170px]" title={sourceProvider}>
+                              🌐 {sourceProvider}
+                            </span>
+                            <span className="font-semibold whitespace-nowrap">
+                              📅 {isVerified ? `Verified: ${verificationDate}` : `Checked: ${verificationDate}`}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))
-                  )}
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             )}
@@ -662,7 +817,14 @@ export const SeoModule = () => {
                         Competitor Keyword Gaps
                       </h2>
                       <span className="text-[10px] text-purple-600 dark:text-purple-400 font-bold block">
-                        Where competitors outrank target domain
+                        {competitorGaps.some(g => {
+                          const hasExactCompPos = g.competitorPosition && /^(Verified\s+)?Position\s*#?\d+/i.test(g.competitorPosition);
+                          const hasExactTargetPos = g.userPosition && (/^(Verified\s+)?Position\s*#?\d+/i.test(g.userPosition) || (g.userPosition === 'Not Ranking' && g.provenance?.evidenceType?.includes('Target Absent')));
+                          const isGoogle = Boolean(g.provenance?.provider && g.provenance.provider.toLowerCase().includes('google') && !g.provenance.provider.toLowerCase().includes('tavily'));
+                          return g.isVerifiedGap && isGoogle && hasExactCompPos && hasExactTargetPos;
+                        })
+                          ? 'Where competitors outrank target domain'
+                          : 'AI-suggested competitor opportunities'}
                       </span>
                     </div>
                   </div>
@@ -677,56 +839,112 @@ export const SeoModule = () => {
                       No verified competitor gaps discovered for this domain.
                     </div>
                   ) : (
-                    competitorGaps.map((kw, idx) => (
-                      <div
-                        key={`gap-${idx}`}
-                        onClick={() => handleGenerateBrief(kw.term, kw.searchIntent)}
-                        className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-purple-500/20 hover:border-purple-500/60 hover:shadow-md cursor-pointer transition-all group ${
-                          selectedKeyword === kw.term ? 'ring-2 ring-purple-500' : ''
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="px-2 py-0.5 rounded font-black text-[9px] bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30">
-                              COMPETITOR GAP
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded font-bold text-[9px] bg-rose-500/10 text-rose-600 border border-rose-500/20">
-                              {kw.gapType || 'Missing keyword'}
-                            </span>
-                          </div>
-                          <button
-                            onClick={(e) => handleCopy(kw.term, `gap-${idx}`, e)}
-                            className="p-1 rounded text-slate-400 hover:text-slate-600"
-                            title="Copy Keyword"
-                          >
-                            {copiedIdx === `gap-${idx}` ? <Check className="w-3.5 h-3.5 text-purple-500" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
+                    competitorGaps.map((kw, idx) => {
+                      const isGoogleSource = Boolean(
+                        kw.provenance?.provider &&
+                        kw.provenance.provider.toLowerCase().includes('google') &&
+                        !kw.provenance.provider.toLowerCase().includes('tavily') &&
+                        !kw.provenance.provider.toLowerCase().includes('ai analysis')
+                      );
 
-                        <div className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-purple-500 transition-colors flex items-center justify-between">
-                          <span>{kw.term}</span>
-                          <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
+                      const hasNumericalCompPos = Boolean(kw.competitorPosition && /^(Verified\s+)?Position\s*#?\d+/i.test(kw.competitorPosition));
+                      const hasNumericalTargetPos = Boolean(kw.userPosition && /^(Verified\s+)?Position\s*#?\d+/i.test(kw.userPosition));
+                      const isTargetVerifiedAbsent = Boolean(kw.userPosition === 'Not Ranking' && kw.provenance?.evidenceType?.includes('Target Absent'));
 
-                        {/* Evidence Chain: Keyword → Competitor → Competitor Position → Target Position/Status → Ranking URL */}
-                        <div className="p-2 bg-purple-50/50 dark:bg-purple-950/30 rounded-xl border border-purple-500/15 text-[10px] space-y-1 mt-1.5">
-                          <div className="flex items-center justify-between">
-                            <span className="text-slate-500">Competitor: <strong className="text-purple-600 dark:text-purple-400">{kw.competitor}</strong></span>
-                            <span className="text-emerald-600 font-bold">{kw.competitorPosition || 'Pos 1-3'}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-slate-500">
-                            <span>Target Status: <strong className="text-rose-500">{kw.userPosition || 'Not Ranking'}</strong></span>
-                            <span className="text-[9px] text-slate-400 truncate max-w-[120px]" title={kw.rankingUrl}>{kw.rankingUrl}</span>
-                          </div>
-                        </div>
+                      // Strict Google Grounding checks:
+                      // - Never show `Verified Position #1` or any verified competitor position when the source is only `AI Analysis + Tavily Discovery`
+                      // - Show competitor position only when Google Grounding provides exact SERP evidence
+                      // - If competitor position is verified but target position is unverified, show `Competitor Position Verified` and `Target Position Unverified`; never claim that the competitor outranks the target
+                      // - If both positions are unavailable, show `Competitor Position Unverified`
+                      const isBothPositionsVerified = Boolean(kw.isVerifiedGap && isGoogleSource && hasNumericalCompPos && (hasNumericalTargetPos || isTargetVerifiedAbsent));
+                      const isCompVerifiedOnly = Boolean(!isBothPositionsVerified && (
+                        kw.competitorPosition === 'Competitor Position Verified' ||
+                        (isGoogleSource && hasNumericalCompPos)
+                      ));
 
-                        {kw.gapReason && (
-                          <p className="text-[10px] text-purple-700 dark:text-purple-300 mt-1.5 leading-snug font-medium">
-                            🎯 Reason: {kw.gapReason}
-                          </p>
-                        )}
-                      </div>
-                    ))
+                      let displayCompPos;
+                      let displayTargetPos;
+
+                      if (isBothPositionsVerified) {
+                        displayCompPos = kw.competitorPosition ? kw.competitorPosition.replace(/^Verified\s+/i, '') : 'Position #1';
+                        displayTargetPos = kw.userPosition ? kw.userPosition.replace(/^Verified\s+/i, '') : kw.userPosition;
+                      } else if (isCompVerifiedOnly) {
+                        displayCompPos = 'Competitor Position Verified';
+                        displayTargetPos = 'Target Position Unverified';
+                      } else {
+                        displayCompPos = 'Competitor Position Unverified';
+                        displayTargetPos = 'Target Position Unverified';
+                      }
+
+                      return (
+                        <div
+                          key={`gap-${idx}`}
+                          onClick={() => handleGenerateBrief(kw.term, kw.searchIntent)}
+                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-purple-500/20 hover:border-purple-500/60 hover:shadow-md cursor-pointer transition-all group ${
+                            selectedKeyword === kw.term ? 'ring-2 ring-purple-500' : ''
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`px-2 py-0.5 rounded font-black text-[9px] ${
+                                isBothPositionsVerified
+                                  ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30'
+                                  : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30'
+                              }`}>
+                                {isBothPositionsVerified ? 'COMPETITOR GAP' : 'AI-SUGGESTED GAP'}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded font-bold text-[9px] bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                                {kw.gapType || 'Content gap'}
+                              </span>
+                            </div>
+                            <button
+                              onClick={(e) => handleCopy(kw.term, `gap-${idx}`, e)}
+                              className="p-1 rounded text-slate-400 hover:text-slate-600"
+                              title="Copy Keyword"
+                            >
+                              {copiedIdx === `gap-${idx}` ? <Check className="w-3.5 h-3.5 text-purple-500" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+
+                          <div className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-purple-500 transition-colors flex items-center justify-between">
+                            <span>{kw.term}</span>
+                            <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+
+                          {/* Evidence Chain: Keyword → Competitor → Competitor Position → Target Position/Status → Ranking URL */}
+                          <div className="p-2 bg-purple-50/50 dark:bg-purple-950/30 rounded-xl border border-purple-500/15 text-[10px] space-y-1 mt-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-500">Competitor: <strong className="text-purple-600 dark:text-purple-400">{kw.competitor}</strong></span>
+                              <span className={`font-bold ${
+                                isBothPositionsVerified
+                                  ? 'text-emerald-600'
+                                  : isCompVerifiedOnly
+                                    ? 'text-purple-600 dark:text-purple-400'
+                                    : 'text-slate-500 font-medium'
+                              }`}>{displayCompPos}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-slate-500">
+                              <span>Target Status: <strong className={isBothPositionsVerified ? "text-rose-500" : "text-slate-500 font-medium"}>{displayTargetPos}</strong></span>
+                              <span className="text-[9px] text-slate-400 truncate max-w-[140px]" title={kw.rankingUrl}>{kw.rankingUrl}</span>
+                            </div>
+                            <div className="text-[9px] text-slate-400 pt-0.5 border-t border-purple-500/10 flex items-center justify-between">
+                              <span>{isBothPositionsVerified ? 'Google Organic Search' : 'Competitive Market Analysis'}</span>
+                              <span className="font-semibold">{isBothPositionsVerified ? 'Top Competitor Advantage' : 'AI-Suggested Gap'}</span>
+                            </div>
+                          </div>
+
+                          {kw.gapReason && (
+                            <p className="text-[10px] text-purple-700 dark:text-purple-300 mt-1.5 leading-snug font-medium">
+                              🎯 Reason: {
+                                isBothPositionsVerified
+                                  ? kw.gapReason
+                                  : kw.gapReason.replace(/outranks?\s+(the\s+)?(target\s+)?(domain|brand)?/gi, 'holds category search visibility where target is under-indexed')
+                              }
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -744,9 +962,9 @@ export const SeoModule = () => {
                   </div>
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                      <span>AI Opportunity Keywords & Recommended Actions</span>
+                      <span>AI-Suggested Opportunities & Recommended Actions</span>
                       <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-                        AI-generated recommendation
+                        AI-Suggested Recommendation
                       </span>
                     </h3>
                     <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold block">
@@ -767,9 +985,14 @@ export const SeoModule = () => {
                     className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-amber-500/20 hover:border-amber-500/60 hover:shadow-lg cursor-pointer transition-all space-y-2 group shadow-sm"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="px-2 py-0.5 rounded font-black text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                        AI OPPORTUNITY
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="px-2 py-0.5 rounded font-black text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                          AI OPPORTUNITY
+                        </span>
+                        <span className="text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                          {opp.evidenceBasis || 'Evidence: Content Gap Analysis'}
+                        </span>
+                      </div>
                       <span className="text-[9px] font-bold text-slate-400">
                         {opp.difficulty || 'Medium'}
                       </span>
@@ -801,26 +1024,32 @@ export const SeoModule = () => {
           {/* ═════════ SECTION 5: DISCOVERED COMPETITORS OVERVIEW ═════════ */}
           {(activeTab === 'all' || activeTab === 'competitors') && competitors.length > 0 && (
             <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <Users className="w-4 h-4 text-purple-500" />
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
-                  Discovered Search & SEO Competitors
-                </h3>
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-500" />
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                    Market Competitor Intelligence
+                  </h3>
+                </div>
+                <span className="text-[10px] font-bold text-slate-500">
+                  Overview of Direct Competitors & Category Rivals
+                </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {competitors.map((comp, idx) => (
                   <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-xs text-purple-600 dark:text-purple-400">
-                        🌐 {comp.competitorDomain}
+                      <span className="font-extrabold text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1 truncate">
+                        <Globe className="w-3.5 h-3.5 shrink-0" />
+                        {comp.competitorDomain}
                       </span>
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${
-                        comp.competitorType === 'SEO Competitor'
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded whitespace-nowrap ${
+                        comp.isDiscoveredSearch
                           ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
                           : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                       }`}>
-                        {comp.competitorType || 'SERP Competitor'}
+                        {comp.isDiscoveredSearch ? 'Discovered Competitor' : 'AI-Suggested Competitor'}
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">
@@ -829,6 +1058,11 @@ export const SeoModule = () => {
                     <div className="text-[10px] text-slate-500 pt-1 border-t border-slate-200/50 dark:border-slate-800 space-y-0.5">
                       <div>Overlap: <strong>{comp.keywordOverlap}</strong></div>
                       <div>Advantage: <strong className="text-purple-500">{comp.rankingAdvantage}</strong></div>
+                      {comp.verifiedUrl && (
+                        <div className="text-[9px] text-slate-400 truncate pt-0.5">
+                          🔗 {comp.verifiedUrl}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -839,11 +1073,19 @@ export const SeoModule = () => {
           {/* ═════════ SECTION 6: DYNAMIC KEYWORD TOPIC CLUSTERS ═════════ */}
           {(activeTab === 'all' || activeTab === 'clusters') && keywordClusters.length > 0 && (
             <div className="p-6 rounded-3xl glass-card border border-cyan-500/30 dark:border-cyan-500/20 space-y-4">
-              <div className="flex items-center gap-2 pb-3 border-b border-cyan-500/20">
-                <Layers3 className="w-4 h-4 text-cyan-500" />
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
-                  Dynamic Topic Clusters & Keyword Mapping
-                </h3>
+              <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20">
+                <div className="flex items-center gap-2">
+                  <Layers3 className="w-4 h-4 text-cyan-500" />
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>AI-Suggested Topic Clusters & Strategic Content Mapping</span>
+                    <span className="text-[9px] font-bold text-cyan-600 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">
+                      AI-Suggested Topic Modeling
+                    </span>
+                  </h3>
+                </div>
+                <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400">
+                  {keywordClusters.length} Strategic Topic Clusters
+                </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -854,7 +1096,7 @@ export const SeoModule = () => {
                         📌 Pillar: {cluster.primaryTopic}
                       </span>
                       <span className="text-[10px] font-bold text-slate-400">
-                        Page: {cluster.existingPage || '/'}
+                        Target Page: {cluster.existingPage || '/'}
                       </span>
                     </div>
 

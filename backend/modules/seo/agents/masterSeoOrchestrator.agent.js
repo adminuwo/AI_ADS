@@ -86,9 +86,12 @@ async function runMasterSeoPipeline({
     websiteUrl,
     brandName: resolvedBrand,
     industry: resolvedIndustry,
-    metaTitle: crawlResult?.metaTitle || '',
+    pageTitle: crawlResult?.pageTitle || crawlResult?.metaTitle || '',
+    metaTitle: crawlResult?.metaTitle || crawlResult?.pageTitle || '',
     metaDescription: crawlResult?.metaDescription || '',
     headings: crawlResult?.headings || { h1: [], h2: [], h3: [] },
+    productTerms: crawlResult?.productTerms || [],
+    promotionalContent: crawlResult?.promotionalContent || [],
     internalPages: crawlResult?.internalPages || [],
     onSiteKeywords,
     rankingKeywords,
@@ -108,9 +111,16 @@ async function runMasterSeoPipeline({
   ];
 
   const durationMs = Date.now() - startTime;
+  const verifiedSerpCount = (rankingKeywords || []).filter(k => {
+    if (!k || !k.isVerifiedSerp) return false;
+    const pos = (k.rankingPosition || '').trim();
+    if (/unverified|unavailable|indexed|crawled|found in serp|domain search index|site index|estimated|18.*25/i.test(pos)) return false;
+    return /^(Verified\s+)?Position\s*#?\d+/i.test(pos);
+  }).length;
+
   console.log(`[Master SEO Orchestrator] ✅ Pipeline finished in ${durationMs}ms for "${resolvedBrand}":`);
-  console.log(`  - 🟢 Verified On-Page: ${onSiteKeywords.length}`);
-  console.log(`  - 🔵 Verified SERP Rankings: ${rankingKeywords.length}`);
+  console.log(`  - 🟢 Verified On-Page Keywords: ${onSiteKeywords.length}`);
+  console.log(`  - 🔵 Verified SERP Positions: ${verifiedSerpCount} (Total Queried: ${rankingKeywords.length})`);
   console.log(`  - 🟣 Competitor Gaps: ${competitorGaps.length}`);
   console.log(`  - 🟠 SEO Opportunities: ${opportunityKeywords.length}`);
   console.log(`  - ⚡ Quick Wins: ${quickWins.length}`);
@@ -122,18 +132,27 @@ async function runMasterSeoPipeline({
     brandName: resolvedBrand,
     industry: resolvedIndustry,
     pipelineDurationMs: durationMs,
+    pageTitle: crawlResult?.pageTitle || crawlResult?.metaTitle || '',
+    metaDescription: crawlResult?.metaDescription || '',
+    headings: crawlResult?.headings || { h1: [], h2: [], h3: [] },
+    productTerms: crawlResult?.productTerms || [],
+    categoryNames: crawlResult?.productTerms || [],
+    internalPages: crawlResult?.internalPages || [],
+    promotionalContent: crawlResult?.promotionalContent || [],
     agentsExecutionSummary: {
       agent1_liveOnPageCrawler: {
         status: crawlResult?.success ? 'COMPLETED' : 'FALLBACK',
         crawledUrl: crawlResult?.targetUrl || websiteUrl,
         resolvedBrand,
         resolvedIndustry,
-        keywordsExtracted: onSiteKeywords.length
+        keywordsExtracted: onSiteKeywords.length,
+        productTermsFound: (crawlResult?.productTerms || []).length
       },
       agent2_liveRankingKeywords: {
         status: rankingsResult?.success ? 'COMPLETED' : 'FALLBACK',
         serpFootprint: rankingsResult?.domainHost || '',
-        rankingQueriesFound: rankingKeywords.length
+        verifiedPositionsFound: verifiedSerpCount,
+        totalQueriesEvaluated: rankingKeywords.length
       },
       agent3_opportunityGap: {
         status: opportunityResult?.success ? 'COMPLETED' : 'FALLBACK',
@@ -141,6 +160,14 @@ async function runMasterSeoPipeline({
         gapsFound: competitorGaps.length,
         opportunitiesFound: opportunityKeywords.length
       }
+    },
+    dataIntegritySummary: {
+      realFetchedCount: (onSiteKeywords || []).filter(k => k.isRealFetched).length + (rankingKeywords || []).filter(k => k.isRealFetched).length + (competitorGaps || []).filter(k => k.isRealFetched).length,
+      aiGeneratedCount: (opportunityKeywords || []).length + (quickWins || []).length + (competitorGaps || []).filter(k => k.isAiGenerated).length + (keywordClusters || []).length,
+      verifiedSerpCount,
+      verifiedOnPageCount: (onSiteKeywords || []).length,
+      discoveredCompetitorsCount: (competitors || []).filter(c => c.isDiscoveredSearch).length,
+      aiSuggestedCompetitorsCount: (competitors || []).filter(c => !c.isDiscoveredSearch).length
     },
     learnedWebsiteMemory,
     onSiteKeywords,
@@ -151,7 +178,7 @@ async function runMasterSeoPipeline({
     quickWins,
     keywordClusters,
     keywords: allKeywords,
-    model: 'Multi-Agent SEO Orchestrator v2.0'
+    model: 'Multi-Agent SEO Orchestrator v2.0 (Strict Provenance)'
   };
 }
 

@@ -31,8 +31,10 @@ async function runSeoBriefArchitectAgent({
   const kw = keyword || primaryKeyword || 'AI Marketing Strategy';
   console.log(`[Agent 4: SeoBriefArchitect] 📑 Synthesizing structured SEO brief for "${kw}" (Intent: ${intent})...`);
 
-  const internalPagesList = (learnedWebsiteMemory.internalPages || []).join(', ');
+  const discoveredPages = (learnedWebsiteMemory.internalPages || []).filter(p => typeof p === 'string' && p.startsWith('/'));
+  const internalPagesList = discoveredPages.join(', ');
   const onSiteContext = (learnedWebsiteMemory.onSiteKeywords || []).map(k => k.term).slice(0, 8).join(', ');
+  const brandDomainUrl = learnedWebsiteMemory.websiteUrl || `https://${(brandName || 'site').toLowerCase().replace(/\s+/g, '')}.com`;
 
   let intentDirectives = '';
   if (intent === 'Transactional') {
@@ -64,11 +66,15 @@ BRAND & SITE CONTEXT:
 - Industry: "${industry || 'General'}"
 - Target Audience: "${targetAudience}"
 - Brand Voice: "${brandVoice || 'Authoritative & Actionable'}"
-- Live Internal Pages available for linking: "${internalPagesList || '/features, /pricing, /about, /blog'}"
+- Verified Crawled Internal Pages: "${internalPagesList || 'Only homepage / is verified. Recommend new pages to create.'}"
 - On-Site Topics: "${onSiteContext || 'Category solutions'}"
 - Target Search Intent: "${intent}"
 
 ${intentDirectives}
+
+CRITICAL RULE FOR INTERNAL LINKS:
+- Only recommend existing internal paths if they appear in the Verified Crawled Internal Pages list above.
+- If recommending a page that does not exist yet, explicitly note it as a "New page to create".
 
 Generate a JSON object with:
 1. "suggestedTitles": array of 3 high-CTR title tag options (50-60 characters, calibrated to ${intent})
@@ -79,7 +85,7 @@ Generate a JSON object with:
 6. "entityKeywords": array of 8-12 semantic LSI entities and NLP keywords
 7. "faqSuggestions": array of 4-6 high-traffic frequently asked questions with brief 1-sentence answers
 8. "secondaryKeywords": array of 5-8 long-tail variations
-9. "internalLinkingSuggestions": array of 3-4 objects with "anchorText", "targetPage" (matching available internal paths), and "rationale"
+9. "internalLinkingSuggestions": array of 3-4 objects with "anchorText", "targetPage", and "rationale"
 
 Return ONLY valid JSON.`;
 
@@ -90,6 +96,7 @@ Return ONLY valid JSON.`;
     if (aiBrief && Array.isArray(aiBrief.suggestedTitles) && aiBrief.suggestedTitles.length > 0) {
       const schemaType = aiBrief.schemaType || (intent === 'Informational' ? 'HowTo' : intent === 'Transactional' ? 'Product' : 'Article');
 
+      const canonicalDomain = brandDomainUrl.replace(/\/+$/, '');
       const jsonLd = {
         "@context": "https://schema.org",
         "@type": schemaType,
@@ -100,9 +107,21 @@ Return ONLY valid JSON.`;
         "inLanguage": language,
         "mainEntityOfPage": {
           "@type": "WebPage",
-          "@id": `https://${(brandName || 'site').toLowerCase().replace(/\s+/g, '')}.com/${aiBrief.urlSlug || 'article'}`
+          "@id": `${canonicalDomain}/${aiBrief.urlSlug || 'article'}`
         }
       };
+
+      // Validate internal links against real crawled pages
+      const validatedLinks = (aiBrief.internalLinkingSuggestions || []).map(link => {
+        const target = link.targetPage || '/';
+        const isExisting = discoveredPages.includes(target) || target === '/';
+        return {
+          anchorText: link.anchorText || kw,
+          targetPage: isExisting ? target : (discoveredPages[0] || '/'),
+          status: isExisting ? 'Verified Existing Page' : 'Recommended New Page',
+          rationale: link.rationale || 'Contextual relevance'
+        };
+      });
 
       console.log(`[Agent 4: SeoBriefArchitect] ✅ Structured brief generated for "${kw}".`);
       return {
@@ -121,7 +140,7 @@ Return ONLY valid JSON.`;
         entityKeywords: aiBrief.entityKeywords || [kw],
         secondaryKeywords: aiBrief.secondaryKeywords || [],
         faqSuggestions: aiBrief.faqSuggestions || [],
-        internalLinkingSuggestions: aiBrief.internalLinkingSuggestions || [],
+        internalLinkingSuggestions: validatedLinks,
         jsonLdSchema: JSON.stringify(jsonLd, null, 2),
         generatedAt: new Date().toISOString()
       };
