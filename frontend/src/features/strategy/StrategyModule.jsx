@@ -97,18 +97,19 @@ const getWeekLabel = (day) => {
 const formatPostTitle = (title, directive) => {
   if (!title) return '';
   let text = title;
-  // Remove redundant 'Day X (Platform): ' prefix
   text = text.replace(/^Day\s+\d+\s*\([^)]+\):\s*/i, '');
-  // Replace trailing '...' or truncated directives with full text
-  if (text.includes('...')) {
-    if (directive) {
-      text = text.replace(/—\s*.*?\.\.\.$/, `— ${directive}`);
-      text = text.replace(/:\s*.*?\.\.\.$/, `: ${directive}`);
-      text = text.replace(/\.\.\.$/, ` — ${directive}`);
-    } else {
-      text = text.replace(/\.\.\.$/, '');
-    }
+
+  if (directive && directive.trim()) {
+    const cleanDir = directive.trim();
+    const escapedDir = cleanDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    text = text.replace(new RegExp(`[:\\s—-]+${escapedDir}.*`, 'i'), '');
   }
+
+  text = text.replace(/:\s*i\s+am\s+launching.*/i, '');
+  text = text.replace(/:\s*launch\s+\d+.*strategy.*/i, '');
+  text = text.replace(/:\s*30\s*days\s*marketing.*/i, '');
+  text = text.replace(/\.\.\.$/, '');
+
   return text.trim();
 };
 
@@ -232,79 +233,64 @@ export const StrategyModule = () => {
 
     setIsSubmittingImageBrief(true);
     try {
+      const wsId = activeWorkspace?.id || activeWorkspace?._id || 'default_ws';
       const brandName = activeWorkspace?.brandName || 'Brand';
       const industry = activeWorkspace?.industryCategory || activeWorkspace?.industry || 'Consumer Products';
       const directive = imageDirective.trim() || 'Promote core product features and scale social media engagement with reference image';
 
-      const platformsList = ['Instagram', 'Facebook', 'LinkedIn', 'Twitter / X', 'YouTube Shorts', 'Pinterest'];
+      let newCustomStrat = null;
+      try {
+        const res = await strategyAPI.generateCustomStrategy(wsId, {
+          directive,
+          referenceImageUrl: imagePreviewUrl || null,
+          brandName,
+          industry,
+          tagline: activeWorkspace?.tagline || '',
+          companyDescription: activeWorkspace?.companyDescription || '',
+          brandColors: activeWorkspace?.brandColors || []
+        });
 
-      const weekThemes = [
-        { week: 1, name: 'Brand Awareness & Visual Hook (Days 1–7)', tag: 'Week 1: Awareness' },
-        { week: 2, name: 'Product Value & Feature Deep Dive (Days 8–14)', tag: 'Week 2: Value' },
-        { week: 3, name: 'Social Proof & Community Engagement (Days 15–21)', tag: 'Week 3: Engagement' },
-        { week: 4, name: 'Conversion Sprint & Direct Response CTA (Days 22–30)', tag: 'Week 4: Conversion' }
-      ];
-
-      const generated30DayPosts = Array.from({ length: 30 }, (_, i) => {
-        const day = i + 1;
-        const weekNum = day <= 7 ? 1 : day <= 14 ? 2 : day <= 21 ? 3 : 4;
-        const weekThemeObj = weekThemes[weekNum - 1];
-        const platform = platformsList[i % platformsList.length];
-
-        let format = 'Single Image Banner Post';
-        if (platform === 'Instagram') format = 'Carousel Slide / Reel Concept';
-        if (platform === 'Facebook') format = 'High-Engagement Ad Graphic';
-        if (platform === 'LinkedIn') format = 'Executive Slide Briefing';
-        if (platform === 'Twitter / X') format = '16:9 Viral Thread Graphic';
-        if (platform === 'YouTube Shorts') format = '9:16 Short Video Motion Hook';
-        if (platform === 'Pinterest') format = 'Shoppable Vertical Moodboard Pin';
-
-        let title = ``;
-        let hook = ``;
-        let caption = ``;
-        let cta = ``;
-
-        if (weekNum === 1) {
-          title = `${brandName} Visual Spotlight: ${directive || 'Brand & Product Showcase'}`;
-          hook = `✨ Stop scrolling! Day ${day} focus: Discover how ${brandName} is defining the new standard in ${industry}.`;
-          caption = `Day ${day} of our 30-Day custom visual strategy.\n\nDirective Focus: "${directive}".\n\nWe're bringing high-converting visual storytelling straight to your feed. Whether you're looking for peak quality or modern design, ${brandName} delivers.`;
-          cta = `Explore ${brandName}'s latest collection today! 👇`;
-        } else if (weekNum === 2) {
-          title = `${brandName} Deep Dive Feature: ${directive || 'Core Product Value'}`;
-          hook = `💡 Day ${day} Feature Breakdown: Why ${brandName} outperforms standard options in ${industry}.`;
-          caption = `Day ${day} Value Focus.\n\nCustom Directive: "${directive}".\n\nOur team engineered every detail with intent. Learn how this feature solves everyday challenges for users like you.`;
-          cta = `Click to read full specs & shop now 🔗`;
-        } else if (weekNum === 3) {
-          title = `${brandName} Customer Proof & Community Spotlight`;
-          hook = `🔥 Day ${day} Community Highlight: Here's what real users are saying about ${brandName}!`;
-          caption = `Day ${day} Proof Sprint.\n\nVisual Directives: "${directive}".\n\nJoin thousands of verified customers who upgraded their workflow with ${brandName}. Drop a comment with your thoughts!`;
-          cta = `Leave a comment & tap link in bio 💬`;
-        } else {
-          title = `${brandName} Conversion Push: Exclusive Campaign Offer`;
-          hook = `⚡ Day ${day} Special Offer: Limited-time access to ${brandName}'s primary collection!`;
-          caption = `Day ${day} Final Sprint.\n\nDirective: "${directive}".\n\nDon't miss out on seasonal savings and exclusive bonuses. Claim your spot before offer expires!`;
-          cta = `Claim Exclusive Offer Now 🛍️`;
+        if (res && res.customStrategy && Array.isArray(res.customStrategy.posts)) {
+          newCustomStrat = res.customStrategy;
         }
+      } catch (apiErr) {
+        console.warn('[Custom Strategy Frontend] Backend API notice:', apiErr.message);
+      }
 
-        const hashtags = `#${brandName.replace(/\s+/g,'')} #Day${day} #${industry.replace(/\s+/g,'')} #VisualStrategy #${platform.replace(/[\s\/]+/g,'')}`;
+      if (!newCustomStrat) {
+        const platformsList = ['Instagram', 'Facebook', 'LinkedIn', 'Twitter / X', 'YouTube Shorts', 'Pinterest'];
+        const generated30DayPosts = Array.from({ length: 30 }, (_, i) => {
+          const day = i + 1;
+          const weekNum = day <= 7 ? 1 : day <= 14 ? 2 : day <= 21 ? 3 : 4;
+          const platform = platformsList[i % platformsList.length];
+          const weekTag = weekNum === 1 ? 'Week 1: Awareness' : weekNum === 2 ? 'Week 2: Value' : weekNum === 3 ? 'Week 3: Engagement' : 'Week 4: Conversion';
+          const weekName = weekNum === 1 ? 'Brand Awareness & Visual Hook (Days 1–7)' : weekNum === 2 ? 'Product Value & Feature Deep Dive (Days 8–14)' : weekNum === 3 ? 'Social Proof & Community Engagement (Days 15–21)' : 'Conversion Sprint & Direct Response CTA (Days 22–30)';
 
-        const visualDirective = `[Day ${day} - ${platform}] Format reference image for ${format}. Integrate ${brandName} official logo in top right, apply dynamic gradient framing, and add overlay directive: "${directive}".`;
+          return {
+            day,
+            week: weekNum,
+            weekTag,
+            weekName,
+            platform,
+            format: platform === 'Instagram' ? 'Carousel Slide / Reel Concept' : platform === 'Facebook' ? 'High-Engagement Ad Graphic' : platform === 'LinkedIn' ? 'Executive Slide Briefing' : '16:9 Viral Thread Graphic',
+            title: `Day ${day}: ${brandName} Launch Focus - ${directive.slice(0, 30)}...`,
+            visualDirective: `[Day ${day} - ${platform}] Custom product launch graphic highlighting ${directive}.`,
+            hook: `✨ Day ${day} Product Launch Spotlight for ${brandName}!`,
+            caption: `Day ${day} of our 30-Day custom visual launch roadmap for ${brandName}.`,
+            cta: `Explore ${brandName}'s new release today! 👇`,
+            hashtags: `#${brandName.replace(/\s+/g,'')} #Day${day} #${industry.replace(/\s+/g,'')}`
+          };
+        });
 
-        return {
-          day,
-          week: weekNum,
-          weekTag: weekThemeObj.tag,
-          weekName: weekThemeObj.name,
-          platform,
-          format,
-          title,
-          visualDirective,
-          hook,
-          caption,
-          cta,
-          hashtags
+        newCustomStrat = {
+          id: 'custom_strat_' + Date.now(),
+          imagePreviewUrl: imagePreviewUrl || null,
+          fileName: uploadedImageFile ? uploadedImageFile.name : 'Reference Image',
+          directive,
+          timestamp: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+          posts: generated30DayPosts
         };
-      });
+      }
 
       const newBrief = {
         id: 'brief_' + Date.now(),
@@ -317,16 +303,6 @@ export const StrategyModule = () => {
 
       const updatedBriefs = [newBrief, ...customImageBriefs];
       setCustomImageBriefs(updatedBriefs);
-
-      const newCustomStrat = {
-        id: 'custom_strat_' + Date.now(),
-        imagePreviewUrl: imagePreviewUrl || null,
-        fileName: uploadedImageFile ? uploadedImageFile.name : 'Reference Image',
-        directive,
-        timestamp: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-        posts: generated30DayPosts
-      };
-
       setCustomStrategy(newCustomStrat);
 
       const updatedStrategy = {
@@ -335,8 +311,8 @@ export const StrategyModule = () => {
         customStrategy: newCustomStrat
       };
 
-      if (updateWorkspace && (activeWorkspace.id || activeWorkspace._id)) {
-        await updateWorkspace(activeWorkspace.id || activeWorkspace._id, { currentStrategy: updatedStrategy });
+      if (updateWorkspace && wsId) {
+        await updateWorkspace(wsId, { currentStrategy: updatedStrategy });
       }
 
       setImageBriefToastMsg('Custom Social Media Strategy generated successfully for all platforms!');
@@ -1741,7 +1717,7 @@ export const StrategyModule = () => {
           </div>
 
           {/* 30 Posts Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3.5">
             {(customStrategy.posts || [])
               .filter(post => {
                 const matchesWeek = selectedCustomWeek === 'ALL' || String(post.week) === selectedCustomWeek;
@@ -1753,79 +1729,79 @@ export const StrategyModule = () => {
                 return (
                   <div
                     key={post.day || idx}
-                    className="group relative p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 hover:border-purple-500/40 hover:shadow-xl transition-all duration-300 space-y-4 flex flex-col justify-between"
+                    className="group relative p-3.5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 hover:border-purple-500/40 hover:shadow-lg transition-all duration-300 space-y-2.5 flex flex-col justify-between"
                   >
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {/* Header: Day Badge, Platform & Week Tag */}
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2.5">
-                          <div className="px-3 py-1 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs shadow-md">
+                      <div className="flex items-center justify-between flex-wrap gap-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <div className="px-2 py-0.5 rounded bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-[10px] shadow-2xs shrink-0">
                             Day {post.day}
                           </div>
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${getPlatformColor(post.platform)}`}>
-                            <PIcon className="w-4 h-4" />
+                          <div className={`w-5.5 h-5.5 rounded-md flex items-center justify-center shadow-2xs shrink-0 ${getPlatformColor(post.platform)}`}>
+                            <PIcon className="w-3 h-3" />
                           </div>
-                          <div>
-                            <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">{post.platform}</h4>
-                            <span className="text-[10px] text-slate-400 font-semibold">{post.format}</span>
+                          <div className="min-w-0">
+                            <h4 className="text-[10.5px] font-black text-slate-900 dark:text-white uppercase tracking-wider">{post.platform}</h4>
+                            <span className="text-[9px] text-slate-400 font-medium block -mt-0.5">{post.format}</span>
                           </div>
                         </div>
-                        <span className="px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 text-[10px] font-extrabold border border-purple-500/20">
+                        <span className="px-1.5 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 text-[8.5px] font-extrabold border border-purple-500/20 shrink-0">
                           {post.weekTag}
                         </span>
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-snug break-words">
+                      <h3 className="text-xs font-extrabold text-slate-900 dark:text-white leading-snug break-words">
                         {formatPostTitle(post.title, customStrategy?.directive)}
                       </h3>
 
                       {/* Visual Directive Box */}
-                      <div className="p-4 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 space-y-1.5 shadow-sm">
-                        <span className="text-[11px] font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
-                          <ImageIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Visual Guidance &amp; Image Layout:
+                      <div className="p-2.5 rounded-xl bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/50 space-y-1 shadow-2xs">
+                        <span className="text-[9.5px] font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider flex items-center gap-1">
+                          <ImageIcon className="w-3 h-3 text-purple-600 dark:text-purple-400 shrink-0" /> Visual Guidance:
                         </span>
-                        <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 leading-relaxed break-words">
+                        <p className="text-[10px] font-semibold text-slate-900 dark:text-slate-100 leading-snug break-words">
                           {post.visualDirective}
                         </p>
                       </div>
 
                       {/* Hook & Copy */}
-                      <div className="space-y-3 p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="space-y-1.5 p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800">
                         <div>
-                          <span className="text-[10.5px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hook Line</span>
-                          <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white mt-0.5 leading-snug break-words">{post.hook}</p>
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Hook Line</span>
+                          <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-snug break-words mt-0.5">{post.hook}</p>
                         </div>
                         <div>
-                          <span className="text-[10.5px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Caption / Copywriting</span>
-                          <p className="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-pre-line leading-relaxed mt-0.5 break-words">
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Caption Copy</span>
+                          <p className="text-[10px] font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed break-words mt-0.5">
                             {post.caption}
                           </p>
                         </div>
                       </div>
 
                       {/* CTA & Hashtags */}
-                      <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs pt-1">
-                        <span className="font-extrabold text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 rounded-xl">
+                      <div className="space-y-1 text-[9.5px] pt-0.5">
+                        <div className="font-extrabold text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-1 rounded-md text-[9.5px] break-words">
                           CTA: {post.cta}
-                        </span>
-                        <span className="text-purple-700 dark:text-purple-300 font-extrabold break-words">
+                        </div>
+                        <div className="text-purple-700 dark:text-purple-300 font-bold text-[9px] break-words">
                           {post.hashtags}
-                        </span>
+                        </div>
                       </div>
                     </div>
 
                     {/* Card Footer Actions */}
-                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                    <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-1 mt-1.5">
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(`Day ${post.day} - ${post.platform}\n\n${post.hook}\n\n${post.caption}\n\n${post.cta}\n${post.hashtags}`);
-                          showCustomAlert({ title: 'Copied to Clipboard!', message: `Day ${post.day} (${post.platform}) post copy copied successfully.`, type: 'success' });
+                          showCustomAlert({ title: 'Copied!', message: `Day ${post.day} (${post.platform}) copy copied.`, type: 'success' });
                         }}
-                        className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                        className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[9.5px] transition-colors flex items-center gap-1 cursor-pointer"
                       >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>Copy Copy</span>
+                        <FileText className="w-2.5 h-2.5" />
+                        <span>Copy</span>
                       </button>
 
                       <button
@@ -1861,10 +1837,10 @@ export const StrategyModule = () => {
                           }
                           setActiveModule('creativeStudio');
                         }}
-                        className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-extrabold text-xs shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
+                        className="px-2.5 py-0.5 rounded bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-extrabold text-[9.5px] shadow-2xs flex items-center gap-1 transition-all cursor-pointer"
                       >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Create in Studio →</span>
+                        <Sparkles className="w-2.5 h-2.5" />
+                        <span>Create Studio →</span>
                       </button>
                     </div>
 

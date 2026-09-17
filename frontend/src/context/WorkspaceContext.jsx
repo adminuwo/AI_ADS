@@ -4,7 +4,12 @@ import { API_BASE } from '../config/api';
 const WorkspaceContext = createContext();
 
 const MODULE_TO_PATH = {
-  landing: '/',
+  landing: '/landing-page',
+  landingpage: '/landing-page',
+  login: '/sign-in-create-account',
+  signin: '/sign-in-create-account',
+  register: '/sign-in-create-account',
+  createAccount: '/sign-in-create-account',
   dashboard: '/dashboard',
   brands: '/brand-dna',
   strategy: '/strategy',
@@ -26,6 +31,15 @@ const MODULE_TO_PATH = {
 const PATH_TO_MODULE = {
   '/': 'landing',
   '/landing': 'landing',
+  '/landing-page': 'landing',
+  '/landingpage': 'landing',
+  '/sign-in-create-account': 'login',
+  '/sign-in': 'login',
+  '/signin': 'login',
+  '/login': 'login',
+  '/create-account': 'login',
+  '/createaccount': 'login',
+  '/register': 'login',
   '/dashboard': 'dashboard',
   '/brand-dna': 'brands',
   '/brands': 'brands',
@@ -1638,9 +1652,9 @@ export const WorkspaceProvider = ({ children }) => {
 
     window.addEventListener('popstate', handlePopState);
 
-    // Set clean URL on initial load if at root /
-    const initialPath = MODULE_TO_PATH[activeModule] || '/dashboard';
-    if (window.location.pathname === '/' || window.location.pathname === '') {
+    // Set clean URL on initial load
+    const initialPath = MODULE_TO_PATH[activeModule] || '/landing-page';
+    if (window.location.pathname === '/' || window.location.pathname === '' || window.location.pathname === '/landing') {
       window.history.replaceState({ module: activeModule }, '', initialPath);
     }
 
