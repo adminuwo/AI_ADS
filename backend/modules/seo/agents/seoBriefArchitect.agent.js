@@ -90,7 +90,7 @@ Generate a JSON object with:
 Return ONLY valid JSON.`;
 
   try {
-    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-2.5-flash' });
     const aiBrief = aiResult?.data || aiResult;
 
     if (aiBrief && Array.isArray(aiBrief.suggestedTitles) && aiBrief.suggestedTitles.length > 0) {
@@ -228,7 +228,7 @@ Return a JSON object with:
 Return ONLY valid JSON.`;
 
   try {
-    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-2.5-flash' });
     const aiArticle = aiResult?.data || aiResult;
 
     if (aiArticle && aiArticle.content && aiArticle.content.length > 500) {
@@ -242,7 +242,7 @@ Return ONLY valid JSON.`;
         content: aiArticle.content,
         faqSection: aiArticle.faqSection || [],
         socialSnippet: aiArticle.socialSnippet || '',
-        model: aiResult?.model || 'gemini-3.5-flash'
+        model: aiResult?.model || 'gemini-2.5-flash'
       };
     }
   } catch (err) {
@@ -304,7 +304,7 @@ Return a JSON object with:
 Return ONLY valid JSON.`;
 
   try {
-    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-2.5-flash' });
     const aiData = aiResult?.data || aiResult;
     if (aiData && aiData.linkedInPost) {
       return { success: true, outputs: aiData };

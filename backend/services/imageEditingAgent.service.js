@@ -64,7 +64,7 @@ async function fetchImageAsBase64(imageUrl) {
 async function analyzeProductFromImage(client, referenceImageBase64, referenceImageMime) {
   if (!referenceImageBase64 || !referenceImageMime) return null;
 
-  const candidateTextModels = ['gemini-3.5-flash'];
+  const candidateTextModels = ['gemini-2.5-flash'];
 
   for (const modelName of candidateTextModels) {
     try {
@@ -192,7 +192,7 @@ CRITICAL RULES:
 - Specify camera: 85mm portrait lens, 50mm prime, macro close-up, etc.
 - End with photography quality cues: "8K resolution, photorealistic, commercial product photography, Hasselblad H6D-100c quality, no rendered text, no artificial logos"`;
 
-  const candidateTextModels = ['gemini-3.5-flash'];
+  const candidateTextModels = ['gemini-2.5-flash'];
 
   for (const modelName of candidateTextModels) {
     try {

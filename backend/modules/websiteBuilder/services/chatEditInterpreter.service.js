@@ -662,7 +662,7 @@ GENERATE THE FOLLOWING JSON:
 `;
 
     try {
-      const aiRes = await generateJSON(editSystemPrompt, { model: 'gemini-3.5-flash', reqId });
+      const aiRes = await generateJSON(editSystemPrompt, { model: 'gemini-2.5-flash', reqId });
       const aiData = aiRes && aiRes.data ? aiRes.data : aiRes;
 
       if (aiData && typeof aiData === 'object') {

@@ -92,17 +92,17 @@ const chatWithGemini = async (messages, options = {}) => {
       });
     }
 
-    let requestedModel = 'gemini-3.5-flash';
+    let requestedModel = 'gemini-2.5-flash';
     if (options.modelId || options.model) {
       const customModel = String(options.modelId || options.model).toLowerCase();
       if (customModel.includes('gemini') || customModel.includes('3.5') || customModel.includes('flash') || customModel.includes('pro')) {
-        requestedModel = 'gemini-3.5-flash';
+        requestedModel = 'gemini-2.5-flash';
       } else {
         requestedModel = customModel;
       }
     }
 
-    const modelSequence = ['gemini-3.5-flash'];
+    const modelSequence = ['gemini-2.5-flash'];
 
     let lastError = null;
     for (const client of clientCandidates) {

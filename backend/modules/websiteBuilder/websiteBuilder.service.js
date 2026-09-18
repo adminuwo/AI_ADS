@@ -43,7 +43,7 @@ Output ONLY a JSON object:
 `;
   console.log(`${correlationTag}[Tier 1: Flash] Calling Gemini 3.5 Flash for Rapid Intent Analysis...`);
   try {
-    const aiResponse = await generateJSON(prompt, { model: 'gemini-3.5-flash', reqId });
+    const aiResponse = await generateJSON(prompt, { model: 'gemini-2.5-flash', reqId });
     return aiResponse && aiResponse.data ? aiResponse.data : aiResponse;
   } catch (err) {
     console.warn(`${correlationTag}[Tier 1: Flash] Intent analysis failed, using prompt directly:`, err.message);
@@ -213,14 +213,14 @@ GENERATE THE FOLLOWING JSON:
   try {
     console.log(`${correlationTag}[Tier 2: Fast Planner] Calling Gemini 3.5 for Deep Autonomous Planning & Visual Reasoning...`);
     let aiResponse = null;
-    let modelUsed = 'gemini-3.5-flash';
+    let modelUsed = 'gemini-2.5-flash';
 
     try {
-      aiResponse = await generateJSON(systemPrompt, { model: 'gemini-3.5-flash', reqId });
+      aiResponse = await generateJSON(systemPrompt, { model: 'gemini-2.5-flash', reqId });
     } catch (flashErr) {
       console.warn(`${correlationTag}[Tier 2] Gemini 3.5 Flash invocation error (${flashErr.message}), retrying...`);
-      aiResponse = await generateJSON(systemPrompt, { model: 'gemini-3.5-flash', reqId });
-      modelUsed = 'gemini-3.5-flash';
+      aiResponse = await generateJSON(systemPrompt, { model: 'gemini-2.5-flash', reqId });
+      modelUsed = 'gemini-2.5-flash';
     }
 
     const requirementData = aiResponse && aiResponse.data ? aiResponse.data : aiResponse;
@@ -237,7 +237,7 @@ GENERATE THE FOLLOWING JSON:
         ...normalized,
         analysisMetadata: {
           analysisSource: 'llm_dual_tier',
-          tier1Model: 'gemini-3.5-flash',
+          tier1Model: 'gemini-2.5-flash',
           tier2Model: modelUsed,
           provider: 'ai-service',
           confidence: 0.99

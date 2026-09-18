@@ -167,7 +167,7 @@ CRITICAL RULES:
 Return ONLY valid JSON.`;
 
   try {
-    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-2.5-flash' });
     const data = aiResult?.data || aiResult;
 
     if (data) {

@@ -501,7 +501,7 @@ Return ONLY a raw valid JSON object with NO markdown:
     throw new Error('Google Cloud Vertex / Gemini client is not configured for search grounding');
   }
 
-  const candidateModels = ['gemini-3.5-flash'];
+  const candidateModels = ['gemini-2.5-flash'];
   for (const modelName of candidateModels) {
     try {
       gRes = await client.models.generateContent({

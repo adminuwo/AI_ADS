@@ -394,7 +394,7 @@ USER CUSTOM DIRECTIVE:
 
 Please analyze this directive and produce an array of exactly 30 unique daily post objects in pure JSON. Output JSON only, no markdown wrapping, no explanation.`;
 
-    const candidateModels = ['gemini-3.5-flash'];
+    const candidateModels = ['gemini-2.5-flash'];
 
     for (const modelName of candidateModels) {
       try {

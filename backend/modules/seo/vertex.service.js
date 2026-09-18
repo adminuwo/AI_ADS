@@ -82,10 +82,10 @@ Return a JSON object with:
 Return ONLY valid JSON.`;
 
   try {
-    const result = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const result = await aiService.generateJSON(prompt, { model: 'gemini-2.5-flash' });
     const aiData = result?.data || result;
     if (aiData?.term) {
-      return { success: true, keyword: aiData, model: result?.model || 'gemini-3.5-flash' };
+      return { success: true, keyword: aiData, model: result?.model || 'gemini-2.5-flash' };
     }
   } catch (err) {
     console.warn('Single keyword regeneration error:', err.message);

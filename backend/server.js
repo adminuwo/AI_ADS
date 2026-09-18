@@ -1062,7 +1062,7 @@ Return ONLY valid JSON.`;
 
     let strategy = null;
     try {
-      const aiResponse = await generateJSON(prompt, { temperature: 0.7 });
+      const aiResponse = await generateJSON(prompt, { model: 'gemini-2.5-flash', temperature: 0.7, reqId: 'GEN-STRATEGY' });
       strategy = aiResponse?.data || (aiResponse && typeof aiResponse === 'object' && !aiResponse.data ? aiResponse : null);
     } catch (aiErr) {
       console.warn('[Strategy Engine] AI synthesis error, using brand-specific fallback builder:', aiErr.message);

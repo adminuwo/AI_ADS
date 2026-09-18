@@ -65,7 +65,7 @@ Workspace Brand: ${brandContext.brandName || 'Not specified'} (${brandContext.in
       systemPrompt: aiSystemPrompt,
       userPrompt: userPromptPayload,
       temperature: 0.2,
-      model: 'gemini-3.5-flash'
+      model: 'gemini-2.5-flash'
     });
 
     if (aiRes && aiRes.questions && Array.isArray(aiRes.questions) && aiRes.questions.length > 0) {
