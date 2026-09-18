@@ -290,6 +290,8 @@ const CampaignDetail = ({ campaign, onBack }) => {
   );
   const [showStrategyModal, setShowStrategyModal] = useState(false);
   const [isStrategyExpanded, setIsStrategyExpanded] = useState(false);
+  const [showDurationModal, setShowDurationModal] = useState(false);
+  const [strategyDays, setStrategyDays] = useState(30);
   const [successToast, setSuccessToast] = useState('');
   const [generatingPost, setGeneratingPost] = useState(null);
   const [error, setError] = useState('');
@@ -308,16 +310,22 @@ const CampaignDetail = ({ campaign, onBack }) => {
 
   useEffect(() => { loadPosts(); }, [loadPosts]);
 
-  const handleGenerateStrategyAndGoToPlan = async () => {
-    sessionStorage.setItem('strategyActiveTab', 'strategyPlan');
+  const handleOpenDurationModal = () => {
     if (campaignStrategy) {
+      sessionStorage.setItem('strategyActiveTab', 'strategyPlan');
       setActiveModule('strategy');
       return;
     }
+    setShowDurationModal(true);
+  };
+
+  const handleExecuteGenerateStrategy = async (daysToGenerate) => {
+    const days = Math.max(1, Math.min(30, parseInt(daysToGenerate || strategyDays || 30, 10)));
     setGeneratingStrategy(true);
     setError('');
+    setShowDurationModal(false);
     try {
-      const result = await campaignAPI.generateStrategy(campaign._id);
+      const result = await campaignAPI.generateStrategy(campaign._id, { duration: days });
       if (result.strategy) {
         setCampaignStrategy(result.strategy);
         if (setGeneratedStrategy) setGeneratedStrategy(result.strategy);
