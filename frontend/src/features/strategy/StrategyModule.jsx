@@ -9,7 +9,8 @@ import {
   MousePointerClick, Edit3, Sparkles, PieChart, Calendar, DollarSign,
   Megaphone, BookOpen, Clock, ChevronRight, Star, Lightbulb, Rocket,
   Hash, Video, FileText, MessageSquare, Filter, Play, Award, BarChart2,
-  ArrowUpRight, Flame, X, RefreshCw, UploadCloud, Image as ImageIcon, Trash2, Plus
+  ArrowUpRight, Flame, X, RefreshCw, UploadCloud, Image as ImageIcon, Trash2, Plus,
+  Compass
 } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
