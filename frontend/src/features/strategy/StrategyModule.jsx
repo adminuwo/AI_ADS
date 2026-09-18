@@ -1282,56 +1282,73 @@ export const StrategyModule = () => {
                   Channel Deployment & Cadence
                 </h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                  Tier-1 Priorities
+                  {channelMix && channelMix.length > 0 ? `${channelMix.length} Active Channels` : (bestPlatforms.length > 0 ? `${bestPlatforms.length} Platforms` : 'Target Channels')}
                 </span>
               </div>
 
               <div className="space-y-3">
-                {[
-                  {
-                    name: 'Instagram & Social Feeds',
-                    role: 'Visual Brand Storytelling & Top-of-Funnel Static & Carousel Reach',
-                    cadence: '4–5x Posts / Week',
-                    tag: 'Primary Brand Engine',
-                    badge: 'bg-pink-100 text-pink-700 dark:bg-pink-950/80 dark:text-pink-300'
-                  },
-                  {
-                    name: 'LinkedIn / Professional Network',
-                    role: 'B2B Thought Leadership & Executive Decision-Maker Authority',
-                    cadence: '3x Long-Form Posts / Week',
-                    tag: 'Authority Anchor',
-                    badge: 'bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300'
-                  },
-                  {
-                    name: 'Meta Ads & Paid Distribution',
-                    role: 'High-Scale Conversion Funnels & Retargeting Infrastructure',
-                    cadence: 'Continuous Ad Optimization Sprints',
-                    tag: 'Direct Response',
-                    badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300'
-                  },
-                  {
-                    name: 'Direct Email & Nurture',
-                    role: 'Lead Magnet Delivery, Onboarding & High-LTV Retention',
-                    cadence: '2x Segmented Broadcasts / Week',
-                    tag: 'Owned Audience',
-                    badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'
-                  }
-                ].map((item, idx) => (
-                  <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-slate-800 dark:text-white">{item.name}</span>
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${item.badge}`}>
-                          {item.tag}
-                        </span>
+                {(channelMix && channelMix.length > 0
+                  ? channelMix
+                  : (bestPlatforms.length > 0
+                      ? bestPlatforms.map((p, idx) => ({
+                          label: typeof p === 'object' ? (p.name || p.platform || 'Platform') : String(p),
+                          pct: idx === 0 ? 40 : idx === 1 ? 30 : idx === 2 ? 20 : 10,
+                          tag: idx === 0 ? 'Primary Engine' : idx === 1 ? 'Growth Vector' : 'Support Channel'
+                        }))
+                      : [
+                          { label: 'Instagram', pct: 40, tag: 'Visual Engine' },
+                          { label: 'LinkedIn', pct: 30, tag: 'Authority Anchor' },
+                          { label: 'SEO & Blog', pct: 20, tag: 'Search Intent' },
+                          { label: 'Email Nurture', pct: 10, tag: 'Owned Audience' }
+                        ]
+                  )
+                ).map((item, idx) => {
+                  const channelName = item.label || item.name || item.platform || String(item);
+                  const PIcon = getPlatformIcon(channelName);
+                  const colorClass = getPlatformColor(channelName);
+                  const pct = item.pct || item.percentage || (idx === 0 ? 40 : 20);
+                  
+                  const getRole = (name) => {
+                    const lower = String(name).toLowerCase();
+                    if (lower.includes('instagram') || lower.includes('reel')) return 'Visual Brand Storytelling & High-Engagement Social Reach';
+                    if (lower.includes('linkedin')) return 'B2B Thought Leadership & Executive Decision-Maker Authority';
+                    if (lower.includes('facebook') || lower.includes('meta')) return 'High-Scale Conversion Funnels & Retargeting Infrastructure';
+                    if (lower.includes('twitter') || lower.includes('x.com')) return 'Real-time Industry Insights, Trending Hooks & Community Reach';
+                    if (lower.includes('youtube') || lower.includes('video')) return 'High-Intent Video Demonstrations & Product Deep Dives';
+                    if (lower.includes('blog') || lower.includes('seo')) return 'High-Intent Search Traffic & Evergreen Organic Authority';
+                    if (lower.includes('email') || lower.includes('newsletter')) return 'Direct Lead Magnet Delivery & Customer Lifetime Value Retention';
+                    return 'Targeted Brand Presence & Audience Growth';
+                  };
+
+                  const getCadence = (name) => {
+                    const lower = String(name).toLowerCase();
+                    if (lower.includes('instagram')) return '4–5x Posts / Week';
+                    if (lower.includes('linkedin')) return '3x In-Depth Posts / Week';
+                    if (lower.includes('email')) return '2x Segmented Broadcasts / Week';
+                    if (lower.includes('blog') || lower.includes('seo')) return '1–2x Optimized Articles / Week';
+                    return postingFrequency || 'Daily Cadence';
+                  };
+
+                  return (
+                    <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                            <PIcon className="w-3 h-3" />
+                          </div>
+                          <span className="text-xs font-black text-slate-800 dark:text-white">{channelName}</span>
+                          <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                            {pct}% Split
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">{getRole(channelName)}</p>
                       </div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">{item.role}</p>
+                      <div className="text-right shrink-0">
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">{getCadence(channelName)}</span>
+                      </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">{item.cadence}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

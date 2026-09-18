@@ -311,11 +311,6 @@ const CampaignDetail = ({ campaign, onBack }) => {
   useEffect(() => { loadPosts(); }, [loadPosts]);
 
   const handleOpenDurationModal = () => {
-    if (campaignStrategy) {
-      sessionStorage.setItem('strategyActiveTab', 'strategyPlan');
-      setActiveModule('strategy');
-      return;
-    }
     setShowDurationModal(true);
   };
 
