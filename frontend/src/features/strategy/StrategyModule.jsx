@@ -163,7 +163,7 @@ export const StrategyModule = () => {
   const [activeTab,     setActiveTab]     = useState(() => {
     const tab = sessionStorage.getItem('strategyActiveTab');
     return (tab && tab !== 'plan') ? tab : 'overview';
-  }); // overview | campaigns | custom
+  }); // overview | custom
   const [showSaveToast, setShowSaveToast] = useState(false);
   const [showRegenToast, setShowRegenToast] = useState(false);
   const [isSavedState,  setIsSavedState]  = useState(false);
@@ -599,7 +599,7 @@ export const StrategyModule = () => {
 
       setThirtyDayPlan(generatedPlan);
       setGeneratedDoc(true);
-      setActiveTab('campaigns');
+      setActiveTab('overview');
     } catch (err) {
       console.log('Campaign strategy generation error:', err.message);
     } finally {
@@ -862,8 +862,8 @@ export const StrategyModule = () => {
             {generatedDoc && (
               <div className="flex items-center gap-1 mt-2 bg-white/60 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-1.5 w-fit flex-wrap border border-purple-200/50 dark:border-purple-800/40 shadow-inner">
                 {[
+                  { id: 'strategyPlan', label: t('strategyPlanTab', 'Strategy Plan'), icon: Layers },
                   { id: 'overview',   label: t('overviewTab', 'Overview'),   icon: BarChart2 },
-                  { id: 'campaigns',  label: t('campaignsTab', 'Campaigns'),  icon: Megaphone },
                   ...(customStrategy ? [{ id: 'custom', label: 'Custom Strategy', icon: Sparkles, isCustom: true }] : []),
                 ].map(tab => (
                   <button
@@ -939,6 +939,441 @@ export const StrategyModule = () => {
               : <><Zap className="w-4 h-4 text-amber-300 fill-amber-300" /> Generate Master Strategy</>
             }
           </button>
+        </div>
+      )}
+
+      
+      {/* ══════════ TAB: STRATEGY PLAN ══════════ */}
+      {generatedDoc && activeTab === 'strategyPlan' && (
+        <div className="space-y-6">
+
+          {/* Top Banner: Master Strategic Growth Blueprint */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 shadow-2xl border border-purple-500/30">
+            <div className="absolute -right-20 -top-20 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="relative z-10">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 text-white font-black text-sm">
+                    <Rocket className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/10 text-purple-200 border border-white/10">
+                        Strategic Master Blueprint
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-300">
+                        {activeWorkspace?.industryCategory || 'Omni-Channel Marketing'}
+                      </span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-1">
+                      {activeWorkspace?.brandName || 'Brand'} Strategy & Execution Plan
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => setActiveModule('campaigns')}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold text-xs shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+                  >
+                    <Megaphone className="w-3.5 h-3.5" />
+                    <span>Open Campaign Builder →</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('overview')}
+                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs border border-white/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+                  >
+                    <BarChart2 className="w-3.5 h-3.5" />
+                    <span>View Analytics Overview</span>
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-sm text-purple-100/90 max-w-3xl leading-relaxed mb-6">
+                {businessGoal || deriveGoal(activeWorkspace)}
+              </p>
+
+              {/* High-level KPI Targets */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-white/10">
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 border border-white/10">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-purple-200">Execution Mode</div>
+                  <div className="text-base font-black text-white mt-0.5">4-Week Sprints</div>
+                  <div className="text-[10px] text-purple-300/80 mt-0.5">Phased Rollout</div>
+                </div>
+
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 border border-white/10">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">Target Cadence</div>
+                  <div className="text-base font-black text-white mt-0.5">{postingFrequency || 'Daily Cadence'}</div>
+                  <div className="text-[10px] text-emerald-200/80 mt-0.5">Multi-Platform Sync</div>
+                </div>
+
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 border border-white/10">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-amber-300">Growth Multiple</div>
+                  <div className="text-base font-black text-white mt-0.5">3.5x Targeted Pipeline</div>
+                  <div className="text-[10px] text-amber-200/80 mt-0.5">Organic + Paid Scale</div>
+                </div>
+
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 border border-white/10">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-pink-300">Core Conversion CTA</div>
+                  <div className="text-xs font-bold text-white mt-1 line-clamp-1" title={primaryCta || deriveCta(activeWorkspace)}>
+                    {primaryCta || deriveCta(activeWorkspace)}
+                  </div>
+                  <div className="text-[10px] text-pink-200/80 mt-0.5">Direct Response</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 1: 4-Phase Tactical Strategy Roadmap */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+                  <Compass className="w-3.5 h-3.5" />
+                </div>
+                Strategy Execution Roadmap & 4-Week Action Sprints
+              </h2>
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                Full-Funnel Lifecycle
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+              {/* SPRINT 1 */}
+              <div className="rounded-3xl p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group hover:border-purple-300 dark:hover:border-purple-700">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                      Sprint 1 • Days 1–7
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500">
+                      Awareness
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-2 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-purple-500" />
+                    Foundation & Brand Positioning
+                  </h3>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                    Establish high-credibility market presence, test foundational creative angles, and seed core retargeting pools.
+                  </p>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Key Deliverables:</div>
+                    <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-200">
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
+                        <span>Brand manifesto & origin story rollout</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
+                        <span>Top-of-funnel educational carousels</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-purple-500 shrink-0 mt-0.5" />
+                        <span>Pixel tracking & audience seeding</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-slate-500 dark:text-slate-400">Target KPI:</span>
+                  <span className="font-extrabold text-purple-600 dark:text-purple-400">15K+ Impressions • &lt;$0.45 CPC</span>
+                </div>
+              </div>
+
+              {/* SPRINT 2 */}
+              <div className="rounded-3xl p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group hover:border-indigo-300 dark:hover:border-indigo-700">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                      Sprint 2 • Days 8–14
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500">
+                      Trust & Authority
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-2 flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-indigo-500" />
+                    Consideration & Social Proof
+                  </h3>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                    Nurture engaged visitors, showcase real product benefits, and eliminate common customer buying hesitations.
+                  </p>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Key Deliverables:</div>
+                    <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-200">
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                        <span>Video walkthroughs & case studies</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                        <span>Lead Magnet: <span className="font-semibold">{leadMagnet || deriveLeadMagnet(activeWorkspace)}</span></span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                        <span>Engagement retargeting pools setup</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-slate-500 dark:text-slate-400">Target KPI:</span>
+                  <span className="font-extrabold text-indigo-600 dark:text-indigo-400">4.5%+ CTR • 500+ Engaged Visits</span>
+                </div>
+              </div>
+
+              {/* SPRINT 3 */}
+              <div className="rounded-3xl p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group hover:border-pink-300 dark:hover:border-pink-700">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-800">
+                      Sprint 3 • Days 15–21
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500">
+                      Conversion
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-2 flex items-center gap-1.5">
+                    <Target className="w-4 h-4 text-pink-500" />
+                    High-Intent Direct Conversion
+                  </h3>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                    Deploy direct response offers with urgency cues and high-converting creative hooks to maximize revenue.
+                  </p>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Key Deliverables:</div>
+                    <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-200">
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-pink-500 shrink-0 mt-0.5" />
+                        <span>High-converting direct response ads</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-pink-500 shrink-0 mt-0.5" />
+                        <span>Cart abandoner & warm visitor retargeting</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-pink-500 shrink-0 mt-0.5" />
+                        <span>Offer CTA: <span className="font-semibold">{primaryCta || deriveCta(activeWorkspace)}</span></span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-slate-500 dark:text-slate-400">Target KPI:</span>
+                  <span className="font-extrabold text-pink-600 dark:text-pink-400">3.2x ROAS • 18% Landing Conv.</span>
+                </div>
+              </div>
+
+              {/* SPRINT 4 */}
+              <div className="rounded-3xl p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group hover:border-emerald-300 dark:hover:border-emerald-700">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                      Sprint 4 • Days 22–30
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500">
+                      Scale & LTV
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-2 flex items-center gap-1.5">
+                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    Scaling, Lookalikes & Retention
+                  </h3>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                    Scale winning 20% ad creatives, launch lookalike audiences (1-3%), and activate post-purchase referral loops.
+                  </p>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Key Deliverables:</div>
+                    <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-200">
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>Scale top 20% highest ROAS creatives</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>Lookalike & broad expansion ad groups</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>Customer retention & referral sequences</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-slate-500 dark:text-slate-400">Target KPI:</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">4.0x+ Blended ROAS • 25% Repeat</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Channel Strategy & Strategic Content Pillars */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Left: Strategic Channel Deployment */}
+            <div className="rounded-3xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+                    <Globe className="w-3.5 h-3.5" />
+                  </div>
+                  Channel Deployment & Cadence
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                  Tier-1 Priorities
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    name: 'Instagram & Reels',
+                    role: 'Visual Brand Storytelling & Top-of-Funnel Viral Reach',
+                    cadence: '4–5x Posts / Week + Daily Stories',
+                    tag: 'Primary Brand Engine',
+                    color: 'from-pink-500 to-purple-600',
+                    badge: 'bg-pink-100 text-pink-700 dark:bg-pink-950/80 dark:text-pink-300'
+                  },
+                  {
+                    name: 'LinkedIn / Professional Network',
+                    role: 'B2B Thought Leadership & Executive Decision-Maker Authority',
+                    cadence: '3x Long-Form Posts / Week',
+                    tag: 'Authority Anchor',
+                    color: 'from-blue-600 to-indigo-600',
+                    badge: 'bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300'
+                  },
+                  {
+                    name: 'Facebook & Meta Ads',
+                    role: 'High-Scale Conversion Funnels & Retargeting Infrastructure',
+                    cadence: 'Continuous Ad Optimization Sprints',
+                    tag: 'Direct Response',
+                    color: 'from-indigo-600 to-purple-600',
+                    badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300'
+                  },
+                  {
+                    name: 'Direct Email & Nurture',
+                    role: 'Lead Magnet Delivery, Onboarding & High-LTV Retention',
+                    cadence: '2x Segmented Broadcasts / Week',
+                    tag: 'Owned Audience',
+                    color: 'from-emerald-500 to-teal-600',
+                    badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'
+                  }
+                ].map((item, idx) => (
+                  <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-slate-800 dark:text-white">{item.name}</span>
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${item.badge}`}>
+                          {item.tag}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">{item.role}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">{item.cadence}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Core Strategic Pillars & Audience Focus */}
+            <div className="rounded-3xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-sm">
+                    <Lightbulb className="w-3.5 h-3.5" />
+                  </div>
+                  Content Pillars & Core Narratives
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                  {contentPillars.length || 4} Core Pillars
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {(contentPillars.length > 0 ? contentPillars : [
+                  { pillar: 'Industry Problem & Solution Blueprint', desc: 'Educate prospects on underlying friction and highlight your unique value prop.' },
+                  { pillar: 'Product Mastery & Feature Spotlights', desc: 'Deep dives into features, comparisons, and seamless user experience.' },
+                  { pillar: 'Customer Success & Transformation Proof', desc: 'Real-world results, metrics, case studies, and buyer testimonials.' },
+                  { pillar: 'Brand Culture & Behind-the-Scenes Craft', desc: 'Humanize the brand with visionary perspectives and team craft stories.' }
+                ]).map((pillar, idx) => {
+                  const title = extractPillarText(pillar);
+                  const desc = typeof pillar === 'object' ? (pillar.desc || pillar.description || '') : '';
+                  return (
+                    <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-black flex items-center justify-center">
+                          0{idx + 1}
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 dark:text-white leading-snug">{title}</span>
+                      </div>
+                      {desc && (
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-7 leading-relaxed">{desc}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Next Step Action Bridge */}
+          <div className="rounded-3xl bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-emerald-500/10 dark:from-purple-950/40 dark:via-indigo-950/40 dark:to-emerald-950/40 border border-purple-200 dark:border-purple-800/50 p-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-1.5 text-center md:text-left">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-black uppercase">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Strategy Aligned with 2026 Brand DNA
+                </div>
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                  Ready to Turn This Strategy into Live Campaigns?
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-xl">
+                  Take these 4-week execution sprints and content pillars directly into the Campaign Builder to set up ad groups, or generate creative studio assets immediately.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0 flex-wrap justify-center">
+                <button
+                  onClick={() => setActiveModule('campaigns')}
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-purple-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                >
+                  <Megaphone className="w-4 h-4" />
+                  <span>Build Campaigns Now</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setActiveModule('create')}
+                  className="px-5 py-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-100 font-extrabold text-xs border border-slate-200 dark:border-slate-700 shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4 text-purple-500" />
+                  <span>Generate Creative Ads</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
       )}
 
@@ -1351,87 +1786,6 @@ export const StrategyModule = () => {
                     </div>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">Goal: {stage.goal}</span>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════ TAB: CAMPAIGNS ══════════ */}
-      {activeTab === 'campaigns' && (
-        <div className="space-y-5">
-
-          {/* Campaign Ideas */}
-          <div className="space-y-4">
-            <h2 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
-              <Megaphone className="w-4 h-4 text-brand-500" /> Campaign Ideas
-              <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{campaignIdeas.length}</span>
-            </h2>
-            {campaignIdeas.length === 0 && (
-              <div className="text-center py-16 rounded-3xl bg-white/70 dark:bg-slate-900/80 border border-dashed border-purple-200 dark:border-slate-700">
-                <Lightbulb className="w-10 h-10 text-amber-400 mx-auto mb-3" />
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white mb-2">No Campaign Ideas Yet</h3>
-                <p className="text-sm text-slate-500 mb-4">Generate your master strategy to get AI-powered campaign concepts.</p>
-                <button onClick={handleGenerate} disabled={isGenerating} className="btn-primary text-sm flex items-center gap-2 mx-auto px-5 py-2 rounded-xl disabled:opacity-50">
-                  <Zap className="w-4 h-4 text-amber-300 fill-amber-300" /> Generate Strategy
-                </button>
-              </div>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {campaignIdeas.map((idea, i) => {
-                const gradients = [
-                  'from-violet-500 to-indigo-600',
-                  'from-emerald-500 to-teal-500',
-                  'from-amber-500 to-orange-500',
-                  'from-pink-500 to-rose-500',
-                  'from-blue-500 to-cyan-500',
-                  'from-purple-500 to-pink-500',
-                ];
-                const ideaTitle = typeof idea === 'object' && idea !== null ? (idea.title || idea.name || `Campaign Idea ${i+1}`) : String(idea);
-                const ideaDesc = typeof idea === 'object' && idea !== null ? (idea.desc || idea.description || idea.concept || '') : '';
-                return (
-                  <div key={i} className="group relative p-6 rounded-2xl bg-white/80 dark:bg-slate-900/85 border border-purple-200/60 dark:border-slate-800 hover:border-purple-400 shadow-sm hover:shadow-md transition-all duration-300 space-y-3">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center shadow-xs shrink-0`}>
-                        <Megaphone className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Campaign {i+1}</span>
-                          <Award className="w-3.5 h-3.5 text-amber-400" />
-                        </div>
-                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">{ideaTitle}</h3>
-                      </div>
-                    </div>
-                    {ideaDesc && <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-14">{ideaDesc}</p>}
-                    <div className="pl-14 flex items-center gap-2">
-                      <button
-                        onClick={() => { setSelectedCampaignIdea({ ...((typeof idea === 'object' && idea !== null) ? idea : {}), title: ideaTitle, desc: ideaDesc }); setCampaignDuration('30'); setBuildCampaignModal(true); }}
-                        className="flex items-center gap-1.5 text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline transition-all hover:gap-2"
-                      >
-                        <ArrowUpRight className="w-3 h-3" /> Build Campaign
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Funnel (repeated here for campaign context) */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-rose-500/6 via-purple-500/4 to-emerald-500/6 dark:from-slate-900/90 dark:to-slate-900/90 border border-purple-200/60 dark:border-slate-800 space-y-5">
-            <h2 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
-              <Layers className="w-4 h-4 text-brand-500" /> Campaign Funnel Strategy
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {funnelStages.map((stage, i) => (
-                <div key={stage.label} className={`p-5 rounded-2xl border ${stage.border} ${stage.bg} space-y-3`}>
-                  <div>
-                    <span className={`text-xs font-extrabold ${stage.text} block`}>{stage.label}</span>
-                    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${stage.badge}`}>{stage.mix} Content Mix</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed">{stage.desc}</p>
                 </div>
               ))}
             </div>
