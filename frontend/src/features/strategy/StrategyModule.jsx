@@ -95,6 +95,7 @@ const getWeekLabel = (day) => {
 };
 
 // Safe Pillar extraction helper (handles strings, objects with pillar, name, title)
+export const extractPillarText = (pillar) => getPillarTitle(pillar);
 export const getPillarTitle = (pillar) => {
   if (!pillar) return '';
   if (typeof pillar === 'string') return pillar;
@@ -1319,7 +1320,7 @@ export const StrategyModule = () => {
                   { pillar: 'Customer Success & Transformation Proof', desc: 'Real-world results, metrics, case studies, and buyer testimonials.' },
                   { pillar: 'Brand Culture & Behind-the-Scenes Craft', desc: 'Humanize the brand with visionary perspectives and team craft stories.' }
                 ]).map((pillar, idx) => {
-                  const title = extractPillarText(pillar);
+                  const title = getPillarTitle(pillar);
                   const desc = typeof pillar === 'object' ? (pillar.desc || pillar.description || '') : '';
                   return (
                     <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
