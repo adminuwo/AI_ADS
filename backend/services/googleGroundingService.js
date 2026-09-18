@@ -5,39 +5,56 @@ const { aiClient, globalAiClient } = require('../config/vertex');
  * Executes real-time Google Search Grounding queries using Google Cloud Vertex AI / Gemini SDK
  */
 
-async function searchWithGoogleGrounding(prompt, model = 'gemini-2.5-flash') {
+async function searchWithGoogleGrounding(prompt, model = 'gemini-3.5-flash') {
   const client = globalAiClient || aiClient;
   if (!client) {
     console.warn('[GoogleGrounding] Google Vertex/Gemini client is not initialized.');
     return null;
   }
 
-  const candidateModels = [model, 'gemini-2.5-flash', 'gemini-1.5-flash-002'];
+  let requestedModel = 'gemini-3.5-flash';
+  const candidateModels = ['gemini-3.5-flash'];
+
   for (const mName of candidateModels) {
-    try {
-      const response = await client.models.generateContent({
-        model: mName,
-        contents: prompt,
-        config: {
-          tools: [{ googleSearch: {} }]
+    let maxRetries = 2;
+    for (let retry = 0; retry <= maxRetries; retry++) {
+      try {
+        if (retry > 0) {
+          console.log(`[GoogleGrounding] Retrying model "${mName}" (Attempt ${retry + 1}/${maxRetries + 1}) after rate limit pause...`);
+          await new Promise(resolve => setTimeout(resolve, 1200 * retry));
         }
-      });
 
-      const text = response.text || '';
-      const groundingMetadata = response.candidates?.[0]?.groundingMetadata || {};
-      const webQueries = groundingMetadata.webSearchQueries || [];
-      const groundingChunks = (groundingMetadata.groundingChunks || []).map(c => c.web || c);
+        const response = await client.models.generateContent({
+          model: mName,
+          contents: prompt,
+          config: {
+            tools: [{ googleSearch: {} }]
+          }
+        });
 
-      return {
-        success: true,
-        text,
-        webQueries,
-        groundingChunks,
-        groundingMetadata,
-        model: mName
-      };
-    } catch (err) {
-      console.warn(`[GoogleGrounding] Model "${mName}" note: ${err.message?.slice(0, 120)}`);
+        const text = response.text || '';
+        const groundingMetadata = response.candidates?.[0]?.groundingMetadata || {};
+        const webQueries = groundingMetadata.webSearchQueries || [];
+        const groundingChunks = (groundingMetadata.groundingChunks || []).map(c => c.web || c);
+
+        return {
+          success: true,
+          text,
+          webQueries,
+          groundingChunks,
+          groundingMetadata,
+          model: mName
+        };
+      } catch (err) {
+        const errStr = err.message || String(err);
+        const isRateLimit = errStr.includes('429') || errStr.includes('Resource exhausted');
+        console.warn(`[GoogleGrounding] Model "${mName}" attempt note: ${errStr.slice(0, 120)}`);
+
+        if (isRateLimit && retry < maxRetries) {
+          continue;
+        }
+        break;
+      }
     }
   }
 

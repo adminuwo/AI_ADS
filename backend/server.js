@@ -1205,6 +1205,83 @@ Return ONLY valid JSON.`;
   }
 });
 
+// ─── POST /api/workspace/:id/generate-custom-strategy ──────────────────────
+app.post('/api/workspace/:id/generate-custom-strategy', async (req, res) => {
+  const { id } = req.params;
+  const { directive, referenceImageUrl, brandName, industry, tagline, companyDescription, brandColors } = req.body || {};
+
+  try {
+    let workspace = null;
+    let brandProfile = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      workspace = await Workspace.findById(id);
+      brandProfile = await BrandProfile.findOne({ workspaceId: id });
+    }
+    if (!workspace) {
+      workspace = memoryWorkspaces.find(w => w.id === id || w._id === id) || {};
+    }
+
+    const bName = brandName || workspace.brandName || brandProfile?.companyName || 'Brand';
+    const ind = industry || workspace.industryCategory || brandProfile?.structuredIdentity?.industry || 'Consumer Products';
+    const tag = tagline || workspace.tagline || brandProfile?.structuredIdentity?.tagline || '';
+    const desc = companyDescription || workspace.companyDescription || brandProfile?.structuredIdentity?.companyDescription || '';
+    const colors = brandColors && brandColors.length > 0 ? brandColors : (workspace.brandColors || []);
+
+    const { generateCustom30DayStrategy } = require('./services/customStrategyAgent.service');
+    const result = await generateCustom30DayStrategy({
+      brandName: bName,
+      industry: ind,
+      tagline: tag,
+      companyDescription: desc,
+      directive: directive || 'Custom 30-Day Growth & Product Strategy',
+      referenceImageUrl,
+      brandColors: colors
+    });
+
+    const customBrief = {
+      id: 'brief_' + Date.now(),
+      imageUrl: referenceImageUrl || null,
+      directive: directive || '',
+      timestamp: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    const newCustomStrat = {
+      id: 'custom_strat_' + Date.now(),
+      imagePreviewUrl: referenceImageUrl || null,
+      directive: directive || '',
+      timestamp: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      engine: result.engine,
+      posts: result.posts
+    };
+
+    if (workspace && workspace._id) {
+      try {
+        const currentStrat = workspace.currentStrategy || {};
+        const updatedBriefs = [customBrief, ...(currentStrat.customImageBriefs || [])];
+        await Workspace.findByIdAndUpdate(id, {
+          currentStrategy: {
+            ...currentStrat,
+            customImageBriefs: updatedBriefs,
+            customStrategy: newCustomStrat
+          }
+        });
+      } catch (dbErr) {
+        console.warn('[Custom Strategy Endpoint] DB update note:', dbErr.message);
+      }
+    }
+
+    return res.json({
+      success: true,
+      customStrategy: newCustomStrat,
+      engine: result.engine
+    });
+  } catch (err) {
+    console.error('[Generate Custom Strategy Error]:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ─── POST /api/workspace/:id/regenerate-strategy-card ─────────────────────────
 app.post('/api/workspace/:id/regenerate-strategy-card', async (req, res) => {
   const { id } = req.params;
@@ -1801,6 +1878,117 @@ app.post('/api/creative/image-editing-agent/generate', async (req, res) => {
     });
   } catch (err) {
     console.error('[/api/creative/image-editing-agent/generate] Error:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── 2-Agent Pipeline Endpoint: Craft Prompt (Agent 1) -> Generate Ad Image (Agent 2) ───
+// Triggered strictly when user clicks "Create in Studio" on a Custom Strategy / Upload Image Brief card.
+app.post('/api/creative/craft-and-generate-visual', async (req, res) => {
+  try {
+    const {
+      workspaceId,
+      topic,
+      visualDirective,
+      hook,
+      caption,
+      brandName,
+      industry,
+      tagline,
+      companyDescription,
+      brandColors,
+      platform,
+      style,
+      aspect,
+      referenceImageUrl,
+      creditCost = 5
+    } = req.body;
+
+    const cleanBrand = brandName || 'Brand';
+    const targetAspect = aspect || (platform === 'linkedin' ? '16:9' : (platform === 'story' || platform === 'reel' || platform === 'tiktok') ? '9:16' : '1:1');
+
+    console.log(`\n🤖 [2-AGENT PIPELINE] Triggered for Custom Strategy card topic: "${topic}"...`);
+
+    // STEP 1: Agent 1 - Prompt Crafting Agent
+    const { craftCardImagePrompt } = require('./services/promptCraftingAgent.service');
+    const agent1Result = await craftCardImagePrompt({
+      topic,
+      visualDirective,
+      hook,
+      caption,
+      brandName: cleanBrand,
+      industry,
+      tagline,
+      companyDescription,
+      brandColors,
+      platform,
+      style: style || 'Photorealistic Commercial',
+      aspect: targetAspect,
+      referenceImageUrl
+    });
+
+    const craftedPrompt = agent1Result.craftedPrompt;
+
+    // STEP 2: Agent 2 - Image Generation Agent (or Image Editing Agent if reference image exists)
+    let agent2Result = null;
+    if (referenceImageUrl) {
+      const { runImageEditingAgent } = require('./services/imageEditingAgent.service');
+      agent2Result = await runImageEditingAgent({
+        workspaceId,
+        referenceImageUrl,
+        visualDirective: craftedPrompt,
+        topic,
+        brandName: cleanBrand,
+        brandColors,
+        industry,
+        tagline,
+        companyDescription,
+        platform,
+        style: style || 'Photorealistic Commercial',
+        aspect: targetAspect
+      });
+    } else {
+      const { generateBrandAdImage } = require('./services/brandImageAgent.service');
+      agent2Result = await generateBrandAdImage({
+        workspaceId,
+        prompt: craftedPrompt,
+        customPrompt: craftedPrompt,
+        brandName: cleanBrand,
+        logoUrl: req.body.logoUrl || req.body.brandLogo,
+        brandColors,
+        industry,
+        tagline,
+        companyDescription,
+        topic,
+        postType: 'image',
+        platform: platform || 'instagram',
+        style: style || 'Photorealistic Commercial',
+        aspect: targetAspect
+      });
+    }
+
+    const deduction = deductCredits(creditCost, `2-Agent Visual Generation: "${topic || 'Custom Visual'}"`);
+
+    console.log(`✅ [2-AGENT PIPELINE] Finished! Crafted Prompt: "${craftedPrompt?.slice(0, 60)}..." -> Image URL: ${agent2Result?.imageUrl?.slice(0, 60)}...`);
+
+    return res.json({
+      success: true,
+      remainingCredits: deduction.newBalance,
+      craftedPrompt,
+      asset: {
+        imageUrl: agent2Result?.imageUrl,
+        logoUrl: agent2Result?.logoUrl,
+        gcsPath: agent2Result?.gcsPath,
+        imagePrompt: craftedPrompt,
+        brand: agent2Result?.brandName || cleanBrand,
+        style: agent2Result?.imageStyle || style,
+        aspect: agent2Result?.imageAspect || targetAspect,
+        engine: agent2Result?.engine,
+        svgFallback: agent2Result?.svgFallback
+      }
+    });
+  } catch (err) {
+    console.error('[/api/creative/craft-and-generate-visual] Error:', err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });

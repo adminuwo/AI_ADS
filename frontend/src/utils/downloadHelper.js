@@ -55,7 +55,7 @@ export const downloadImageToDevice = async (imageUrl, defaultFilename = 'ai_ads_
     document.body.removeChild(link);
   };
 
-  // Strategy 1: Data URL (Base64 or SVG Data URL) -> Direct download
+  // Strategy 1: Data URL (Base64) -> Direct anchor download
   if (imageUrl.startsWith('data:')) {
     try {
       const canvasUrl = await renderCanvasDataUrl(imageUrl);
@@ -70,59 +70,36 @@ export const downloadImageToDevice = async (imageUrl, defaultFilename = 'ai_ads_
     }
   }
 
-  // Strategy 2: Direct Fetch Blob
+  // Strategy 2: Same-Origin Backend Proxy Blob Download (Same-Origin blob link forces direct save to device)
   try {
-    const res = await fetch(imageUrl, { mode: 'cors' });
-    if (res.ok) {
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const canvasUrl = await renderCanvasDataUrl(blobUrl);
-      URL.revokeObjectURL(blobUrl);
-
-      if (canvasUrl) {
-        triggerDownloadFromUrl(canvasUrl);
-        return true;
-      }
-      const directBlobUrl = URL.createObjectURL(blob);
-      triggerDownloadFromUrl(directBlobUrl);
-      setTimeout(() => URL.revokeObjectURL(directBlobUrl), 1000);
-      return true;
-    }
-  } catch (e) {
-    console.log('Direct fetch blocked by CORS, trying Canvas/Proxy fallback...');
-  }
-
-  // Strategy 3: Canvas In-Memory Export
-  try {
-    const canvasUrl = await renderCanvasDataUrl(imageUrl);
-    if (canvasUrl) {
-      triggerDownloadFromUrl(canvasUrl);
-      return true;
-    }
-  } catch (e) {
-    console.log('Canvas export failed, using backend proxy download...');
-  }
-
-  // Strategy 4: Backend Proxy Route Fetch
-  try {
-    const apiBase = API_BASE;
+    const apiBase = API_BASE || 'http://localhost:5000/api';
     const proxyUrl = `${apiBase}/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(fileName)}`;
 
     const response = await fetch(proxyUrl);
     if (response.ok) {
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
-      const canvasUrl = await renderCanvasDataUrl(blobUrl);
-
-      if (canvasUrl) {
-        URL.revokeObjectURL(blobUrl);
-        triggerDownloadFromUrl(canvasUrl);
-        return true;
-      }
       triggerDownloadFromUrl(blobUrl);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
       return true;
     }
+  } catch (e) {
+    console.warn('Proxy blob fetch note:', e);
+  }
+
+  // Strategy 3: Hidden Iframe Direct Attachment Trigger (Prevents browser tab opening & forces save)
+  try {
+    const apiBase = API_BASE || 'http://localhost:5000/api';
+    const proxyUrl = `${apiBase}/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(fileName)}`;
+    
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = proxyUrl;
+    document.body.appendChild(iframe);
+    setTimeout(() => {
+      try { document.body.removeChild(iframe); } catch(e){}
+    }, 60000);
+    return true;
   } catch (e) {
     console.error('All download methods failed:', e);
   }

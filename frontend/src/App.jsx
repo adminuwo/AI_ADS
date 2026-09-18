@@ -53,7 +53,11 @@ const MainContent = () => {
     if (mainEl) {
       mainEl.scrollTop = 0;
     }
-  }, [activeModule]);
+
+    if (!user && activeModule !== 'landing' && activeModule !== 'landingpage' && window.location.pathname !== '/sign-in-create-account') {
+      window.history.replaceState({ module: 'login' }, '', '/sign-in-create-account');
+    }
+  }, [activeModule, user]);
 
   if (activeModule === 'landing' || activeModule === 'landingpage') {
     return <LandingPage />;

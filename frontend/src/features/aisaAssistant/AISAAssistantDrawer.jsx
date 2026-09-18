@@ -232,7 +232,7 @@ export const AISAAssistantDrawer = () => {
       const result = await chatAPI.sendMessage({
         message: promptText,
         sessionId,
-        model: 'gemini-3.5-pro',
+        model: 'gemini-3.5-flash',
         history,
         workspaceId: activeWorkspace?._id || activeWorkspace?.id,
         userEmail: currentUserEmail,

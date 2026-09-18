@@ -18,7 +18,18 @@ import {
   Bot,
   Check,
   MessageSquare,
-  FileText
+  FileText,
+  Clock,
+  TrendingUp,
+  DollarSign,
+  Cpu,
+  Lock,
+  Share2,
+  ExternalLink,
+  Users,
+  CheckCircle,
+  HelpCircle,
+  Sliders
 } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 
@@ -27,6 +38,15 @@ export const LandingPage = () => {
   const [activeTab, setActiveTab] = useState('brandDna');
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
   const [openFaq, setOpenFaq] = useState(null);
+  const [faqSearch, setFaqSearch] = useState('');
+  const [roiPostsCount, setRoiPostsCount] = useState(30);
+
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const handleLaunchApp = (targetModule = 'dashboard') => {
     if (!user) {
@@ -36,118 +56,118 @@ export const LandingPage = () => {
     setActiveModule(targetModule);
   };
 
-  const modulesList = [
+  const waterfallModules = [
     {
       id: 'brandDna',
+      targetModule: 'brands',
       name: 'Brand DNA Memory',
-      tagline: 'Single-Source Brand Voice & Approved Claims',
-      desc: 'Automatically scrape your brand URL to ingest logo, brand colors, positioning summary, verified claims, target audience personas, and style rules into immutable AI memory.',
+      num: '01',
+      badge: 'AUTOMATED DNA SCRAPER',
       icon: ShieldCheck,
-      softBg: 'bg-gradient-to-r from-indigo-50/90 via-violet-50/60 to-slate-50',
-      activeBorder: 'border-indigo-400 ring-2 ring-indigo-400/30 shadow-indigo-500/10',
-      iconColor: 'text-indigo-600',
-      previewBadge: 'AUTOMATED BRAND SCRAPER & DNA MEMORY',
-      highlights: ['URL Auto-Scraper', 'Approved & Restricted Claims', 'Persona Target Alignment', 'Immutable Brand Color Palette']
+      color: 'from-indigo-500 to-violet-600',
+      badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      descLine1: 'Auto-scrape your brand website URL to ingest logos, hex color palettes, positioning, and verified claims.',
+      descLine2: 'Locks immutable brand guidelines into single-source AI memory for 100% brand voice alignment.'
     },
     {
       id: 'strategy',
+      targetModule: 'strategy',
       name: '30-Day Strategy Roadmap',
-      tagline: 'Autonomous Campaign & Roadmap Synthesizer',
-      desc: 'Generate complete 30-day multi-platform social media and advertising roadmaps. Upload reference product images for custom visual guidance and localized campaign themes.',
+      num: '02',
+      badge: 'CAMPAIGN ROADMAP ENGINE',
       icon: Layers,
-      softBg: 'bg-gradient-to-r from-purple-50/90 via-pink-50/60 to-slate-50',
-      activeBorder: 'border-purple-400 ring-2 ring-purple-400/30 shadow-purple-500/10',
-      iconColor: 'text-purple-600',
-      previewBadge: '30-DAY CUSTOM VISUAL STRATEGY',
-      highlights: ['30 Daily Post Directives', 'Reference Image Brief Integration', 'Multi-Platform Guidance', 'Custom Regeneration Engine']
+      color: 'from-purple-500 to-pink-600',
+      badgeBg: 'bg-purple-50 text-purple-700 border-purple-200',
+      descLine1: 'Synthesizes 30 daily non-repeating campaign post directives across Instagram, LinkedIn, X, and Facebook.',
+      descLine2: 'Integrates user reference product image briefs to craft customized commercial photoshoot directives.'
     },
     {
       id: 'creative',
+      targetModule: 'creative',
       name: 'Creative Studio & Image Editing Agent',
-      tagline: 'Photorealistic Ad Visuals via Gemini 3.1 Flash Image',
-      desc: 'Transform reference product photos into high-converting magazine-editorial advertising visuals. Powered by Gemini 3.1 Flash Image and direct Google Cloud Storage bucket export.',
+      num: '03',
+      badge: '8K PHOTOREALISTIC AD VISUALS',
       icon: ImageIcon,
-      softBg: 'bg-gradient-to-r from-cyan-50/90 via-blue-50/60 to-slate-50',
-      activeBorder: 'border-cyan-400 ring-2 ring-cyan-400/30 shadow-cyan-500/10',
-      iconColor: 'text-cyan-600',
-      previewBadge: 'IMAGE EDITING AGENT & GCS BUCKET EXPORT',
-      highlights: ['gemini-3.1-flash-image Model', 'Hero Product Placement', 'Automatic Brand Logo Overlay', 'V4 Signed URL GCS Export']
+      color: 'from-cyan-500 to-blue-600',
+      badgeBg: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+      descLine1: 'Render photorealistic 8K commercial ad visuals powered by Gemini 3.1 Flash Image AI vision models.',
+      descLine2: 'Places product hero assets into studio scenes with automatic logo watermarking and V4 GCS bucket exports.'
     },
     {
       id: 'contentStudio',
-      name: 'Content Studio',
-      tagline: 'Multi-Channel Copy & Carousel Synthesizer',
-      desc: 'Draft Instagram carousels, LinkedIn slide decks, viral X threads, Facebook ads, and long-form blog articles perfectly tuned to your brand voice.',
+      targetModule: 'studio',
+      name: 'Content Studio & Carousel Builder',
+      num: '04',
+      badge: 'MULTI-CHANNEL COPYWRITER',
       icon: FileText,
-      softBg: 'bg-gradient-to-r from-amber-50/90 via-orange-50/60 to-slate-50',
-      activeBorder: 'border-amber-400 ring-2 ring-amber-400/30 shadow-amber-500/10',
-      iconColor: 'text-amber-600',
-      previewBadge: 'MULTI-CHANNEL COPYWRITING & CAROUSEL BUILDER',
-      highlights: ['Single Post & Carousel Slides', '1-Click Multi-Channel Repurposing', 'No-Asterisk Clean Formatting', 'SEO Keyword Integration']
+      color: 'from-amber-500 to-orange-600',
+      badgeBg: 'bg-amber-50 text-amber-700 border-amber-200',
+      descLine1: 'Draft Instagram carousels, LinkedIn slide decks, viral X threads, Facebook ads, and long-form blog articles.',
+      descLine2: 'Generates clean, no-asterisk formatting with 1-click multi-channel copy repurposing.'
     },
     {
       id: 'websiteBuilder',
+      targetModule: 'websiteBuilder',
       name: 'AI Website & Landing Page Builder',
-      tagline: 'Prompt-Driven Full Landing Page Generator',
-      desc: 'Generate, customize, and edit full responsive landing pages with instant live previews, custom HTML/CSS exports, and AI prompt refinement.',
+      num: '05',
+      badge: 'PROMPT-DRIVEN SITE GENERATOR',
       icon: Globe,
-      softBg: 'bg-gradient-to-r from-emerald-50/90 via-teal-50/60 to-slate-50',
-      activeBorder: 'border-emerald-400 ring-2 ring-emerald-400/30 shadow-emerald-500/10',
-      iconColor: 'text-emerald-600',
-      previewBadge: 'AI WEBSITE & LANDING PAGE BUILDER',
-      highlights: ['Full Landing Page Generation', 'Live Code & Visual Preview', 'ZIP / HTML Package Export', 'Prompt Element Editor']
+      color: 'from-emerald-500 to-teal-600',
+      badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      descLine1: 'Generate full responsive landing pages with prompt-driven real-time code & visual previews.',
+      descLine2: 'Export production-ready responsive HTML/CSS code packages and downloadable ZIP source packages.'
     },
     {
       id: 'seo',
-      name: 'SEO Intelligence',
-      tagline: 'Search Intent & JSON-LD Brief Generator',
-      desc: 'Perform SEO keyword intent analysis, generate structured JSON-LD schema briefs, and draft search-optimized content briefs for content writers.',
+      targetModule: 'seo',
+      name: 'SEO Intelligence & JSON-LD Briefs',
+      num: '06',
+      badge: 'SERP & SCHEMA AUDIT ENGINE',
       icon: Search,
-      softBg: 'bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-slate-50',
-      activeBorder: 'border-blue-400 ring-2 ring-blue-400/30 shadow-blue-500/10',
-      iconColor: 'text-blue-600',
-      previewBadge: 'SEO INTENT & JSON-LD BRIEF ENGINE',
-      highlights: ['Search Intent Analysis', 'Structured JSON-LD Outlines', 'Keyword Density Optimization', 'Competitive SERP Audits']
+      color: 'from-blue-500 to-indigo-600',
+      badgeBg: 'bg-blue-50 text-blue-700 border-blue-200',
+      descLine1: 'Perform SEO search intent keyword analysis and generate structured JSON-LD schema markup outlines.',
+      descLine2: 'Build comprehensive SEO content briefs and competitive SERP audits for top search engine rankings.'
     },
     {
-      id: 'contentCalendar',
-      name: 'Content Calendar',
-      tagline: 'Omnichannel Publishing & Drag-and-Drop Planner',
-      desc: 'Plan, schedule, and automate publishing across Instagram, LinkedIn, X (Twitter), Facebook, and Pinterest with an intuitive interactive calendar.',
+      id: 'calendar',
+      targetModule: 'calendar',
+      name: 'Omnichannel Publishing Calendar',
+      num: '07',
+      badge: 'DRAG-AND-DROP PUBLISHER',
       icon: Calendar,
-      softBg: 'bg-gradient-to-r from-pink-50/90 via-rose-50/60 to-slate-50',
-      activeBorder: 'border-pink-400 ring-2 ring-pink-400/30 shadow-pink-500/10',
-      iconColor: 'text-pink-600',
-      previewBadge: 'OMNICHANNEL PUBLISHING CALENDAR',
-      highlights: ['Multi-Channel Publishing', 'Drag-and-Drop Rescheduling', 'Best-Time Auto Scheduling', 'Live Post Previews']
+      color: 'from-pink-500 to-rose-600',
+      badgeBg: 'bg-pink-50 text-pink-700 border-pink-200',
+      descLine1: 'Interactive drag-and-drop calendar grid to schedule and automate multi-channel publishing.',
+      descLine2: 'Smart auto-scheduling at peak audience engagement times with live social media post previews.'
     },
     {
-      id: 'approvalsDesk',
-      name: 'Approvals Desk',
-      tagline: 'Enterprise Governance & Human-in-the-Loop Gate',
-      desc: 'Review, edit, reject, or approve generated posts before publishing. Multi-tenant RBAC permissions ensure agency team alignment.',
+      id: 'approvals',
+      targetModule: 'approvals',
+      name: 'Approvals Desk Governance',
+      num: '08',
+      badge: 'HUMAN-IN-THE-LOOP GATE',
       icon: ShieldCheck,
-      softBg: 'bg-gradient-to-r from-teal-50/90 via-cyan-50/60 to-slate-50',
-      activeBorder: 'border-teal-400 ring-2 ring-teal-400/30 shadow-teal-500/10',
-      iconColor: 'text-teal-600',
-      previewBadge: 'GOVERNANCE & APPROVAL WORKFLOW',
-      highlights: ['Client & Agency Review Desk', 'Audit Log History', 'Claim Verification Check', 'Multi-User Permissions']
+      color: 'from-teal-500 to-cyan-600',
+      badgeBg: 'bg-teal-50 text-teal-700 border-teal-200',
+      descLine1: 'Human-in-the-loop governance review queue for digital agencies and clients to edit or approve content.',
+      descLine2: 'Enforces brand claim verification checks, audit log trails, and multi-user RBAC role permissions.'
     },
     {
       id: 'aisaAssistant',
-      name: 'AISA™ AI Copilot Assistant',
-      tagline: 'Embedded Multi-Model Intelligence Assistant',
-      desc: 'Interactive AI copilot trained specifically on the AI ADS platform to assist with strategy queries, copywriting, and instant module navigation.',
+      targetModule: 'dashboard',
+      name: 'Embedded AISA™ AI Copilot',
+      num: '09',
+      badge: 'PLATFORM INTELLIGENCE COPILOT',
       icon: Bot,
-      softBg: 'bg-gradient-to-r from-violet-50/90 via-purple-50/60 to-slate-50',
-      activeBorder: 'border-violet-400 ring-2 ring-violet-400/30 shadow-violet-500/10',
-      iconColor: 'text-violet-600',
-      previewBadge: 'EMBEDDED AISA™ AI COPILOT',
-      highlights: ['Direct Platform Integration', 'Multi-Model Fallback Engine', 'Brand Context Memory', 'Instant Module Navigation']
+      color: 'from-violet-500 to-purple-600',
+      badgeBg: 'bg-violet-50 text-violet-700 border-violet-200',
+      descLine1: 'Embedded multi-model AI assistant trained specifically on platform content marketing workflows.',
+      descLine2: 'Real-time interactive chat copilot for campaign strategy advice, prompt refining, and instant navigation.'
     }
   ];
 
-  const currentModule = modulesList.find(m => m.id === activeTab) || modulesList[0];
+  const currentModule = waterfallModules.find(m => m.id === activeTab) || waterfallModules[0];
 
   const faqs = [
     {
@@ -155,8 +175,8 @@ export const LandingPage = () => {
       a: 'AI ADS™ is an all-in-one autonomous content intelligence and ad creation platform. By unifying Brand DNA memory, 30-day strategy generation, photorealistic image creation (gemini-3.1-flash-image), and multi-channel publishing, marketing teams achieve up to 400% production velocity without sacrificing brand consistency.'
     },
     {
-      q: 'How does the Image Editing Agent work with reference product photos?',
-      a: 'When creating custom campaign strategies, you can upload a reference photo of your product. Our two-stage Image Editing Agent first analyzes the product details (colors, materials, form factor) using Gemini vision AI, then crafts a magazine-quality commercial scene prompt and renders photorealistic ad images using gemini-3.1-flash-image.'
+      q: 'How does the 2-Agent pipeline work with reference product photos?',
+      a: 'When creating custom campaign strategies, you can upload a reference photo of your product. Agent 1 (Prompt Crafting Agent) analyzes the product details (colors, form factor, positioning) using Gemini Vision AI and crafts a commercial photoshoot prompt. Agent 2 (Image Generation Agent) takes that prompt and renders photorealistic ad visuals using gemini-3.1-flash-image.'
     },
     {
       q: 'Can I connect my client websites and social media handles?',
@@ -169,21 +189,29 @@ export const LandingPage = () => {
     {
       q: 'Can I export full responsive landing pages?',
       a: 'Absolutely. The built-in AI Website Builder allows you to generate full landing pages with responsive HTML/CSS code, live visual previews, and 1-click ZIP package exports.'
+    },
+    {
+      q: 'Is my brand data secure?',
+      a: 'Yes. All brand DNA data, reference images, and generated assets are secured via enterprise V4 signed URL Google Cloud Storage (GCS) buckets with strict multi-tenant isolation.'
     }
   ];
 
+  const filteredFaqs = faqs.filter(
+    f => f.q.toLowerCase().includes(faqSearch.toLowerCase()) || f.a.toLowerCase().includes(faqSearch.toLowerCase())
+  );
+
   return (
-    <div className="bg-slate-50 text-slate-900 min-h-screen font-sans selection:bg-brand-500 selection:text-white relative overflow-x-hidden transition-colors duration-300">
-      
-      {/* Background Glowing Ambient Orbs */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] rounded-full blur-[140px] pointer-events-none bg-gradient-to-tr from-indigo-200/60 via-purple-200/50 to-cyan-200/40" />
-      <div className="absolute top-[1200px] right-0 w-[600px] h-[600px] rounded-full blur-[160px] pointer-events-none bg-purple-200/40" />
+    <div className="landing-root min-h-screen">
+
+      {/* ─── BACKGROUND AMBIENT GLOW MESH ─── */}
+      <div className="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-brand-500/15 via-purple-400/10 to-transparent blur-[140px] pointer-events-none z-0 animate-float-orb-1" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-bl from-cyan-400/15 via-indigo-400/10 to-transparent blur-[140px] pointer-events-none z-0 animate-float-orb-2" />
 
       {/* ─── TOP NAVIGATION BAR ─── */}
-      <header className="relative z-50 bg-white border-b border-slate-200/80 shadow-sm">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           
-          {/* Official Project Logo & Brand Identity */}
+          {/* Brand Identity */}
           <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img
               src="/logo.png"
@@ -204,28 +232,28 @@ export const LandingPage = () => {
 
           {/* Navigation Links */}
           <nav className="hidden lg:flex items-center gap-8 text-xs font-extrabold text-slate-700">
-            <a href="#features" className="hover:text-brand-600 transition-colors">Key Features</a>
-            <a href="#modules" className="hover:text-brand-600 transition-colors">Module Suite</a>
-            <a href="#how-it-works" className="hover:text-brand-600 transition-colors">How It Works</a>
-            <a href="#pricing" className="hover:text-brand-600 transition-colors">Pricing & Topups</a>
-            <a href="#faq" className="hover:text-brand-600 transition-colors">FAQ</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }} className="hover:text-brand-600 transition-colors cursor-pointer">Key Features</a>
+            <a href="#modules" onClick={(e) => { e.preventDefault(); scrollToSection('modules'); }} className="hover:text-brand-600 transition-colors cursor-pointer">Module Suite</a>
+            <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollToSection('pricing'); }} className="hover:text-brand-600 transition-colors cursor-pointer">Pricing & Topups</a>
+            <a href="#faq" onClick={(e) => { e.preventDefault(); scrollToSection('faq'); }} className="hover:text-brand-600 transition-colors cursor-pointer">FAQ</a>
           </nav>
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => handleLaunchApp('login')}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold transition-all hidden sm:block shadow-sm cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold transition-all hidden sm:block shadow-xs cursor-pointer"
             >
               Sign In
             </button>
 
             <button
               onClick={() => handleLaunchApp('login')}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 via-purple-600 to-cyan-600 hover:from-brand-500 hover:to-cyan-500 text-white font-black text-xs shadow-lg shadow-brand-500/20 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 via-purple-600 to-cyan-600 hover:from-brand-500 hover:to-cyan-500 text-white font-black text-xs shadow-lg shadow-brand-500/20 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer relative overflow-hidden group"
             >
-              <span>Launch Workspace</span>
-              <ArrowRight className="w-4 h-4" />
+              <span className="relative z-10">Launch Workspace</span>
+              <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-0.5 transition-transform" />
+              <div className="absolute inset-0 animate-shimmer pointer-events-none" />
             </button>
           </div>
 
@@ -233,16 +261,16 @@ export const LandingPage = () => {
       </header>
 
       {/* ─── HERO SECTION ─── */}
-      <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section id="features" className="relative pt-12 pb-20 md:pt-20 md:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
         <div className="text-center space-y-6 max-w-4xl mx-auto">
           
-          {/* Top Live Badge */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-xs font-extrabold bg-white border border-brand-500/30 text-brand-600 shadow-md shadow-brand-500/10">
+          {/* Pulsing Status Badge */}
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-xs font-extrabold bg-white/90 border border-brand-500/30 text-brand-600 shadow-md shadow-brand-500/10">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
             </span>
-            <span>Next-Gen Autonomous Brand Memory & Ad Creative Engine</span>
+            <span>Powered by Gemini 3.1 Flash Image & Immutable Brand DNA Memory</span>
           </div>
 
           {/* Main Headline */}
@@ -260,263 +288,106 @@ export const LandingPage = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
               onClick={() => handleLaunchApp('login')}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-600 via-purple-600 to-cyan-600 hover:from-brand-500 hover:to-cyan-500 text-white font-black text-sm shadow-xl shadow-brand-500/25 flex items-center justify-center gap-3 transition-all hover:scale-105 cursor-pointer"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-600 via-purple-600 to-cyan-600 hover:from-brand-500 hover:to-cyan-500 text-white font-black text-sm shadow-xl shadow-brand-500/25 flex items-center justify-center gap-3 transition-all hover:scale-105 cursor-pointer relative overflow-hidden group"
             >
               <Zap className="w-5 h-5 text-amber-300 fill-amber-300" />
               <span>Start Free Enterprise Trial</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <div className="absolute inset-0 animate-shimmer pointer-events-none" />
             </button>
-            <a
-              href="#modules"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-sm flex items-center justify-center gap-2 transition-all shadow-sm"
+
+            <button
+              onClick={() => scrollToSection('modules')}
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-sm flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
             >
               <Play className="w-4 h-4 text-brand-600 fill-brand-600" />
               <span>Explore Module Suite</span>
-            </a>
+            </button>
           </div>
 
           {/* Trust Highlights */}
           <div className="pt-8 flex items-center justify-center gap-6 sm:gap-10 text-xs font-bold text-slate-600 flex-wrap">
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4.5 h-4.5 text-emerald-500" /> No credit card required</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4.5 h-4.5 text-emerald-500" /> Immutable Brand Memory</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4.5 h-4.5 text-emerald-500" /> Direct GCS Bucket Export</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" /> No credit card required</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" /> Immutable Brand DNA Memory</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" /> Direct GCS Bucket Export</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" /> Billed in INR ₹</span>
           </div>
         </div>
 
-        {/* Hero Interactive App Mockup Showcase */}
-        <div className="mt-14 relative mx-auto max-w-5xl">
-          <div className="landing-gradient-border shadow-2xl shadow-brand-500/10">
-            <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white">
-              
-              {/* Window Topbar */}
-              <div className="h-11 bg-slate-100 px-4 border-b border-slate-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-rose-400" />
-                  <div className="w-3 h-3 rounded-full bg-amber-400" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                </div>
-                <div className="px-4 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-mono text-slate-700 flex items-center gap-2 shadow-xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-brand-600" />
-                  <span>https://app.aiads.com/dashboard/strategy-roadmap</span>
-                </div>
-                <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  <span>LIVE PROD API</span>
-                </div>
-              </div>
-
-              {/* Mockup Dashboard Content */}
-              <div className="p-6 md:p-8 space-y-6 landing-hero-grid-light text-slate-900 bg-slate-50/60">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src="/logo.png"
-                      alt="Brand Logo"
-                      className="w-10 h-10 object-contain shrink-0"
-                      onError={(e) => { e.target.onerror = null; e.target.src = '/logo.jpg'; }}
-                    />
-                    <div>
-                      <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-brand-600" /> ACTIVE BRAND DNA WORKSPACE
-                      </span>
-                      <h3 className="text-lg font-black text-slate-900">GUCCI — Digital Avatar & Commercial Campaign</h3>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-xl bg-purple-100 text-purple-700 text-xs font-bold border border-purple-200">30 Posts Generated</span>
-                    <span className="px-3 py-1 rounded-xl bg-cyan-100 text-cyan-700 text-xs font-bold border border-cyan-200">gemini-3.1-flash-image</span>
-                  </div>
-                </div>
-
-                {/* Grid Preview Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[
-                    { title: 'Brand Awareness Spotlight', platform: 'INSTAGRAM', aspect: '1:1', tag: 'Week 1: Hook' },
-                    { title: 'Product Value & Feature Deep Dive', platform: 'LINKEDIN', aspect: '16:9', tag: 'Week 2: Value' },
-                    { title: 'Exclusive Campaign Offer & CTA', platform: 'REELS / STORIES', aspect: '9:16', tag: 'Week 4: Conversion' }
-                  ].map((card, i) => (
-                    <div key={i} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3 relative overflow-hidden group hover:border-brand-500/50 hover:shadow-md transition-all">
-                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-                        <span className="text-brand-600 font-extrabold">{card.platform} · {card.aspect}</span>
-                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold">{card.tag}</span>
-                      </div>
-                      <h4 className="text-sm font-extrabold text-slate-900 leading-snug">{card.title}</h4>
-                      <div className="h-28 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-slate-200 flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/10 to-purple-500/10 opacity-40 group-hover:opacity-80 transition-opacity" />
-                        <ImageIcon className="w-8 h-8 text-indigo-400 group-hover:text-cyan-600 transition-colors" />
-                        <span className="absolute bottom-2 right-2 text-[9px] font-extrabold px-2 py-0.5 rounded bg-white/90 text-slate-800 border border-slate-200 shadow-xs">8K Render</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── MODULE SUITE INTERACTIVE SHOWCASE ─── */}
-      <section id="modules" className="py-24 border-y border-slate-200 bg-slate-100/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          
-          <div className="text-center space-y-4 max-w-3xl mx-auto">
+        {/* Waterfall Modules Cascade Showcase */}
+        <div id="modules" className="mt-16 relative mx-auto max-w-7xl pt-6">
+          <div className="text-center space-y-3 mb-12">
             <span className="text-xs font-black uppercase tracking-widest text-brand-600 flex items-center justify-center gap-2">
-              <Layers className="w-4 h-4" /> UNIFIED ENTERPRISE ARCHITECTURE
+              <Sparkles className="w-4 h-4 text-brand-600" /> COMPLETE PLATFORM SUITE
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900">
-              Specialized AI Modules in One Workspace
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              Our Autonomous AI Modules
             </h2>
-            <p className="text-base font-medium text-slate-600">
-              Eliminate fragmented marketing tools. AI ADS™ provides end-to-end execution from brand memory lock to multi-platform publishing.
+            <p className="text-xs sm:text-sm font-medium text-slate-600 max-w-2xl mx-auto">
+              Explore our 9 specialized modules arranged in a waterfall flow. Click any module card to launch its workspace directly.
             </p>
           </div>
 
-          {/* Module Selector Tabs */}
-          <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {modulesList.map(mod => {
+          <div className="waterfall-grid pb-8">
+            {waterfallModules.map((mod) => {
               const Icon = mod.icon;
-              const isActive = activeTab === mod.id;
               return (
-                <button
+                <div
                   key={mod.id}
-                  onClick={() => setActiveTab(mod.id)}
-                  className={`px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl border text-left transition-all flex items-center gap-3 cursor-pointer group ${mod.softBg} ${
-                    isActive
-                      ? `${mod.activeBorder} shadow-md bg-white`
-                      : 'border-slate-200/90 hover:border-slate-300 hover:shadow-xs'
-                  }`}
+                  onClick={() => handleLaunchApp(mod.targetModule)}
+                  className="waterfall-card p-6 sm:p-7 rounded-3xl bg-white border border-slate-200/90 shadow-md hover:shadow-xl hover:border-brand-500/50 space-y-4 relative overflow-hidden group cursor-pointer flex flex-col justify-between"
                 >
-                  <Icon className={`w-4.5 h-4.5 shrink-0 transition-transform group-hover:scale-110 ${mod.iconColor}`} />
-                  <h3 className={`text-xs font-extrabold leading-tight transition-colors ${isActive ? 'text-slate-900 font-black' : 'text-slate-700 group-hover:text-slate-900'}`}>
-                    {mod.name}
-                  </h3>
-                </button>
+                  <div className="space-y-4">
+                    {/* Top Header Row */}
+                    <div className="flex items-center justify-between">
+                      <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${mod.color} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-3xl font-black text-slate-200 group-hover:text-brand-500/30 transition-colors font-mono">
+                        {mod.num}
+                      </span>
+                    </div>
+
+                    {/* Badge & Title */}
+                    <div className="space-y-1.5">
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${mod.badgeBg}`}>
+                        {mod.badge}
+                      </span>
+                      <h3 className="text-lg font-black text-slate-900 leading-snug group-hover:text-brand-600 transition-colors">
+                        {mod.name}
+                      </h3>
+                    </div>
+
+                    {/* 2-Line Description */}
+                    <div className="space-y-2 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3 font-medium">
+                      <p className="text-slate-800 font-semibold">{mod.descLine1}</p>
+                      <p className="text-slate-500">{mod.descLine2}</p>
+                    </div>
+                  </div>
+
+                  {/* Footer Action */}
+                  <div className="pt-4 flex items-center justify-between text-xs font-extrabold text-brand-600 group-hover:text-brand-700 border-t border-slate-100">
+                    <span className="flex items-center gap-1">
+                      <span>Launch Module</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
+                      Interactive
+                    </span>
+                  </div>
+                </div>
               );
             })}
           </div>
-
-          {/* Active Module Detail Box */}
-          <div className="p-8 sm:p-10 rounded-3xl border border-slate-200 bg-white shadow-xl relative overflow-hidden">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              
-              <div className="lg:col-span-6 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-brand-50 border border-brand-200 text-xs font-extrabold text-brand-600">
-                  <span>{currentModule.previewBadge}</span>
-                </div>
-                <h3 className="text-2xl sm:text-4xl font-black leading-tight text-slate-900">
-                  {currentModule.name}
-                </h3>
-                <p className="text-sm sm:text-base leading-relaxed text-slate-600">
-                  {currentModule.desc}
-                </p>
-
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  {currentModule.highlights.map((h, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                      <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                      <span>{h}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-4">
-                  <button
-                    onClick={() => handleLaunchApp('login')}
-                    className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-600 text-white font-black text-xs shadow-lg shadow-brand-500/20 flex items-center gap-2 hover:scale-105 transition-all cursor-pointer"
-                  >
-                    <span>Try {currentModule.name} Now</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Visual Demo Card */}
-              <div className="lg:col-span-6">
-                <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-4 shadow-sm relative">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-3 text-xs text-slate-500 font-bold">
-                    <span>LIVE MODULE INTERFACE</span>
-                    <span className="text-emerald-600 font-extrabold">READY</span>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-2 shadow-xs">
-                      <span className="text-[10px] font-black text-purple-600 uppercase tracking-wider block">Directive Input</span>
-                      <p className="text-xs text-slate-800 font-semibold italic">"{currentModule.tagline}"</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50/60 to-purple-50/60 border border-slate-200 space-y-2">
-                      <span className="text-[10px] font-black text-cyan-700 uppercase tracking-wider block">Automated Output SLA</span>
-                      <p className="text-xs text-slate-700 font-medium leading-relaxed">
-                        Executed with immutable Brand DNA memory and verified claims validation.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS (3-STEP PROCESS) ─── */}
-      <section id="how-it-works" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <span className="text-xs font-black uppercase tracking-widest text-cyan-600 flex items-center justify-center gap-2">
-            <Zap className="w-4 h-4" /> SIMPLE 3-STEP WORKFLOW
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900">
-            From URL to Full Campaign in Minutes
-          </h2>
-          <p className="text-base font-medium text-slate-600">
-            No complex setup or prompt engineering required. AI ADS™ automates research, strategy, visual creation, and publishing.
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              step: '01',
-              title: 'Lock Brand DNA Memory',
-              desc: 'Input your brand website URL. Our automated scraper extracts your logo, brand hex palette, tone of voice, verified claims, and audience personas.',
-              icon: Globe,
-              badge: 'Step 1: Scrape & Lock'
-            },
-            {
-              step: '02',
-              title: 'Generate Strategy & Visuals',
-              desc: 'Select campaign goals or upload a reference product image. AI ADS synthesizes a 30-day roadmap and renders photorealistic ad visuals using gemini-3.1-flash-image.',
-              icon: Sparkles,
-              badge: 'Step 2: Synthesize'
-            },
-            {
-              step: '03',
-              title: 'Review, Publish & Track ROI',
-              desc: 'Approve assets at the Approvals Desk, auto-publish across Instagram, LinkedIn, X, and Facebook, and track production SLA velocity.',
-              icon: BarChart3,
-              badge: 'Step 3: Publish & Scale'
-            }
-          ].map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div key={i} className="p-8 rounded-3xl border border-slate-200 bg-white shadow-sm space-y-5 relative overflow-hidden group hover:border-brand-500/50 hover:shadow-md transition-all">
-                <div className="flex items-center justify-between">
-                  <span className="text-4xl font-black text-indigo-400 group-hover:text-brand-600 transition-colors">{s.step}</span>
-                  <div className="w-10 h-10 rounded-2xl bg-brand-50 border border-brand-200 flex items-center justify-center text-brand-600">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest block">{s.badge}</span>
-                  <h3 className="text-xl font-extrabold text-slate-900">{s.title}</h3>
-                  <p className="text-sm leading-relaxed text-slate-600">{s.desc}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+
+
 
       {/* ─── METRICS & SOCIAL PROOF ─── */}
-      <section className="py-16 border-y border-slate-200 bg-gradient-to-r from-indigo-50 via-purple-50 to-cyan-50">
+      <section className="py-16 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-purple-50 to-cyan-50 z-10 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
@@ -540,7 +411,7 @@ export const LandingPage = () => {
       </section>
 
       {/* ─── PRICING & TOPUPS MATRIX (EXACT WEBSITE PLANS IN INR ₹) ─── */}
-      <section id="pricing" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+      <section id="pricing" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 z-10 relative">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <span className="text-xs font-black uppercase tracking-widest text-brand-600 flex items-center justify-center gap-2">
             <Award className="w-4 h-4" /> TRANSPARENT PRICING & CREDITS (INR ₹)
@@ -553,7 +424,7 @@ export const LandingPage = () => {
           </p>
 
           {/* Billing Cycle Switch */}
-          <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl border border-slate-200 bg-white shadow-xs">
             <button
               onClick={() => setBillingCycle('monthly')}
               className={`px-5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
@@ -578,7 +449,7 @@ export const LandingPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           
           {/* Plan 1: Starter (base) */}
-          <div className="p-7 rounded-3xl border border-slate-200 bg-white shadow-sm space-y-6 flex flex-col justify-between hover:shadow-md transition-all hover:border-brand-500/40">
+          <div className="p-7 rounded-3xl border border-slate-200 bg-white shadow-xs space-y-6 flex flex-col justify-between hover:shadow-md transition-all hover:border-brand-500/40">
             <div className="space-y-4">
               <div>
                 <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Solo Creators</span>
@@ -610,7 +481,7 @@ export const LandingPage = () => {
           </div>
 
           {/* Plan 2: Pro / Growth (professional) */}
-          <div className="p-7 rounded-3xl border border-slate-200 bg-white shadow-sm space-y-6 flex flex-col justify-between hover:shadow-md transition-all hover:border-brand-500/40">
+          <div className="p-7 rounded-3xl border border-slate-200 bg-white shadow-xs space-y-6 flex flex-col justify-between hover:shadow-md transition-all hover:border-brand-500/40">
             <div className="space-y-4">
               <div>
                 <span className="text-[10px] font-extrabold text-brand-600 uppercase tracking-widest">Growth Tier</span>
@@ -678,7 +549,7 @@ export const LandingPage = () => {
           </div>
 
           {/* Plan 4: Enterprise (enterprise) */}
-          <div className="p-7 rounded-3xl border border-slate-200 bg-white shadow-sm space-y-6 flex flex-col justify-between hover:shadow-md transition-all hover:border-brand-500/40">
+          <div className="p-7 rounded-3xl border border-slate-200 bg-white shadow-xs space-y-6 flex flex-col justify-between hover:shadow-md transition-all hover:border-brand-500/40">
             <div className="space-y-4">
               <div>
                 <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest">Enterprise</span>
@@ -697,7 +568,7 @@ export const LandingPage = () => {
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> <strong>UNLIMITED</strong> Text Generations</li>
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Unlimited Corporate Workspaces</li>
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Real-Time AI Chat Code Tweaker</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Priority SLA SLA Account Manager</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Priority SLA Account Manager</li>
               </ul>
             </div>
 
@@ -712,8 +583,8 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* ─── FAQ ACCORDION ─── */}
-      <section id="faq" className="py-24 border-t border-slate-200 bg-slate-50 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      {/* ─── FAQ ACCORDION WITH LIVE SEARCH ─── */}
+      <section id="faq" className="py-24 border-t border-slate-200 bg-slate-50 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 z-10 relative">
         <div className="text-center space-y-4">
           <span className="text-xs font-black uppercase tracking-widest text-cyan-600 flex items-center justify-center gap-2">
             <MessageSquare className="w-4 h-4" /> FREQUENTLY ASKED QUESTIONS
@@ -723,31 +594,49 @@ export const LandingPage = () => {
           </h2>
         </div>
 
+        {/* FAQ Search Bar */}
+        <div className="relative max-w-xl mx-auto">
+          <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search FAQs (e.g. credits, product photo, GCS export)..."
+            value={faqSearch}
+            onChange={(e) => setFaqSearch(e.target.value)}
+            className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 shadow-xs"
+          />
+        </div>
+
         <div className="space-y-4">
-          {faqs.map((faq, i) => {
-            const isOpen = openFaq === i;
-            return (
-              <div key={i} className="p-6 rounded-2xl border border-slate-200 bg-white space-y-3 transition-all hover:border-slate-300">
-                <button
-                  onClick={() => setOpenFaq(isOpen ? null : i)}
-                  className="w-full flex items-center justify-between text-left gap-4 cursor-pointer"
-                >
-                  <h3 className="text-base font-extrabold text-slate-900">{faq.q}</h3>
-                  <ChevronDown className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180 text-brand-600' : 'text-slate-400'}`} />
-                </button>
-                {isOpen && (
-                  <p className="text-sm leading-relaxed pt-2 border-t border-slate-200 font-medium text-slate-600 animate-in fade-in duration-200">
-                    {faq.a}
-                  </p>
-                )}
-              </div>
-            );
-          })}
+          {filteredFaqs.length > 0 ? (
+            filteredFaqs.map((faq, i) => {
+              const isOpen = openFaq === i;
+              return (
+                <div key={i} className="p-6 rounded-2xl border border-slate-200 bg-white space-y-3 transition-all hover:border-slate-300 shadow-xs">
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : i)}
+                    className="w-full flex items-center justify-between text-left gap-4 cursor-pointer"
+                  >
+                    <h3 className="text-base font-extrabold text-slate-900">{faq.q}</h3>
+                    <ChevronDown className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180 text-brand-600' : 'text-slate-400'}`} />
+                  </button>
+                  {isOpen && (
+                    <p className="text-sm leading-relaxed pt-2 border-t border-slate-200 font-medium text-slate-600 animate-in fade-in duration-200">
+                      {faq.a}
+                    </p>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <div className="p-8 text-center text-slate-500 text-xs font-bold bg-white rounded-2xl border border-slate-200">
+              No matching FAQs found for "{faqSearch}". Please contact our support team.
+            </div>
+          )}
         </div>
       </section>
 
       {/* ─── FINAL CTA BANNER ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 relative">
         <div className="p-10 sm:p-16 rounded-3xl bg-gradient-to-r from-brand-600 via-purple-600 to-cyan-600 border border-brand-400 relative overflow-hidden text-center space-y-8 shadow-2xl text-white">
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
           
@@ -775,7 +664,7 @@ export const LandingPage = () => {
       </section>
 
       {/* ─── FOOTER ─── */}
-      <footer className="py-12 border-t border-slate-200 text-xs bg-slate-100 text-slate-600">
+      <footer className="py-12 border-t border-slate-200 text-xs bg-white text-slate-600 z-10 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <img
@@ -797,10 +686,10 @@ export const LandingPage = () => {
           </div>
 
           <div className="flex items-center gap-6 font-semibold text-slate-600">
-            <a href="#features" className="hover:text-brand-600 transition-colors">Features</a>
-            <a href="#modules" className="hover:text-brand-600 transition-colors">Modules</a>
-            <a href="#pricing" className="hover:text-brand-600 transition-colors">Pricing</a>
-            <a href="#faq" className="hover:text-brand-600 transition-colors">Support & FAQ</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }} className="hover:text-brand-600 transition-colors cursor-pointer">Features</a>
+            <a href="#modules" onClick={(e) => { e.preventDefault(); scrollToSection('modules'); }} className="hover:text-brand-600 transition-colors cursor-pointer">Modules</a>
+            <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollToSection('pricing'); }} className="hover:text-brand-600 transition-colors cursor-pointer">Pricing</a>
+            <a href="#faq" onClick={(e) => { e.preventDefault(); scrollToSection('faq'); }} className="hover:text-brand-600 transition-colors cursor-pointer">Support & FAQ</a>
           </div>
         </div>
       </footer>

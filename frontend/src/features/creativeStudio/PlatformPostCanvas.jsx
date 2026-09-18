@@ -224,7 +224,7 @@ const renderFormattedArticle = (rawText = '') => {
 };
 
 export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deductVisualCredits, setIsCreditModalOpen }) => {
-  const { showToast, addGlobalAsset, setActiveModule } = useWorkspace();
+  const { showToast, addGlobalAsset, setActiveModule, studioTarget } = useWorkspace();
   const unwrapped = unwrapAndCleanContent(generatedContent);
   const rawType     = (unwrapped?.type     || unwrapped?.postType || generatedContent?.type || generatedContent?.postType || "SOCIAL").toUpperCase();
   const [platform, setPlatform] = useState((unwrapped?.platform || generatedContent?.platform || "instagram").toLowerCase());
@@ -502,7 +502,7 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
 
   const rawImagePrompt = contentData?.visualDirective || contentData?.imagePrompt || contentData?.visualPrompt || `${brand} ${topic} ${hook}`.slice(0, 150);
   const refObjUrl = contentData?.referenceImage || generatedContent?.referenceImage || null;
-  const defaultVisual = (contentData?.isCustomStrategy ? null : generatedContent?.imageUrl) || generateVertexAISvgDataUrl(rawImagePrompt, brand, visualStyle, refObjUrl);
+  const defaultVisual = (generatedContent?.imageUrl || contentData?.imageUrl) || generateVertexAISvgDataUrl(rawImagePrompt, brand, visualStyle, refObjUrl);
 
   const [visualUrl, setVisualUrl] = useState(defaultVisual);
   const [showFullImageModal, setShowFullImageModal] = useState(false);
@@ -512,7 +512,8 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
     const processImage = async () => {
       const promptToUse = contentData?.visualDirective || contentData?.imagePrompt || contentData?.visualPrompt || `${brand} ${topic} ${hook}`.slice(0, 150);
       const refObj = contentData?.referenceImage || generatedContent?.referenceImage || null;
-      const srcUrl = (contentData?.isCustomStrategy ? null : generatedContent?.imageUrl) || generateVertexAISvgDataUrl(promptToUse, brand, visualStyle, refObj);
+      const existingImg = generatedContent?.imageUrl || contentData?.imageUrl || (visualUrl && !visualUrl.startsWith('data:image/svg+xml') ? visualUrl : null);
+      const srcUrl = existingImg || generateVertexAISvgDataUrl(promptToUse, brand, visualStyle, refObj);
       const composited = await compositeBrandLogoOntoImage(srcUrl, {
         brandName: brand,
         domainUrl: workspace?.domainUrl,
@@ -544,23 +545,25 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
     deductVisualCredits(cost, "AI Visual: " + topic.slice(0, 30));
 
     const visualGuidancePrompt = contentData?.visualDirective || contentData?.imagePrompt || contentData?.visualPrompt || topic;
-    const refObjImageUrl = contentData?.referenceImage || generatedContent?.referenceImage || null;
-    const isCustomStrategyPost = !!(contentData?.isCustomStrategy && refObjImageUrl);
+    const refObjImageUrl = contentData?.referenceImage || generatedContent?.referenceImage || studioTarget?.referenceImage || null;
+    const isCustomStrategyPost = !!(contentData?.isCustomStrategy || studioTarget?.isCustomStrategy);
 
     const apiBase = API_BASE || import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
     try {
       if (isCustomStrategyPost) {
-        // ── IMAGE EDITING AGENT: Custom Strategy with reference image ──────────
-        console.log('[PlatformPostCanvas] 🤖 Invoking Image Editing Agent for Custom Strategy post...');
-        const agentRes = await fetch(`${apiBase}/creative/image-editing-agent/generate`, {
+        // ── 2-AGENT PIPELINE: Agent 1 (Prompt Crafting) -> Agent 2 (Image Generation with Reference Image) ──────────
+        console.log('[PlatformPostCanvas] 🤖 Invoking 2-Agent Pipeline for Custom Strategy card...');
+        const agentRes = await fetch(`${apiBase}/creative/craft-and-generate-visual`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             workspaceId: workspace?._id || workspace?.id,
             referenceImageUrl: refObjImageUrl,
-            visualDirective: visualGuidancePrompt,
             topic: topic,
+            visualDirective: visualGuidancePrompt,
+            hook: hook || contentData?.hook,
+            caption: caption || contentData?.caption,
             brandName: brand || workspace?.brandName,
             brandColors: workspace?.brandColors || [],
             industry: workspace?.industry || workspace?.industryCategory || workspace?.niche || '',
@@ -574,19 +577,25 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
         });
         const agentData = await agentRes.json();
         if (agentData.success && agentData.asset?.imageUrl) {
-          const composited = await compositeBrandLogoOntoImage(agentData.asset.imageUrl, {
+          const generatedImg = agentData.asset.imageUrl;
+          if (generatedContent) generatedContent.imageUrl = generatedImg;
+          if (contentData) contentData.imageUrl = generatedImg;
+          const composited = await compositeBrandLogoOntoImage(generatedImg, {
             brandName: brand,
             domainUrl: workspace?.domainUrl,
             logoUrl: workspace?.logoUrl,
             faviconUrl: workspace?.faviconUrl
           });
-          setVisualUrl(composited || agentData.asset.imageUrl);
-          console.log('[PlatformPostCanvas] ✅ Image Editing Agent visual ready.');
+          const finalUrl = composited || generatedImg;
+          setVisualUrl(finalUrl);
+          const updatedPayload = compileAssetPayload(finalUrl);
+          addGlobalAsset(updatedPayload);
+          console.log('[PlatformPostCanvas] ✅ 2-Agent visual generation ready!');
         } else {
-          throw new Error(agentData.error || 'Image Editing Agent returned no image');
+          throw new Error(agentData.error || '2-Agent Pipeline returned no image');
         }
       } else {
-        // ── Standard visual generation for all other post types ────────────────
+        // ── Standard visual generation for all other post types (UNCHANGED NORMAL FLOW) ────────────────
         const brandPayload = {
           workspaceId:    workspace?._id || workspace?.id,
           prompt:         visualGuidancePrompt,
@@ -614,13 +623,19 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
         });
         const data = await res.json();
         if (data.success && data.asset?.imageUrl) {
-          const composited = await compositeBrandLogoOntoImage(data.asset.imageUrl, {
+          const generatedImg = data.asset.imageUrl;
+          if (generatedContent) generatedContent.imageUrl = generatedImg;
+          if (contentData) contentData.imageUrl = generatedImg;
+          const composited = await compositeBrandLogoOntoImage(generatedImg, {
             brandName: brand,
             domainUrl: workspace?.domainUrl,
             logoUrl: workspace?.logoUrl,
             faviconUrl: workspace?.faviconUrl
           });
-          setVisualUrl(composited || data.asset.imageUrl);
+          const finalUrl = composited || data.asset.imageUrl;
+          setVisualUrl(finalUrl);
+          const updatedPayload = compileAssetPayload(finalUrl);
+          addGlobalAsset(updatedPayload);
         } else {
           throw new Error(data.error || "API returned no image");
         }
@@ -641,6 +656,21 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
     }
   };
 
+  // Automatically trigger 2-Agent image generation when coming from Custom Strategy card with autoGenerate: true
+  const autoGeneratedRef = useRef(new Set());
+  useEffect(() => {
+    if (!contentData) return;
+    const isCustomStrategyCard = !!(contentData.isCustomStrategy || studioTarget?.isCustomStrategy);
+    if (isCustomStrategyCard && contentData.autoGenerate) {
+      const key = `${contentData.topic}_${contentData.platform}_${contentData.referenceImage || ''}`;
+      if (!autoGeneratedRef.current.has(key)) {
+        autoGeneratedRef.current.add(key);
+        console.log('[PlatformPostCanvas] 🚀 Auto-triggering 2-Agent visual generation for Custom Strategy card:', contentData.topic);
+        handleGenerateVisual();
+      }
+    }
+  }, [contentData?.topic, contentData?.autoGenerate, contentData?.isCustomStrategy]);
+
 
   const isCarousel  = rawPostType.includes("carousel");
   const isEmail     = rawType==="EMAIL"     || platform==="email";
@@ -659,17 +689,16 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
   };
 
   // Helper to compile asset payload
-  const compileAssetPayload = () => {
+  const compileAssetPayload = (overrideUrl = null) => {
     let assetType = 'DOCUMENT';
     let assetName = topic || 'Brand Asset';
-    let assetUrl = visualUrl || defaultVisual || '';
+    let assetUrl = overrideUrl || visualUrl || defaultVisual || '';
     let assetContent = '';
 
     if (isBlog) {
       assetType = 'BLOG';
       assetName = generatedContent?.title || hook || topic || 'SEO Blog Article';
       assetContent = generatedContent?.content || longCap || caption || '';
-      assetUrl = visualUrl || defaultVisual || '';
     } else if (isEmail) {
       assetType = 'EMAIL';
       assetName = `Email: ${generatedContent?.subject || hook || topic}`;
@@ -678,17 +707,20 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
     } else if (isCarousel) {
       assetType = 'CAROUSEL';
       assetName = `Carousel Deck: ${topic || 'Brand Carousel'}`;
-      assetUrl = 'https://picsum.photos/seed/aisa_slide_0/600/600';
+      assetUrl = assetUrl || 'https://picsum.photos/seed/aisa_slide_0/600/600';
       assetContent = carouselSlides.map(s => `[Slide ${s.slide}] ${s.headline}\n${s.body}`).join('\n\n');
     } else {
       // Social / Visual Post
       assetType = 'SOCIAL';
       assetName = `${platform ? platform.toUpperCase() : 'SOCIAL'} Post: ${topic || hook}`;
-      assetUrl = visualUrl || defaultVisual || '';
       assetContent = `${hook}\n\n${caption}\n\n${cta}\n${hashtags}`;
     }
 
+    const cleanTopic = (topic || 'asset').toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const cleanPlatform = (platform || 'social').toLowerCase();
+
     return {
+      id: `asset_${cleanTopic}_${cleanPlatform}`,
       name: assetName,
       type: assetType,
       url: assetUrl,
@@ -712,14 +744,15 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
 
     const contentKey = `${topic}_${hook}_${generatedContent?.title || generatedContent?.subject || ''}_${platform}_${isBlog ? 'blog' : isEmail ? 'email' : isCarousel ? 'carousel' : 'social'}`;
     
-    if (autoSavedRef.current.has(contentKey)) return;
-    autoSavedRef.current.add(contentKey);
+    const isFirstTime = !autoSavedRef.current.has(contentKey);
+    if (isFirstTime) {
+      autoSavedRef.current.add(contentKey);
+      const assetPayload = compileAssetPayload(visualUrl);
+      addGlobalAsset(assetPayload);
 
-    const assetPayload = compileAssetPayload();
-    addGlobalAsset(assetPayload);
-
-    if (showToast) {
-      showToast('Asset automatically saved to Asset Library!', 'success');
+      if (showToast) {
+        showToast('Asset automatically saved to Asset Library!', 'success');
+      }
     }
   }, [generatedContent, topic, hook, platform, isBlog, isEmail, isCarousel, visualUrl]);
 
@@ -1011,25 +1044,58 @@ export const PlatformPostCanvas = ({ workspace, generatedContent, credits, deduc
 
         {/* High-Res Image Display */}
         <div 
-          className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video max-h-[520px] bg-slate-950 shadow-inner group flex items-center justify-center cursor-pointer"
-          onClick={() => setShowFullImageModal(true)}
+          className={`relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video max-h-[520px] bg-slate-950 shadow-inner group flex items-center justify-center ${generating ? 'cursor-wait' : 'cursor-pointer'}`}
+          onClick={() => { if (!generating) setShowFullImageModal(true); }}
         >
-          <img src={visualUrl} alt={topic} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-          
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-extrabold text-xs z-20 pointer-events-none">
-            <Eye className="w-5 h-5 text-emerald-400" />
-            <span>Click to View Full Resolution Image</span>
-          </div>
+          {generating ? (
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md p-6 text-center space-y-4 animate-in fade-in duration-300 select-none">
+              {/* Animated Glowing Spinner */}
+              <div className="relative flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full border-4 border-brand-500/20 border-t-brand-500 animate-spin" />
+                <div className="absolute w-20 h-20 rounded-full border-2 border-purple-500/20 border-b-purple-500 animate-spin duration-700" />
+                <Sparkles className="absolute w-7 h-7 text-brand-400 animate-pulse" />
+              </div>
 
+              {/* Status Indicator */}
+              <div className="space-y-1.5 max-w-md">
+                <h4 className="text-sm font-black text-white tracking-wide flex items-center justify-center gap-2">
+                  <span>Synthesizing AI Visual</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 uppercase tracking-widest">
+                    Gemini 3.1
+                  </span>
+                </h4>
+                <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                  Rendering photorealistic 8K commercial photoshoot visual for <strong className="text-slate-200">"{brand}"</strong>...
+                </p>
+              </div>
 
+              {/* Animated Shimmer Bar */}
+              <div className="w-full max-w-xs h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
+                <div className="h-full bg-gradient-to-r from-brand-500 via-purple-500 to-indigo-500 rounded-full animate-pulse w-full" />
+              </div>
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent flex flex-col sm:flex-row justify-between sm:items-end gap-2 z-10">
-            <div className="space-y-0.5">
-              <p className="text-white font-extrabold text-xs sm:text-sm line-clamp-1">"{hook}"</p>
-              <p className="text-slate-300 text-[10px] font-medium">{brand} · High-Res 8K Studio Render</p>
+              <span className="text-[10px] font-mono text-slate-500">
+                Please wait · Generating high-fidelity visual asset
+              </span>
             </div>
-            <span className="text-[9px] font-mono text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-700 self-start sm:self-auto">1080 × 1080 · HQ</span>
-          </div>
+          ) : (
+            <>
+              <img src={visualUrl} alt={topic} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-extrabold text-xs z-20 pointer-events-none">
+                <Eye className="w-5 h-5 text-emerald-400" />
+                <span>Click to View Full Resolution Image</span>
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent flex flex-col sm:flex-row justify-between sm:items-end gap-2 z-10">
+                <div className="space-y-0.5">
+                  <p className="text-white font-extrabold text-xs sm:text-sm line-clamp-1">"{hook}"</p>
+                  <p className="text-slate-300 text-[10px] font-medium">{brand} · High-Res 8K Studio Render</p>
+                </div>
+                <span className="text-[9px] font-mono text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-700 self-start sm:self-auto">1080 × 1080 · HQ</span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Direct Action Bar: Download, Share, Save */}
