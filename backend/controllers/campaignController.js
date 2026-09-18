@@ -600,12 +600,12 @@ This campaign already contains the following specific scheduled topics:
 ${campaignPostTopics.slice(0, 30).map(t => `- Day ${t.day}: [${t.platform}] "${t.topic}" (Pillar: ${t.pillar}, Stage: ${t.stage})`).join('\n')}
 
 MANDATORY REQUIREMENT FOR "thirtyDayPlan":
-The 30-day strategy plan ("thirtyDayPlan") MUST use these EXACT SAME topics from the campaign for Day 1 to ${Math.min(30, campaignPostTopics.length)}!
+The strategy plan ("thirtyDayPlan") MUST use these EXACT SAME topics from the campaign for Day 1 to ${Math.min(requestedDuration, campaignPostTopics.length)}!
 For each day, the "topic" and "title" MUST match the campaign's topic ("${campaignPostTopics[0].topic}", "${campaignPostTopics[1]?.topic || ''}", etc.). DO NOT replace them with generic topics.
 ═══════════════════════════════════════════════════════` : '';
 
     const prompt = `You are a Chief Marketing Officer (CMO) and Lead Growth Strategist.
-Generate a high-converting, actionable, 30-day marketing strategy and roadmap specifically built to execute and achieve this campaign:
+Generate a high-converting, actionable, ${requestedDuration}-day marketing strategy and roadmap specifically built to execute and achieve this campaign:
 
 ═══════════════════════════════════════════════════════
 TARGET CAMPAIGN:
@@ -669,19 +669,19 @@ Return a JSON object with this exact structure:
   ]
 }
 
-Ensure "thirtyDayPlan" contains 30 distinct daily items from day 1 to 30.
+Ensure "thirtyDayPlan" contains ${requestedDuration} distinct daily items from day 1 to ${requestedDuration}.
 Return ONLY valid JSON.`;
 
     let strategy = null;
     try {
-      const aiResponse = await generateJSON(prompt, { temperature: 0.7 });
+      const aiResponse = await generateJSON(prompt, { model: 'gemini-2.5-flash', temperature: 0.7, reqId: 'CAMP-STRATEGY' });
       strategy = aiResponse?.data || (aiResponse && typeof aiResponse === 'object' && !aiResponse.data ? aiResponse : null);
     } catch (aiErr) {
       console.warn('[Strategy Engine] Campaign AI strategy synthesis error, generating fallback:', aiErr.message);
     }
 
     if (!strategy || !Array.isArray(strategy.thirtyDayPlan) || strategy.thirtyDayPlan.length < 10) {
-      const fallbackPlan = Array.from({ length: 30 }, (_, i) => {
+      const fallbackPlan = Array.from({ length: requestedDuration }, (_, i) => {
         const day = i + 1;
         const matchingPost = campaignPostTopics[i];
         const topicName = matchingPost?.topic || `${campaign.campaignName} Day ${day}: ${pillars[i % pillars.length]}`;

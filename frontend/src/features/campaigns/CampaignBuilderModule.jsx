@@ -403,7 +403,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
 
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
-            onClick={handleGenerateStrategyAndGoToPlan}
+            onClick={handleOpenDurationModal}
             disabled={generatingStrategy}
             className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm disabled:opacity-60"
           >
@@ -436,6 +436,151 @@ const CampaignDetail = ({ campaign, onBack }) => {
       )}
 
 
+
+      
+      {/* ─── Strategy Duration Selection Modal ─── */}
+      {showDurationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-purple-200 dark:border-purple-800/60 shadow-2xl space-y-6 relative overflow-hidden">
+            <div className="absolute -top-16 -right-16 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-500/30">
+                  <Target className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                    Select Strategy Duration
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Kitne din ki AI marketing strategy roadmap generate karni hai?
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDurationModal(false)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Preset Buttons */}
+            <div className="space-y-2 relative z-10">
+              <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Quick Duration Presets:
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                {[
+                  { days: 7, label: '7 Days', sub: 'Sprint 1' },
+                  { days: 14, label: '14 Days', sub: '2 Weeks' },
+                  { days: 21, label: '21 Days', sub: '3 Weeks' },
+                  { days: 30, label: '30 Days', sub: 'Full Month' },
+                ].map(preset => {
+                  const isSelected = strategyDays === preset.days;
+                  return (
+                    <button
+                      key={preset.days}
+                      type="button"
+                      onClick={() => setStrategyDays(preset.days)}
+                      className={`p-3 rounded-2xl border text-center transition-all duration-200 cursor-pointer ${
+                        isSelected
+                          ? 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/30 scale-[1.02]'
+                          : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:border-purple-300 dark:hover:border-purple-600'
+                      }`}
+                    >
+                      <div className="text-sm font-black">{preset.label}</div>
+                      <div className={`text-[10px] font-semibold ${isSelected ? 'text-purple-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                        {preset.sub}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Manual Custom Input */}
+            <div className="space-y-2 relative z-10">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Or Enter Custom Days (Max: 30):
+                </label>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                  Min: 1 | Max: 30
+                </span>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={strategyDays}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw === '') {
+                      setStrategyDays('');
+                      return;
+                    }
+                    const val = parseInt(raw, 10);
+                    if (isNaN(val)) return;
+                    if (val > 30) {
+                      setStrategyDays(30);
+                    } else if (val < 1) {
+                      setStrategyDays(1);
+                    } else {
+                      setStrategyDays(val);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (!strategyDays || strategyDays < 1) setStrategyDays(1);
+                    if (strategyDays > 30) setStrategyDays(30);
+                  }}
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Enter number of days (1-30)"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                  Days
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Gemini 2.5 Flash will generate a tailored strategy roadmap covering exactly {strategyDays || 30} days of execution.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-3 pt-2 relative z-10">
+              <button
+                type="button"
+                onClick={() => setShowDurationModal(false)}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExecuteGenerateStrategy(strategyDays)}
+                disabled={generatingStrategy}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-xs shadow-lg shadow-purple-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-60"
+              >
+                {generatingStrategy ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>Generating Strategy...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
+                    <span>Generate Strategy ({strategyDays || 30} Days)</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── Strategy Completion Modal ─── */}
       {showStrategyModal && campaignStrategy && (
@@ -587,7 +732,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
       {/* ══════════ STICKY FLOATING GENERATE STRATEGY BUTTON ══════════ */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300 shrink-0">
         <button
-          onClick={handleGenerateStrategyAndGoToPlan}
+          onClick={handleOpenDurationModal}
           disabled={generatingStrategy}
           className="flex items-center gap-2.5 px-6 py-3.5 bg-[#0077b6] hover:bg-[#0096c7] text-white rounded-full font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-2xl shadow-[#0077b6]/40 border border-white/20 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md whitespace-nowrap disabled:opacity-60"
           title="Generate strategy and open strategy plan directly"
