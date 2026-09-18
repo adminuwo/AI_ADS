@@ -309,7 +309,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
   useEffect(() => { loadPosts(); }, [loadPosts]);
 
   const handleGenerateStrategyAndGoToPlan = async () => {
-    sessionStorage.setItem('strategyActiveTab', 'overview');
+    sessionStorage.setItem('strategyActiveTab', 'strategyPlan');
     if (campaignStrategy) {
       setActiveModule('strategy');
       return;
@@ -325,7 +325,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
           await updateWorkspace(workspaceId, { currentStrategy: result.strategy });
         }
       }
-      sessionStorage.setItem('strategyActiveTab', 'overview');
+      sessionStorage.setItem('strategyActiveTab', 'strategyPlan');
       setActiveModule('strategy');
     } catch (err) {
       setError(err.message || 'Failed to generate campaign strategy');
@@ -590,7 +590,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
           onClick={handleGenerateStrategyAndGoToPlan}
           disabled={generatingStrategy}
           className="flex items-center gap-2.5 px-6 py-3.5 bg-[#0077b6] hover:bg-[#0096c7] text-white rounded-full font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-2xl shadow-[#0077b6]/40 border border-white/20 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md whitespace-nowrap disabled:opacity-60"
-          title="Generate strategy and open 30-day plan directly"
+          title="Generate strategy and open strategy plan directly"
         >
           {generatingStrategy ? (
             <Loader2 className="w-5 h-5 text-white animate-spin shrink-0" />
