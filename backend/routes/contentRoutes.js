@@ -4,6 +4,7 @@ const contentController = require('../controllers/contentController');
 
 // Save Asset to Library & Trigger Telemetry
 router.post('/save-asset', contentController.saveAsset);
+router.get('/list-assets', contentController.listAssets);
 
 // Social content
 router.post('/social/generate', contentController.generateSocialPost);

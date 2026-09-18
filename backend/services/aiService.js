@@ -92,38 +92,52 @@ const chatWithGemini = async (messages, options = {}) => {
       });
     }
 
-    let requestedModel = (options.modelId || options.model || 'gemini-2.5-flash').toLowerCase();
-    if (requestedModel === 'gemini' || requestedModel === 'gemini-3.5-flash' || requestedModel.includes('3.5')) {
-      requestedModel = 'gemini-2.5-flash';
+    let requestedModel = 'gemini-3.5-flash';
+    if (options.modelId || options.model) {
+      const customModel = String(options.modelId || options.model).toLowerCase();
+      if (customModel.includes('gemini') || customModel.includes('3.5') || customModel.includes('flash') || customModel.includes('pro')) {
+        requestedModel = 'gemini-3.5-flash';
+      } else {
+        requestedModel = customModel;
+      }
     }
 
-    const modelSequence = Array.from(new Set([
-      requestedModel,
-      'gemini-2.5-flash',
-      'gemini-1.5-flash-002',
-      'gemini-2.0-flash',
-      'gemini-1.5-pro-002',
-      'gemini-1.5-flash'
-    ]));
+    const modelSequence = ['gemini-3.5-flash'];
 
     let lastError = null;
     for (const client of clientCandidates) {
       for (const mId of modelSequence) {
-        try {
-          console.log(`${reqTag}Calling @google/genai model: ${mId}...`);
-          const response = await client.models.generateContent({
-            model: mId,
-            contents,
-          });
+        let maxRetries = 2;
+        for (let retry = 0; retry <= maxRetries; retry++) {
+          try {
+            if (retry > 0) {
+              console.log(`${reqTag}Retrying model ${mId} (Attempt ${retry + 1}/${maxRetries + 1}) after rate limit pause...`);
+              await new Promise(resolve => setTimeout(resolve, 1200 * retry));
+            } else {
+              console.log(`${reqTag}Calling @google/genai model: ${mId}...`);
+            }
 
-          const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          if (text) {
-            console.log(`${reqTag}@google/genai (${mId}) response received successfully.`);
-            return { text, model: `vertex-ai (${mId})` };
+            const response = await client.models.generateContent({
+              model: mId,
+              contents,
+            });
+
+            const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            if (text) {
+              console.log(`${reqTag}@google/genai (${mId}) response received successfully.`);
+              return { text, model: `vertex-ai (${mId})` };
+            }
+          } catch (modelErr) {
+            lastError = modelErr;
+            const errStr = modelErr.message || String(modelErr);
+            const isRateLimit = errStr.includes('429') || errStr.includes('Resource exhausted');
+            console.warn(`${reqTag}Model ${mId} attempt note: ${errStr.slice(0, 150)}`);
+
+            if (isRateLimit && retry < maxRetries) {
+              continue;
+            }
+            break;
           }
-        } catch (modelErr) {
-          lastError = modelErr;
-          console.warn(`${reqTag}Model ${mId} attempt note: ${modelErr.message?.slice(0, 150)}`);
         }
       }
     }

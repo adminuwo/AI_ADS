@@ -218,9 +218,9 @@ GENERATE THE FOLLOWING JSON:
     try {
       aiResponse = await generateJSON(systemPrompt, { model: 'gemini-3.5-flash', reqId });
     } catch (flashErr) {
-      console.warn(`${correlationTag}[Tier 2] Gemini 3.5 Flash invocation error (${flashErr.message}), attempting fallback model...`);
-      aiResponse = await generateJSON(systemPrompt, { model: 'gemini-3.5-pro', reqId });
-      modelUsed = 'gemini-3.5-pro';
+      console.warn(`${correlationTag}[Tier 2] Gemini 3.5 Flash invocation error (${flashErr.message}), retrying...`);
+      aiResponse = await generateJSON(systemPrompt, { model: 'gemini-3.5-flash', reqId });
+      modelUsed = 'gemini-3.5-flash';
     }
 
     const requirementData = aiResponse && aiResponse.data ? aiResponse.data : aiResponse;

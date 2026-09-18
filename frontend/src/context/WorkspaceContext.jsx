@@ -2491,45 +2491,95 @@ export const WorkspaceProvider = ({ children }) => {
   };
 
   // ─── Global Asset Management ────────────────────────────────────────────────
+  const saveAssetsToLocalStorage = (assetsList, wsId) => {
+    try {
+      const serialized = JSON.stringify(assetsList);
+      if (wsId) localStorage.setItem(`aisa_assets_${wsId}`, serialized);
+      localStorage.setItem('aisa_global_assets', serialized);
+    } catch (quotaErr) {
+      console.warn('LocalStorage quota notice - caching stripped asset payload:', quotaErr.message);
+      try {
+        const stripped = assetsList.map(a => ({
+          ...a,
+          content: a.content && a.content.length > 5000 ? a.content.slice(0, 1000) + '...' : a.content
+        }));
+        const strippedSerialized = JSON.stringify(stripped);
+        if (wsId) localStorage.setItem(`aisa_assets_${wsId}`, strippedSerialized);
+        localStorage.setItem('aisa_global_assets', strippedSerialized);
+      } catch (e2) {}
+    }
+  };
+
   const [globalAssets, setGlobalAssets] = useState(() => {
     try {
-      const saved = localStorage.getItem(`aisa_assets_${activeWorkspaceId}`) || localStorage.getItem('aisa_global_assets');
-      return saved ? JSON.parse(saved) : [];
+      const savedGlobal = localStorage.getItem('aisa_global_assets');
+      const savedWs = activeWorkspaceId ? localStorage.getItem(`aisa_assets_${activeWorkspaceId}`) : null;
+      const wsArr = savedWs ? JSON.parse(savedWs) : [];
+      const globalArr = savedGlobal ? JSON.parse(savedGlobal) : [];
+      const mergedMap = new Map();
+      [...wsArr, ...globalArr].forEach(a => { if (a && (a.id || a.name)) mergedMap.set(a.id || a.name, a); });
+      return Array.from(mergedMap.values());
     } catch {
       return [];
     }
   });
 
+  // Sync assets from DB whenever workspace or user changes
   useEffect(() => {
-    if (!activeWorkspaceId) return;
-    try {
-      const saved = localStorage.getItem(`aisa_assets_${activeWorkspaceId}`);
-      if (saved) {
-        setGlobalAssets(JSON.parse(saved));
-      } else {
-        const fallback = localStorage.getItem('aisa_global_assets');
-        setGlobalAssets(fallback ? JSON.parse(fallback) : []);
+    const syncAssetsFromDb = async () => {
+      try {
+        const currentWs = activeWorkspaceId || activeWorkspace?._id || activeWorkspace?.id;
+        const url = currentWs
+          ? `${API_BASE}/content/list-assets?workspaceId=${currentWs}`
+          : `${API_BASE}/content/list-assets`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.assets) && data.assets.length > 0) {
+          setGlobalAssets(prev => {
+            const mergedMap = new Map();
+            // Start with DB assets, then merge existing in-memory assets so latest edits stay intact
+            [...data.assets, ...prev].forEach(a => {
+              if (a && (a.id || a.name)) {
+                const key = a.id || a.name;
+                const existing = mergedMap.get(key) || {};
+                mergedMap.set(key, { ...existing, ...a, url: a.url || existing.url });
+              }
+            });
+            const merged = Array.from(mergedMap.values());
+            saveAssetsToLocalStorage(merged, currentWs);
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.log('Asset DB sync notice:', err.message);
       }
-    } catch {
-      setGlobalAssets([]);
-    }
-  }, [activeWorkspaceId]);
+    };
+
+    syncAssetsFromDb();
+  }, [activeWorkspaceId, user]);
 
   const addGlobalAsset = (asset) => {
+    const currentWs = activeWorkspaceId || activeWorkspace?._id || activeWorkspace?.id || 'ws_001';
+    const currentBrand = activeWorkspace?.brandName || '';
+
     const newAsset = {
       id: asset.id || `asset_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
       name: asset.name || asset.title || 'Brand Asset',
-      type: (asset.type || 'DOCUMENT').toUpperCase(), // 'IMAGE' | 'CAROUSEL' | 'DOCUMENT'
+      type: (asset.type || 'DOCUMENT').toUpperCase(), // 'IMAGE' | 'CAROUSEL' | 'DOCUMENT' | 'SOCIAL' | 'BLOG' | 'EMAIL'
       url: asset.url || '',
       date: asset.date || new Date().toISOString(),
       credits: asset.credits || 0,
-      workspaceId: asset.workspaceId || activeWorkspaceId,
+      workspaceId: asset.workspaceId || currentWs,
       content: asset.content || asset.caption || '',
-      metadata: asset.metadata || {},
+      metadata: {
+        brand: currentBrand,
+        ...(asset.metadata || {})
+      },
       category: asset.category || asset.type || 'DOCUMENT'
     };
 
-    // Dispatch backend API request to persist asset & record API hit
+    // Dispatch backend API request to persist asset in database
     try {
       const apiUrl = `${API_BASE}/content/save-asset`;
       fetch(apiUrl, {
@@ -2540,11 +2590,19 @@ export const WorkspaceProvider = ({ children }) => {
     } catch (e) { }
 
     setGlobalAssets(prev => {
-      const updated = [newAsset, ...prev];
-      try {
-        if (activeWorkspaceId) localStorage.setItem(`aisa_assets_${activeWorkspaceId}`, JSON.stringify(updated));
-        localStorage.setItem('aisa_global_assets', JSON.stringify(updated));
-      } catch (e) { }
+      const existingIdx = prev.findIndex(a => a.id === newAsset.id || (a.name === newAsset.name && a.metadata?.platform === newAsset.metadata?.platform));
+      let updated;
+      if (existingIdx >= 0) {
+        updated = [...prev];
+        updated[existingIdx] = {
+          ...updated[existingIdx],
+          ...newAsset,
+          url: newAsset.url || updated[existingIdx].url
+        };
+      } else {
+        updated = [newAsset, ...prev];
+      }
+      saveAssetsToLocalStorage(updated, currentWs);
       return updated;
     });
 
@@ -2552,15 +2610,14 @@ export const WorkspaceProvider = ({ children }) => {
   };
 
   const removeGlobalAsset = (id) => {
+    const currentWs = activeWorkspaceId || activeWorkspace?._id || activeWorkspace?.id;
     setGlobalAssets(prev => {
       const updated = prev.filter(a => a.id !== id);
-      try {
-        if (activeWorkspaceId) localStorage.setItem(`aisa_assets_${activeWorkspaceId}`, JSON.stringify(updated));
-        localStorage.setItem('aisa_global_assets', JSON.stringify(updated));
-      } catch (e) { }
+      saveAssetsToLocalStorage(updated, currentWs);
       return updated;
     });
   };
+
 
   // Real-Time Generated Posts Tracker per Workspace
   const [generatedPostsTracker, setGeneratedPostsTracker] = useState(() => {

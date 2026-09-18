@@ -15,14 +15,27 @@ exports.saveAsset = async (req, res) => {
     let savedContent = null;
     try {
       if (assetData && (assetData.name || assetData.url || assetData.content)) {
-        savedContent = await Content.create({
-          workspaceId: assetData.workspaceId || 'ws_001',
-          type: (assetData.type || 'DOCUMENT').toUpperCase(),
-          title: assetData.name || assetData.title || 'Brand Asset',
-          content: assetData.content || assetData.url || '',
-          briefData: assetData.metadata || assetData,
-          status: 'APPROVED'
-        });
+        const title = assetData.name || assetData.title || 'Brand Asset';
+        const wsId = assetData.workspaceId || 'ws_001';
+        const assetUrl = assetData.url || assetData.content || '';
+
+        // Check if matching content already exists by title and workspaceId
+        let existing = await Content.findOne({ title, workspaceId: wsId });
+        if (existing) {
+          if (assetUrl) existing.content = assetUrl;
+          if (assetData.metadata) existing.briefData = assetData.metadata;
+          await existing.save();
+          savedContent = existing;
+        } else {
+          savedContent = await Content.create({
+            workspaceId: wsId,
+            type: (assetData.type || 'DOCUMENT').toUpperCase(),
+            title: title,
+            content: assetUrl,
+            briefData: assetData.metadata || assetData,
+            status: 'APPROVED'
+          });
+        }
       }
     } catch (dbErr) {
       console.warn('[ContentController] saveAsset DB notice:', dbErr.message);
@@ -33,6 +46,43 @@ exports.saveAsset = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+// ─── GET /api/content/list-assets ─────────────────────────────────────────────
+exports.listAssets = async (req, res) => {
+  try {
+    const { workspaceId } = req.query;
+    let filter = {};
+    if (workspaceId) {
+      filter.$or = [
+        { workspaceId: workspaceId },
+        { workspaceId: 'ws_001' },
+        { workspaceId: 'ws_default' }
+      ];
+    }
+    const docs = await Content.find(filter).sort({ createdAt: -1 }).limit(100);
+    const assets = docs.map(doc => {
+      const brief = doc.briefData || {};
+      const url = (doc.content && (doc.content.startsWith('http') || doc.content.startsWith('data:') || doc.content.startsWith('/')))
+        ? doc.content
+        : (brief.url || brief.imageUrl || '');
+      return {
+        id: doc._id.toString(),
+        name: doc.title || 'Brand Asset',
+        type: doc.type || 'DOCUMENT',
+        url: url,
+        content: doc.content || '',
+        date: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
+        credits: 0,
+        workspaceId: doc.workspaceId,
+        metadata: brief
+      };
+    });
+    res.json({ success: true, assets });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, assets: [] });
+  }
+};
+
 
 // ─── Helper: Get brand context ────────────────────────────────────────────────
 const getBrandContext = async (workspaceId, directBrandName = '') => {

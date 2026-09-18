@@ -258,8 +258,22 @@ export const AssetLibraryModule = () => {
   const currentBrand = activeWorkspace?.brandName;
 
   const assets = globalAssets.filter(a => {
-    if (!a.workspaceId && !a.metadata?.brand) return true;
-    return a.workspaceId === currentWsId || a.metadata?.brand === currentBrand;
+    if (!a) return false;
+    // If active workspace is still initializing / loading on page reload, keep all global assets visible
+    if (!currentWsId && !currentBrand) return true;
+
+    const matchWs = Boolean(
+      (a.workspaceId && currentWsId && (a.workspaceId === currentWsId || a.workspaceId === 'ws_001' || a.workspaceId === 'ws_default'))
+    );
+
+    const matchBrand = Boolean(
+      (a.metadata?.brand && currentBrand && a.metadata.brand.trim().toLowerCase() === currentBrand.trim().toLowerCase())
+    );
+
+    // Keep unbound assets visible
+    const isUnbound = !a.workspaceId && !a.metadata?.brand;
+
+    return matchWs || matchBrand || isUnbound;
   });
 
   const isSameDayAsset = (assetDate, calDate) => {
@@ -317,7 +331,7 @@ export const AssetLibraryModule = () => {
   const sectionCounts = {
     ALL: assets.length,
     BLOG: assets.filter(a => a.type === 'BLOG').length,
-    SOCIAL: assets.filter(a => a.type === 'SOCIAL' || a.type === 'CAROUSEL').length,
+    SOCIAL: assets.filter(a => a.type === 'SOCIAL' || a.type === 'CAROUSEL' || a.type === 'IMAGE').length,
     EMAIL: assets.filter(a => a.type === 'EMAIL' || a.type === 'NEWSPAPER').length,
   };
 
@@ -325,7 +339,7 @@ export const AssetLibraryModule = () => {
     const matchesSection =
       activeSection === 'ALL' ||
       a.type === activeSection ||
-      (activeSection === 'SOCIAL' && (a.type === 'CAROUSEL' || a.type === 'SOCIAL')) ||
+      (activeSection === 'SOCIAL' && (a.type === 'CAROUSEL' || a.type === 'SOCIAL' || a.type === 'IMAGE')) ||
       (activeSection === 'EMAIL' && (a.type === 'NEWSPAPER' || a.type === 'EMAIL'));
 
     const matchesSearch =
@@ -518,7 +532,7 @@ export const AssetLibraryModule = () => {
                   </div>
                 )}
                 <div className="aspect-square rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 relative">
-                  {asset.url && asset.url.startsWith('http') ? (
+                  {asset.url && (asset.url.startsWith('http') || asset.url.startsWith('data:image')) ? (
                     <img src={asset.url} alt={asset.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
