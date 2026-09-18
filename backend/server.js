@@ -967,9 +967,15 @@ app.post('/api/workspace/:id/generate-strategy', async (req, res) => {
     const tagline = workspace.tagline || brandProfile?.structuredIdentity?.tagline || '';
     const positioning = workspace.positioningSummary || brandProfile?.structuredIdentity?.positioning || '';
     const mission = workspace.missionStatement || brandProfile?.structuredIdentity?.mission || '';
-    const pillars = (workspace.contentPillars && workspace.contentPillars.length > 0)
+    const rawPillars = (workspace.contentPillars && workspace.contentPillars.length > 0)
       ? workspace.contentPillars
       : brandProfile?.structuredIdentity?.content_angles || [];
+    const pillars = (Array.isArray(rawPillars) ? rawPillars : [rawPillars]).map(p => {
+      if (!p) return '';
+      if (typeof p === 'string') return p;
+      if (typeof p === 'object') return p.pillar || p.title || p.name || p.focus || JSON.stringify(p);
+      return String(p);
+    }).filter(Boolean);
     const competitors = (workspace.competitorLandscape && workspace.competitorLandscape.length > 0)
       ? workspace.competitorLandscape.join(', ')
       : 'Top industry competitors & alternatives';

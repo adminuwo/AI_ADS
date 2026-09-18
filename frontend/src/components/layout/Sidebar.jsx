@@ -90,20 +90,20 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
       iconBg: 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400'
     },
     { 
-      id: 'strategy', 
-      label: t('strategy', '4. Strategy'), 
-      icon: Target, 
-      color: '#8B5CF6', 
-      gradient: 'from-violet-500 to-purple-600 shadow-violet-500/30',
-      iconBg: 'bg-violet-500/15 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400'
-    },
-    { 
       id: 'campaigns', 
-      label: t('campaigns', '5. Campaigns'), 
+      label: t('campaigns', '4. Campaigns'), 
       icon: Layers, 
       color: '#3B82F6', 
       gradient: 'from-blue-500 to-indigo-600 shadow-blue-500/30',
       iconBg: 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
+    },
+    { 
+      id: 'strategy', 
+      label: t('strategy', '5. Strategy'), 
+      icon: Target, 
+      color: '#8B5CF6', 
+      gradient: 'from-violet-500 to-purple-600 shadow-violet-500/30',
+      iconBg: 'bg-violet-500/15 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400'
     },
     { 
       id: 'calendar', 

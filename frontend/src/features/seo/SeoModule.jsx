@@ -146,8 +146,15 @@ export const SeoModule = () => {
 
   const getDefaultSeed = useCallback(() => {
     const ws = activeWorkspace;
-    if (ws.priorityKeywords?.[0]) return ws.priorityKeywords[0];
-    if (ws.contentPillars?.[0]) return ws.contentPillars[0].split('&')[0].trim();
+    if (ws.priorityKeywords?.[0]) {
+      const pk = ws.priorityKeywords[0];
+      return typeof pk === 'object' && pk !== null ? (pk.keyword || pk.term || pk.name || String(pk)) : String(pk);
+    }
+    if (ws.contentPillars?.[0]) {
+      const p = ws.contentPillars[0];
+      const pStr = typeof p === 'object' && p !== null ? (p.pillar || p.name || p.title || '') : String(p || '');
+      if (pStr) return pStr.split('&')[0].trim();
+    }
     const name = ws.brandName || 'Brand';
     const cat = ws.industryCategory || '';
     const GENERIC_DEFAULTS = ['technology & e-commerce', 'e-commerce', 'general', 'technology', 'consumer & enterprise', ''];
@@ -1218,10 +1225,10 @@ export const SeoModule = () => {
           {/* Floating Action Button */}
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
             <button
-              onClick={() => setActiveModule('strategy')}
+              onClick={() => setActiveModule('campaigns')}
               className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-full font-extrabold text-xs shadow-2xl hover:bg-brand-500 hover:scale-105 active:scale-95 transition-all"
             >
-              <span>Proceed to Strategy Studio</span>
+              <span>Proceed to Campaign Builder</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

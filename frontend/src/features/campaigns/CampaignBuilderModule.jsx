@@ -309,7 +309,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
   useEffect(() => { loadPosts(); }, [loadPosts]);
 
   const handleGenerateStrategyAndGoToPlan = async () => {
-    sessionStorage.setItem('strategyActiveTab', 'plan');
+    sessionStorage.setItem('strategyActiveTab', 'overview');
     if (campaignStrategy) {
       setActiveModule('strategy');
       return;
@@ -325,7 +325,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
           await updateWorkspace(workspaceId, { currentStrategy: result.strategy });
         }
       }
-      sessionStorage.setItem('strategyActiveTab', 'plan');
+      sessionStorage.setItem('strategyActiveTab', 'overview');
       setActiveModule('strategy');
     } catch (err) {
       setError(err.message || 'Failed to generate campaign strategy');

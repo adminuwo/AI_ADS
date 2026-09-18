@@ -64,7 +64,7 @@ const channelColors = {
 
 // Platform icon helper
 const getPlatformIcon = (platform = '') => {
-  const p = platform.toLowerCase();
+  const p = (typeof platform === 'object' && platform !== null ? (platform.name || platform.platform || '') : String(platform || '')).toLowerCase();
   if (p.includes('linkedin')) return Linkedin;
   if (p.includes('instagram') || p.includes('reels')) return Instagram;
   if (p.includes('email') || p.includes('newsletter')) return Mail;
@@ -75,7 +75,7 @@ const getPlatformIcon = (platform = '') => {
 };
 
 const getPlatformColor = (platform = '') => {
-  const p = platform.toLowerCase();
+  const p = (typeof platform === 'object' && platform !== null ? (platform.name || platform.platform || '') : String(platform || '')).toLowerCase();
   if (p.includes('linkedin')) return 'bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-blue-500/20';
   if (p.includes('instagram') || p.includes('reels')) return 'bg-pink-500/15 text-pink-600 dark:text-pink-400 ring-pink-500/20';
   if (p.includes('email') || p.includes('newsletter')) return 'bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-amber-500/20';
@@ -93,10 +93,20 @@ const getWeekLabel = (day) => {
   return 4;
 };
 
+// Safe Pillar extraction helper (handles strings, objects with pillar, name, title)
+export const getPillarTitle = (pillar) => {
+  if (!pillar) return '';
+  if (typeof pillar === 'string') return pillar;
+  if (typeof pillar === 'object') {
+    return pillar.pillar || pillar.name || pillar.title || pillar.label || JSON.stringify(pillar);
+  }
+  return String(pillar);
+};
+
 // Helper to sanitize & format post titles cleanly without trailing '...' or redundant prefixes
 const formatPostTitle = (title, directive) => {
   if (!title) return '';
-  let text = title;
+  let text = typeof title === 'object' ? (title.title || title.topic || JSON.stringify(title)) : String(title);
   // Remove redundant 'Day X (Platform): ' prefix
   text = text.replace(/^Day\s+\d+\s*\([^)]+\):\s*/i, '');
   // Replace trailing '...' or truncated directives with full text
@@ -148,7 +158,10 @@ export const StrategyModule = () => {
   const [isGenerating,  setIsGenerating]  = useState(false);
   const [isSaving,      setIsSaving]      = useState(false);
   const [editingField,  setEditingField]  = useState(null);
-  const [activeTab,     setActiveTab]     = useState(() => sessionStorage.getItem('strategyActiveTab') || 'overview'); // overview | plan | campaigns
+  const [activeTab,     setActiveTab]     = useState(() => {
+    const tab = sessionStorage.getItem('strategyActiveTab');
+    return (tab && tab !== 'plan') ? tab : 'overview';
+  }); // overview | campaigns | custom
   const [showSaveToast, setShowSaveToast] = useState(false);
   const [showRegenToast, setShowRegenToast] = useState(false);
   const [isSavedState,  setIsSavedState]  = useState(false);
@@ -156,7 +169,11 @@ export const StrategyModule = () => {
   useEffect(() => {
     const targetTab = sessionStorage.getItem('strategyActiveTab');
     if (targetTab) {
-      setActiveTab(targetTab);
+      if (targetTab !== 'plan') {
+        setActiveTab(targetTab);
+      } else {
+        setActiveTab('overview');
+      }
       sessionStorage.removeItem('strategyActiveTab');
     }
   }, []);
@@ -423,8 +440,14 @@ export const StrategyModule = () => {
 
   const isLegacyStrategy = (strat) => {
     if (!strat || !strat.thirtyDayPlan || strat.thirtyDayPlan.length < 10) return true;
-    if (strat.campaignIdeas && strat.campaignIdeas.some(c => c.title === 'The Authority Series' || c.title === 'DNA Lead Magnet Launch')) return true;
-    if (strat.thirtyDayPlan.some(d => d.title && (d.title.includes('Key Insights for') || d.title.includes('Day 1: Pillar')))) return true;
+    if (strat.campaignIdeas && strat.campaignIdeas.some(c => {
+      const cTitle = typeof c === 'object' && c !== null ? (c.title || c.name || '') : String(c || '');
+      return cTitle === 'The Authority Series' || cTitle === 'DNA Lead Magnet Launch';
+    })) return true;
+    if (strat.thirtyDayPlan.some(d => {
+      const t = typeof d?.title === 'object' && d?.title !== null ? (d.title?.title || d.title?.topic || '') : String(d?.title || '');
+      return t && (t.includes('Key Insights for') || t.includes('Day 1: Pillar'));
+    })) return true;
     return false;
   };
 
@@ -505,7 +528,8 @@ export const StrategyModule = () => {
 
         const fallbackPlan = Array.from({ length: 30 }, (_, i) => {
           const day = i + 1;
-          const pillar = topics[i % topics.length];
+          const rawPillar = topics[i % topics.length];
+          const pillar = getPillarTitle(rawPillar);
           const platform = platforms[i % platforms.length];
           return {
             day,
@@ -582,7 +606,8 @@ export const StrategyModule = () => {
 
       const generatedPlan = Array.from({ length: days }, (_, i) => {
         const day = i + 1;
-        const pillar = topics[i % topics.length];
+        const rawPillar = topics[i % topics.length];
+        const pillar = getPillarTitle(rawPillar);
         const platform = platforms[i % platforms.length];
         return {
           day,
@@ -597,7 +622,7 @@ export const StrategyModule = () => {
 
       setThirtyDayPlan(generatedPlan);
       setGeneratedDoc(true);
-      setActiveTab('plan');
+      setActiveTab('campaigns');
     } catch (err) {
       console.log('Campaign strategy generation error:', err.message);
     } finally {
@@ -634,10 +659,13 @@ export const StrategyModule = () => {
             const day = i + 1;
             const existing = thirtyDayPlan.find(d => d.day === day);
             if (existing) return existing;
-            const pillar = contentPillars[i % (contentPillars.length || 1)] || 'Product Value';
+            const rawPillar = contentPillars[i % (contentPillars.length || 1)] || 'Product Value';
+            const pillar = getPillarTitle(rawPillar);
+            const bestP = bestPlatforms[i % (bestPlatforms.length || 1)] || 'Instagram';
+            const platformName = typeof bestP === 'object' && bestP !== null ? (bestP.name || bestP.platform || 'Instagram') : String(bestP);
             return {
               day,
-              platform: bestPlatforms[i % (bestPlatforms.length || 1)] || 'Instagram',
+              platform: platformName,
               topic: `Day ${day}: Strategic ${pillar} for ${activeWorkspace?.brandName || 'Brand'}`,
               pillar,
               actionItem: `Publish content showcasing ${pillar} benefits and drive engagement.`
@@ -699,27 +727,42 @@ export const StrategyModule = () => {
   };
 
   // ─── Derived data ─────────────────────────────────────────────────────────
-  const totalPct = channelMix.reduce((s, c) => s + c.pct, 0);
+  const totalPct = channelMix.reduce((s, c) => s + (typeof c?.pct === 'number' ? c.pct : (parseFloat(c?.pct) || 0)), 0) || 100;
 
   const filteredPlan = selectedWeek === 'ALL'
     ? thirtyDayPlan
     : thirtyDayPlan.filter(d => getWeekLabel(d.day) === Number(selectedWeek));
 
+  const getSafeString = (v) => {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'object') return v.goal || v.text || v.title || v.value || JSON.stringify(v);
+    return String(v);
+  };
+
+  const getFunnelDesc = (val) => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object') return val.strategy || val.desc || val.description || Object.values(val).join('; ');
+    return String(val);
+  };
+
   const objectiveCards = [
-    { key: 'businessGoal', label: t('primaryBusinessGoal', 'Primary Business Goal'), sublabel: t('primaryBusinessGoalSub', 'North-star metric for all content strategy'), value: businessGoal, setter: setBusinessGoal, icon: Crosshair, iconBg: 'bg-gradient-to-br from-violet-500 to-indigo-600', tag: 'GOAL', tagColor: 'bg-violet-500/15 text-violet-700 dark:text-violet-300' },
-    { key: 'leadMagnet',   label: t('leadMagnetOffer', 'Lead Magnet / Offer'),   sublabel: t('leadMagnetOfferSub', 'High-value asset to capture qualified leads'),  value: leadMagnet,   setter: setLeadMagnet,   icon: Gift,           iconBg: 'bg-gradient-to-br from-amber-500 to-orange-500',  tag: 'OFFER', tagColor: 'bg-amber-500/15 text-amber-700 dark:text-amber-300' },
-    { key: 'primaryCta',   label: t('primaryCtaTitle', 'Primary CTA'),           sublabel: t('primaryCtaSub', 'Main call-to-action across all touchpoints'),    value: primaryCta,   setter: setPrimaryCta,   icon: MousePointerClick, iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-500', tag: 'CTA',   tagColor: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' },
+    { key: 'businessGoal', label: t('primaryBusinessGoal', 'Primary Business Goal'), sublabel: t('primaryBusinessGoalSub', 'North-star metric for all content strategy'), value: getSafeString(businessGoal), setter: setBusinessGoal, icon: Crosshair, iconBg: 'bg-gradient-to-br from-violet-500 to-indigo-600', tag: 'GOAL', tagColor: 'bg-violet-500/15 text-violet-700 dark:text-violet-300' },
+    { key: 'leadMagnet',   label: t('leadMagnetOffer', 'Lead Magnet / Offer'),   sublabel: t('leadMagnetOfferSub', 'High-value asset to capture qualified leads'),  value: getSafeString(leadMagnet),   setter: setLeadMagnet,   icon: Gift,           iconBg: 'bg-gradient-to-br from-amber-500 to-orange-500',  tag: 'OFFER', tagColor: 'bg-amber-500/15 text-amber-700 dark:text-amber-300' },
+    { key: 'primaryCta',   label: t('primaryCtaTitle', 'Primary CTA'),           sublabel: t('primaryCtaSub', 'Main call-to-action across all touchpoints'),    value: getSafeString(primaryCta),   setter: setPrimaryCta,   icon: MousePointerClick, iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-500', tag: 'CTA',   tagColor: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' },
   ];
 
   const funnelStages = [
-    { label: t('brandAwareness', 'Brand Awareness'), mix: '50%', desc: funnel.awareness,  goal: t('organicTrafficReach', 'Organic Traffic & Reach'), border: 'border-brand-500/40',   bg: 'bg-brand-500/5 dark:bg-brand-500/10',   badge: 'bg-brand-500/15 text-brand-700 dark:text-brand-300',   text: 'text-brand-600 dark:text-brand-400',   bar: 'bg-brand-500',   barW: 'w-[50%]' },
-    { label: t('leadNurturing', 'Lead Nurturing'),  mix: '30%', desc: funnel.nurturing,  goal: t('leadCaptures', 'Lead Captures'),           border: 'border-purple-500/40',  bg: 'bg-purple-500/5 dark:bg-brand-500/10', badge: 'bg-purple-500/15 text-purple-700 dark:text-purple-300', text: 'text-brand-600 dark:text-brand-400', bar: 'bg-purple-500', barW: 'w-[30%]' },
-    { label: t('conversion', 'Conversion'),      mix: '20%', desc: funnel.conversion, goal: t('salesRevenue', 'Sales & Revenue'),         border: 'border-emerald-500/40', bg: 'bg-emerald-500/5 dark:bg-emerald-500/10', badge: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', text: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500', barW: 'w-[20%]' },
+    { label: t('brandAwareness', 'Brand Awareness'), mix: '50%', desc: getFunnelDesc(funnel?.awareness),  goal: t('organicTrafficReach', 'Organic Traffic & Reach'), border: 'border-brand-500/40',   bg: 'bg-brand-500/5 dark:bg-brand-500/10',   badge: 'bg-brand-500/15 text-brand-700 dark:text-brand-300',   text: 'text-brand-600 dark:text-brand-400',   bar: 'bg-brand-500',   barW: 'w-[50%]' },
+    { label: t('leadNurturing', 'Lead Nurturing'),  mix: '30%', desc: getFunnelDesc(funnel?.nurturing),  goal: t('leadCaptures', 'Lead Captures'),           border: 'border-purple-500/40',  bg: 'bg-purple-500/5 dark:bg-brand-500/10', badge: 'bg-purple-500/15 text-purple-700 dark:text-purple-300', text: 'text-brand-600 dark:text-brand-400', bar: 'bg-purple-500', barW: 'w-[30%]' },
+    { label: t('conversion', 'Conversion'),      mix: '20%', desc: getFunnelDesc(funnel?.conversion), goal: t('salesRevenue', 'Sales & Revenue'),         border: 'border-emerald-500/40', bg: 'bg-emerald-500/5 dark:bg-emerald-500/10', badge: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', text: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500', barW: 'w-[20%]' },
   ];
 
   const weekStats = [1,2,3,4].map(w => {
     const days = thirtyDayPlan.filter(d => getWeekLabel(d.day) === w);
-    const fullTheme = days[0]?.topic || days[0]?.theme || days[0]?.title || `Week ${w} Strategy Focus`;
+    const rawTheme = days[0]?.topic || days[0]?.theme || days[0]?.title || `Week ${w} Strategy Focus`;
+    const fullTheme = typeof rawTheme === 'object' && rawTheme !== null ? (rawTheme.topic || rawTheme.title || JSON.stringify(rawTheme)) : String(rawTheme);
     return { week: w, count: days.length, theme: fullTheme };
   });
 
@@ -820,7 +863,7 @@ export const StrategyModule = () => {
                   {t('strategyTitle', 'Marketing Strategy & Roadmap')}
                 </h1>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-semibold">
-                  AI-generated 30-day growth blueprint for{' '}
+                  AI-generated growth blueprint for{' '}
                   <span className="font-black text-brand-600 dark:text-brand-300 px-1.5 py-0.5 rounded-md bg-brand-500/10 border border-brand-500/20">{activeWorkspace.brandName}</span>
                 </p>
                 {activeWorkspace.currentStrategy?.campaignName && (
@@ -844,7 +887,6 @@ export const StrategyModule = () => {
                 {[
                   { id: 'overview',   label: t('overviewTab', 'Overview'),   icon: BarChart2 },
                   { id: 'campaigns',  label: t('campaignsTab', 'Campaigns'),  icon: Megaphone },
-                  { id: 'plan',       label: t('masterStrategyTab', '30 Day Strategy'), icon: Calendar  },
                   ...(customStrategy ? [{ id: 'custom', label: 'Custom Strategy', icon: Sparkles, isCustom: true }] : []),
                 ].map(tab => (
                   <button
@@ -912,7 +954,7 @@ export const StrategyModule = () => {
           </div>
           <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2">Generate Your Master Strategy</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
-            Click "Generate Master Strategy" to get an AI-powered growth blueprint, channel mix, and 30-day content calendar.
+            Click "Generate Master Strategy" to get an AI-powered growth blueprint, channel mix, and actionable campaign roadmap.
           </p>
           <button onClick={handleGenerate} disabled={isGenerating} className="btn-primary text-sm flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl disabled:opacity-50 shadow-lg shadow-brand-500/20 hover:scale-105 active:scale-95 transition-all">
             {isGenerating
@@ -1075,10 +1117,13 @@ export const StrategyModule = () => {
               </div>
               <div className="flex flex-wrap gap-2">
                 {bestPlatforms.map((p, i) => {
-                  const PIcon = getPlatformIcon(p);
+                  const platformName = typeof p === 'object' && p !== null
+                    ? (p.name || p.platform || p.title || `Platform ${i + 1}`)
+                    : String(p || '');
+                  const PIcon = getPlatformIcon(platformName);
                   return (
-                    <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold ring-1 shadow-2xs ${getPlatformColor(p)}`}>
-                      <PIcon className="w-3.5 h-3.5" /> {p}
+                    <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold ring-1 shadow-2xs ${getPlatformColor(platformName)}`}>
+                      <PIcon className="w-3.5 h-3.5" /> {platformName}
                     </span>
                   );
                 })}
@@ -1119,12 +1164,22 @@ export const StrategyModule = () => {
                 <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Budget Strategy</h3>
               </div>
               <div className="space-y-2">
-                {budgetSuggestions.split('/').map((part, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <div className={`mt-1 w-2.5 h-2.5 rounded-full shrink-0 ${i === 0 ? 'bg-brand-500' : 'bg-amber-500'}`} />
-                    <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold leading-snug">{part.trim()}</p>
-                  </div>
-                ))}
+                {(() => {
+                  const parts = typeof budgetSuggestions === 'string'
+                    ? budgetSuggestions.split('/')
+                    : Array.isArray(budgetSuggestions)
+                      ? budgetSuggestions.map(b => typeof b === 'object' ? Object.entries(b).map(([k, v]) => `${k}: ${v}`).join(', ') : String(b))
+                      : typeof budgetSuggestions === 'object' && budgetSuggestions !== null
+                        ? Object.entries(budgetSuggestions).map(([k, v]) => `${k}: ${v}`)
+                        : [String(budgetSuggestions || '')];
+
+                  return parts.map((part, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className={`mt-1 w-2.5 h-2.5 rounded-full shrink-0 ${i === 0 ? 'bg-brand-500' : 'bg-amber-500'}`} />
+                      <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold leading-snug">{String(part).trim()}</p>
+                    </div>
+                  ));
+                })()}
               </div>
             </div>
           </div>
@@ -1138,12 +1193,54 @@ export const StrategyModule = () => {
                 <BookOpen className="w-4 h-4 text-rose-500 dark:text-rose-400" /> Content Pillars
               </h2>
               <div className="grid grid-cols-1 gap-2.5">
-                {contentPillars.map((pillar, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-rose-200/50 dark:border-rose-900/30 text-slate-900 dark:text-white font-bold text-xs shadow-2xs">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-2xs">{i + 1}</div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">{pillar}</span>
-                  </div>
-                ))}
+                {contentPillars.map((pillarItem, i) => {
+                  const isObj = typeof pillarItem === 'object' && pillarItem !== null;
+                  const title = isObj
+                    ? (pillarItem.pillar || pillarItem.name || pillarItem.title || pillarItem.label || `Pillar ${i + 1}`)
+                    : String(pillarItem || '');
+                  const percentage = isObj ? (pillarItem.percentage || pillarItem.pct || null) : null;
+                  const focus = isObj ? (pillarItem.focus || pillarItem.desc || pillarItem.description || null) : null;
+                  const sampleTopics = isObj && Array.isArray(pillarItem.sampleTopics) ? pillarItem.sampleTopics : null;
+
+                  return (
+                    <div key={i} className="p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-rose-200/50 dark:border-rose-900/30 text-slate-900 dark:text-white font-bold text-xs shadow-2xs space-y-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-2xs">
+                            {i + 1}
+                          </div>
+                          <span className="text-xs font-bold text-slate-800 dark:text-white leading-snug">{title}</span>
+                        </div>
+                        {percentage && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 font-extrabold text-[10px] tracking-wide shrink-0 border border-rose-500/20">
+                            {typeof percentage === 'number' ? `${percentage}%` : percentage}
+                          </span>
+                        )}
+                      </div>
+
+                      {focus && (
+                        <p className="text-[11px] font-normal text-slate-600 dark:text-slate-400 pl-10 leading-relaxed">
+                          {typeof focus === 'string' ? focus : JSON.stringify(focus)}
+                        </p>
+                      )}
+
+                      {sampleTopics && sampleTopics.length > 0 && (
+                        <div className="pl-10 flex flex-wrap gap-1.5 pt-0.5">
+                          {sampleTopics.map((topic, tIdx) => {
+                            const topicText = typeof topic === 'object' && topic !== null
+                              ? (topic.topic || topic.title || topic.name || JSON.stringify(topic))
+                              : String(topic);
+                            return (
+                              <span key={tIdx} className="text-[10px] font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/40 dark:border-rose-900/30 px-2 py-0.5 rounded-md">
+                                {topicText}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -1153,12 +1250,39 @@ export const StrategyModule = () => {
                 <Users className="w-4 h-4 text-purple-500 dark:text-purple-400" /> Target Audience
               </h2>
               <div className="grid grid-cols-1 gap-2.5">
-                {(audience.length > 0 ? audience : (activeWorkspace.targetAudience || []).slice(0, 4)).map((persona, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-purple-200/50 dark:border-purple-900/30 text-slate-900 dark:text-white font-bold text-xs shadow-2xs">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-2xs mt-0.5">{i + 1}</div>
-                    <span className="text-xs font-semibold text-slate-800 dark:text-white leading-snug">{persona}</span>
-                  </div>
-                ))}
+                {(audience.length > 0 ? audience : (activeWorkspace.targetAudience || []).slice(0, 4)).map((personaItem, i) => {
+                  const isObj = typeof personaItem === 'object' && personaItem !== null;
+                  const title = isObj
+                    ? (personaItem.persona || personaItem.name || personaItem.segment || personaItem.title || personaItem.role || `Persona ${i + 1}`)
+                    : String(personaItem || '');
+                  const desc = isObj ? (personaItem.painPoints || personaItem.description || personaItem.desc || personaItem.buyingTrigger || null) : null;
+                  const extraTag = isObj ? (personaItem.demographics || personaItem.role || null) : null;
+
+                  return (
+                    <div key={i} className="p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-purple-200/50 dark:border-purple-900/30 text-slate-900 dark:text-white font-bold text-xs shadow-2xs space-y-1.5">
+                      <div className="flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-2xs mt-0.5">
+                          {i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="text-xs font-semibold text-slate-800 dark:text-white leading-snug">{title}</span>
+                            {extraTag && (
+                              <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-300 text-[10px] font-extrabold border border-purple-500/20">
+                                {extraTag}
+                              </span>
+                            )}
+                          </div>
+                          {desc && (
+                            <p className="text-[11px] font-normal text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                              {typeof desc === 'string' ? desc : JSON.stringify(desc)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1257,268 +1381,6 @@ export const StrategyModule = () => {
         </div>
       )}
 
-      {/* ══════════ TAB: 30-DAY PLAN ══════════ */}
-      {generatedDoc && activeTab === 'plan' && (
-        <div className="space-y-5">
-
-          {/* Week Summary Cards */}
-          {thirtyDayPlan.length > 0 && (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {weekStats.map(ws => (
-                  <div
-                    key={ws.week}
-                    onClick={() => setSelectedWeek(selectedWeek === String(ws.week) ? 'ALL' : String(ws.week))}
-                    className={`cursor-pointer p-4 rounded-2xl border transition-all duration-200 ${
-                      selectedWeek === String(ws.week)
-                        ? 'border-brand-500 bg-brand-500/10 dark:bg-brand-500/20 shadow-xs'
-                        : 'border-purple-200/50 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 hover:border-purple-300 backdrop-blur-md'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-300">Week {ws.week}</span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedWeek === String(ws.week) ? 'bg-brand-500/15 text-brand-700 dark:text-brand-300' : 'bg-purple-500/10 text-purple-600 dark:text-purple-300'}`}>{ws.count} days</span>
-                    </div>
-                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-snug line-clamp-2">{ws.theme}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Filter Bar */}
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h2 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-brand-500" />
-                  {selectedWeek === 'ALL' ? '30-Day Marketing Calendar' : `Week ${selectedWeek} Plan`}
-                  <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{filteredPlan.length} days</span>
-                </h2>
-                <div className="flex items-center gap-1.5">
-                  <Filter className="w-3.5 h-3.5 text-slate-400" />
-                  {['ALL','1','2','3','4'].map(w => (
-                    <button
-                      key={w}
-                      onClick={() => setSelectedWeek(w)}
-                      className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all duration-150 ${
-                        selectedWeek === w
-                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
-                          : 'bg-purple-500/8 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-500/15'
-                      }`}
-                    >
-                      {w === 'ALL' ? 'All' : `W${w}`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* 30-Day Plan Grid */}
-          {filteredPlan.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredPlan.map(item => {
-                const PIcon = getPlatformIcon(item.platform);
-                const week = getWeekLabel(item.day);
-                const weekColors = ['from-violet-500 to-indigo-600','from-blue-500 to-cyan-500','from-emerald-500 to-teal-500','from-amber-500 to-orange-500'];
-                return (
-                  <div
-                    key={item.day}
-                    onClick={() => {
-                      const platformRaw = (item.platform || 'instagram').toLowerCase();
-                      const isEmail = platformRaw.includes('email') || platformRaw.includes('newsletter');
-                      const isBlog = platformRaw.includes('blog') || platformRaw.includes('seo') || platformRaw.includes('article');
-                      const type = isEmail ? 'EMAIL' : isBlog ? 'BLOG' : 'SOCIAL';
-                      const platform = isEmail ? 'email' : isBlog ? 'blog' : platformRaw.includes('linkedin') ? 'linkedin' : platformRaw.includes('twitter') ? 'twitter' : 'instagram';
-
-                      const brandName = activeWorkspace?.brandName || 'Brand';
-                      const aspect = platform === 'instagram' ? '1:1' : '16:9';
-                      const fullStrategyPrompt = item.actionItem ? `${item.topic}: ${item.actionItem}` : item.topic;
-                      const imagePrompt = isEmail ? null : `${fullStrategyPrompt} — ${brandName} commercial marketing campaign photography, professional studio lighting, 8k resolution`;
-                      const initialImageUrl = isEmail ? null : resolveBrandVisualAsset({
-                        prompt: imagePrompt,
-                        brandName: brandName,
-                        topic: fullStrategyPrompt,
-                        style: 'Photorealistic Commercial',
-                        aspect: aspect,
-                        variationIndex: item.day || 0
-                      });
-
-                      const payload = {
-                        platform,
-                        type,
-                        postType: isEmail ? 'email' : 'image',
-                        topic: item.topic,
-                        hook: item.topic,
-                        caption: item.actionItem || '',
-                        customPrompt: item.actionItem || '',
-                        strategyPillar: item.topic,
-                        strategyDescription: item.actionItem || '',
-                        calendarDay: item.day,
-                        campaignStage: week === 1 ? 'Awareness' : week === 2 ? 'Consideration' : week === 3 ? 'Engagement' : 'Conversion',
-                        imageUrl: isEmail ? null : initialImageUrl,
-                        imagePrompt: isEmail ? null : imagePrompt,
-                        imageStyle: isEmail ? null : 'Photorealistic Commercial',
-                        imageAspect: isEmail ? null : aspect,
-                      };
-
-                      if (setGeneratedContent) {
-                        setGeneratedContent(payload);
-                      }
-
-                      if (setStudioTarget) {
-                        setStudioTarget({
-                          platform,
-                          topic: item.topic,
-                          customPrompt: item.actionItem || '',
-                          actionItem: item.actionItem || '',
-                          postType: isEmail ? 'email' : 'image',
-                          type,
-                          autoGenerate: true,
-                          generateVisual: !isEmail,
-                          strategyPillar: item.topic,
-                          strategyDescription: item.actionItem || '',
-                          imageUrl: isEmail ? null : initialImageUrl,
-                          imagePrompt: isEmail ? null : imagePrompt,
-                          imageStyle: isEmail ? null : 'Photorealistic Commercial',
-                          imageAspect: isEmail ? null : aspect,
-                        });
-                      }
-
-                      setActiveModule('studio');
-                    }}
-                    className="group relative p-5 rounded-2xl bg-white/80 dark:bg-slate-900/85 border border-purple-200/60 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-md transition-all duration-300 space-y-3 cursor-pointer"
-                  >
-                    {/* Day badge & Action Buttons */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${weekColors[week-1]} flex items-center justify-center shadow-xs text-white text-xs font-extrabold shrink-0`}>
-                          {item.day}
-                        </div>
-                        <div>
-                          <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Day {item.day} · Week {week}</p>
-                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${getPlatformColor(item.platform)}`}>
-                            <PIcon className="w-2.5 h-2.5" />
-                            {item.platform?.split('/')[0]?.trim() || 'Content'}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Action buttons: Regenerate & Draft Post */}
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenRegenDays(prev => ({ ...prev, [item.day]: !prev[item.day] }));
-                          }}
-                          className={`text-[9px] font-bold px-2 py-0.5 rounded-full transition-all flex items-center gap-1 border ${
-                            openRegenDays[item.day]
-                              ? 'bg-brand-500 text-white border-brand-500 shadow-xs'
-                              : 'text-brand-600 dark:text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 border-brand-500/20'
-                          }`}
-                          title="Regenerate strategy content for this card"
-                        >
-                          <Sparkles className="w-2.5 h-2.5" />
-                          <span>Regenerate</span>
-                        </button>
-                        <span className="text-[9px] font-bold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                          Draft Post <ChevronRight className="w-3 h-3" />
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Topic */}
-                    <div>
-                      {loadingRegenDays[item.day] ? (
-                        <div className="flex items-center gap-2 py-1 text-brand-600 dark:text-brand-400">
-                          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                          <span className="text-xs font-semibold animate-pulse">Regenerating strategy content...</span>
-                        </div>
-                      ) : (
-                        <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">{item.topic}</p>
-                      )}
-                    </div>
-
-                    {/* Action item */}
-                    {item.actionItem && !loadingRegenDays[item.day] && (
-                      <div className="flex items-start gap-2 p-2.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/50 dark:border-purple-900/30">
-                        <Play className="w-3 h-3 text-brand-500 shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">{item.actionItem}</p>
-                      </div>
-                    )}
-
-                    {/* Inline Regenerate Input Box */}
-                    {openRegenDays[item.day] && (
-                      <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="mt-3 p-3 rounded-2xl bg-white dark:bg-slate-900/95 border border-brand-500/30 shadow-lg space-y-2 animate-in fade-in zoom-in-95 duration-150"
-                      >
-                        <div className="flex items-center justify-between">
-                          <label className="text-[10px] font-extrabold text-brand-600 dark:text-brand-400 uppercase tracking-wider flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-brand-500" />
-                            Strategy Content Directives
-                          </label>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenRegenDays(prev => ({ ...prev, [item.day]: false }));
-                            }}
-                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-0.5"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            type="text"
-                            value={regenInputs[item.day] || ''}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              setRegenInputs(prev => ({ ...prev, [item.day]: e.target.value }));
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            onKeyDown={(e) => {
-                              e.stopPropagation();
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleRegenerateCardItem(item, e);
-                              }
-                            }}
-                            placeholder="Enter strategy content input (e.g. Focus on family recipe, vintage photo story)..."
-                            className="flex-1 min-w-0 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all"
-                            autoFocus
-                          />
-                          <button
-                            type="button"
-                            disabled={loadingRegenDays[item.day]}
-                            onClick={(e) => handleRegenerateCardItem(item, e)}
-                            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white text-xs font-extrabold transition-all shadow-xs flex items-center gap-1 shrink-0 disabled:opacity-50"
-                          >
-                            {loadingRegenDays[item.day] ? (
-                              <>
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                <span>Generating...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Zap className="w-3 h-3 fill-white" />
-                                <span>Regenerate</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-
-        </div>
-      )}
-
       {/* ══════════ TAB: CAMPAIGNS ══════════ */}
       {activeTab === 'campaigns' && (
         <div className="space-y-5">
@@ -1549,6 +1411,8 @@ export const StrategyModule = () => {
                   'from-blue-500 to-cyan-500',
                   'from-purple-500 to-pink-500',
                 ];
+                const ideaTitle = typeof idea === 'object' && idea !== null ? (idea.title || idea.name || `Campaign Idea ${i+1}`) : String(idea);
+                const ideaDesc = typeof idea === 'object' && idea !== null ? (idea.desc || idea.description || idea.concept || '') : '';
                 return (
                   <div key={i} className="group relative p-6 rounded-2xl bg-white/80 dark:bg-slate-900/85 border border-purple-200/60 dark:border-slate-800 hover:border-purple-400 shadow-sm hover:shadow-md transition-all duration-300 space-y-3">
                     <div className="flex items-start gap-4">
@@ -1560,13 +1424,13 @@ export const StrategyModule = () => {
                           <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Campaign {i+1}</span>
                           <Award className="w-3.5 h-3.5 text-amber-400" />
                         </div>
-                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">{idea.title}</h3>
+                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">{ideaTitle}</h3>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-14">{idea.desc}</p>
+                    {ideaDesc && <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-14">{ideaDesc}</p>}
                     <div className="pl-14 flex items-center gap-2">
                       <button
-                        onClick={() => { setSelectedCampaignIdea(idea); setCampaignDuration('30'); setBuildCampaignModal(true); }}
+                        onClick={() => { setSelectedCampaignIdea({ ...((typeof idea === 'object' && idea !== null) ? idea : {}), title: ideaTitle, desc: ideaDesc }); setCampaignDuration('30'); setBuildCampaignModal(true); }}
                         className="flex items-center gap-1.5 text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline transition-all hover:gap-2"
                       >
                         <ArrowUpRight className="w-3 h-3" /> Build Campaign
@@ -2337,20 +2201,6 @@ export const StrategyModule = () => {
           </div>
         </div>,
         document.body
-      )}
-
-      {/* ══════════ STICKY FLOATING GENERATE CALENDAR BUTTON ══════════ */}
-      {generatedDoc && activeTab === 'plan' && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300 shrink-0">
-          <button 
-            onClick={handleGenerateCalendar}
-            className="flex items-center gap-2.5 px-6 py-3.5 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-2xl shadow-brand-600/40 border border-brand-400/30 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md whitespace-nowrap"
-            title="Generate content calendar events from strategy"
-          >
-            <Calendar className="w-5 h-5 text-white shrink-0" />
-            <span className="tracking-wide">Generate Calendar</span>
-          </button>
-        </div>
       )}
 
     </div>
