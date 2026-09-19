@@ -32,7 +32,7 @@ export const LandingPage = () => {
   }, []);
 
   return (
-    <div className="landing-root min-h-screen bg-[#030712] text-slate-100 selection:bg-indigo-500 selection:text-white relative">
+    <div className="landing-root min-h-screen bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white relative transition-colors duration-300">
       {/* 1. Sticky Navbar */}
       <Navbar />
 

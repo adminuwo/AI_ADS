@@ -1,7 +1,126 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_BASE } from '../config/api';
+import { seoAPI } from '../services/api';
 
-const WorkspaceContext = createContext();
+const DEFAULT_WORKSPACE_CONTEXT = {
+  activeModule: 'dashboard',
+  setActiveModule: () => {},
+  goBack: () => {},
+  canGoBack: false,
+  navigationHistory: [],
+  theme: 'dark',
+  setTheme: () => {},
+  toggleTheme: () => {},
+  user: null,
+  setUser: () => {},
+  loginUser: () => {},
+  logout: () => {},
+  activeRole: 'AgencyAdmin',
+  setActiveRole: () => {},
+  workspaces: [],
+  activeWorkspaceId: '',
+  setActiveWorkspaceId: () => {},
+  activeWorkspace: {
+    id: 'ws_empty',
+    brandName: 'Brand DNA',
+    domainUrl: 'https://',
+    logoUrl: '',
+    brandColors: ['#6366F1', '#8B5CF6'],
+    targetAudience: [],
+    brandVoiceTone: { formalityScore: 3, toneKeywords: [] },
+    competitorLandscape: [],
+    contentPillars: [],
+    socialMediaPresence: [],
+    contactInfo: { email: '', phone: '', location: '' },
+    industryCategory: 'General',
+    missionStatement: '',
+    tagline: '',
+    approvedClaims: [],
+    restrictedClaims: []
+  },
+  addWorkspace: () => {},
+  updateWorkspace: () => {},
+  deleteWorkspace: () => {},
+  credits: { tier: 'Agency', balance: 120, history: [] },
+  deductVisualCredits: () => true,
+  topUpCredits: () => {},
+  approvalsQueue: [],
+  setApprovalsQueue: () => {},
+  updateApprovalStatus: () => {},
+  calendarEvents: [],
+  setCalendarEvents: () => {},
+  addCalendarEvent: () => {},
+  bulkAddCalendarEvents: () => {},
+  globalAssets: [],
+  setGlobalAssets: () => {},
+  addGlobalAsset: () => {},
+  removeGlobalAsset: () => {},
+  isQuickPostOpen: false,
+  setIsQuickPostOpen: () => {},
+  isScraperOpen: false,
+  setIsScraperOpen: () => {},
+  scraperMode: 'website',
+  setScraperMode: () => {},
+  openScraperModal: () => {},
+  isCreditModalOpen: false,
+  setIsCreditModalOpen: () => {},
+  isAISAAssistantOpen: false,
+  setIsAISAAssistantOpen: () => {},
+  notifications: [],
+  setNotifications: () => {},
+  userAvatar: null,
+  setUserAvatar: () => {},
+  customAlert: { isOpen: false, title: '', message: '', type: 'warning' },
+  showCustomAlert: () => {},
+  closeCustomAlert: () => {},
+  toast: { isVisible: false, text: '', type: 'success' },
+  showToast: () => {},
+  closeToast: () => {},
+  isMobileMenuOpen: false,
+  setIsMobileMenuOpen: () => {},
+  isSettingsModalOpen: false,
+  setIsSettingsModalOpen: () => {},
+  activeSettingsTab: 'account',
+  setActiveSettingsTab: () => {},
+  appearance: 'dark',
+  setAppearance: () => {},
+  accentColor: 'default',
+  setAccentColor: () => {},
+  region: 'India',
+  setRegion: () => {},
+  language: 'English',
+  setLanguage: () => {},
+  t: (k, fb = '') => fb || k,
+  multiScheduleReminder: 'Enabled',
+  setMultiScheduleReminder: () => {},
+  notificationPreferences: {},
+  setNotificationPreferences: () => {},
+  dataControlPreferences: {},
+  setDataControlPreferences: () => {},
+  studioTarget: null,
+  setStudioTarget: () => {},
+  generatedContent: null,
+  setGeneratedContent: () => {},
+  generatedPostsTracker: {},
+  markPostAsGenerated: () => {},
+  selectedAssetContext: null,
+  setSelectedAssetContext: () => {},
+  brandDnaData: null,
+  setBrandDnaData: () => {},
+  seoSearchData: null,
+  setSeoSearchData: () => {},
+  seoSearchDataMap: {},
+  isSeoAuditingMap: {},
+  saveSeoDataForWorkspace: () => {},
+  getSeoDataForWorkspace: () => null,
+  runSeoAuditInBackground: async () => ({ success: false }),
+  generatedStrategy: null,
+  setGeneratedStrategy: () => {},
+  sendContentToApprovals: () => {},
+  approveAndSendToCreative: () => {}
+};
+
+const WorkspaceContext = createContext(DEFAULT_WORKSPACE_CONTEXT);
 
 const MODULE_TO_PATH = {
   landing: '/',
@@ -1668,6 +1787,14 @@ export const WorkspaceProvider = ({ children }) => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState('account');
 
+  const [theme, setThemeState] = useState(() => {
+    try {
+      return localStorage.getItem('aisa_theme') || localStorage.getItem('aisa_appearance') || 'dark';
+    } catch (e) {
+      return 'dark';
+    }
+  });
+
   const [appearance, setAppearanceState] = useState(() => {
     try {
       return localStorage.getItem('aisa_appearance') || 'dark';
@@ -1675,6 +1802,55 @@ export const WorkspaceProvider = ({ children }) => {
       return 'dark';
     }
   });
+
+  const setTheme = (val) => {
+    setThemeState(val);
+    setAppearanceState(val);
+    try {
+      localStorage.setItem('aisa_theme', val);
+      localStorage.setItem('aisa_appearance', val);
+    } catch (e) {}
+  };
+
+  const setAppearance = (val) => {
+    setAppearanceState(val);
+    try {
+      localStorage.setItem('aisa_appearance', val);
+    } catch (e) {}
+  };
+
+  const toggleTheme = () => {
+    setThemeState((prev) => {
+      const nextTheme = prev === 'dark' ? 'light' : 'dark';
+      setAppearanceState(nextTheme);
+      try {
+        localStorage.setItem('aisa_theme', nextTheme);
+        localStorage.setItem('aisa_appearance', nextTheme);
+      } catch (e) {}
+      return nextTheme;
+    });
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      let effectiveTheme = appearance;
+      if (appearance === 'system') {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        effectiveTheme = prefersDark ? 'dark' : 'light';
+      } else {
+        effectiveTheme = theme;
+      }
+
+      if (effectiveTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      }
+    }
+  }, [theme, appearance]);
+
 
   const [accentColor, setAccentColorState] = useState(() => {
     try {
@@ -1742,6 +1918,102 @@ export const WorkspaceProvider = ({ children }) => {
   const [seoSearchData, setSeoSearchData] = useState(null);
   const [generatedStrategy, setGeneratedStrategy] = useState(null);
 
+  // Global SEO Intelligence Data Map per Workspace (Persistent across tab & module changes)
+  const [seoSearchDataMap, setSeoSearchDataMap] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aisa_seo_data_map');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+
+  const [isSeoAuditingMap, setIsSeoAuditingMap] = useState({});
+
+  const saveSeoDataForWorkspace = (wsId, dataObj) => {
+    if (!wsId) return;
+    setSeoSearchDataMap(prev => {
+      const updated = { ...prev, [wsId]: dataObj };
+      try {
+        localStorage.setItem('aisa_seo_data_map', JSON.stringify(updated));
+        localStorage.setItem(`aisa_seo_${wsId}`, JSON.stringify(dataObj));
+      } catch (e) {}
+      return updated;
+    });
+    setSeoSearchData(dataObj);
+  };
+
+  const getSeoDataForWorkspace = (wsId) => {
+    if (!wsId) return null;
+    if (seoSearchDataMap[wsId]) return seoSearchDataMap[wsId];
+    try {
+      const raw = localStorage.getItem(`aisa_seo_${wsId}`);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return null;
+  };
+
+  const runSeoAuditInBackground = async ({ wsId, seedKeyword, websiteUrl, brandContext }) => {
+    if (!wsId) return { success: false, error: 'Workspace ID required' };
+    setIsSeoAuditingMap(prev => ({ ...prev, [wsId]: true }));
+    try {
+      const result = await seoAPI.clusterKeywords({
+        seedKeyword: seedKeyword,
+        websiteUrl: websiteUrl || '',
+        ...brandContext,
+        count: 12
+      });
+
+      if (result.success) {
+        const onSite = (result.onSiteKeywords || []).map(k => ({
+          ...k,
+          source: k.source || 'On-Page Content'
+        }));
+        const currentDomain = websiteUrl || '';
+        const rawRankings = result.rankingKeywords || [];
+        const sanitizedRankings = rawRankings.map(k => ({
+          ...k,
+          isVerifiedSerp: Boolean(k.isVerifiedSerp),
+          badge: k.isVerifiedSerp ? 'VERIFIED RANK' : 'RANKING UNVERIFIED',
+          rankingPosition: k.rankingPosition || 'Ranking Unverified'
+        }));
+        const comps = result.competitors || [];
+        const gaps = result.competitorGaps || [];
+        const opps = result.opportunityKeywords || [];
+        const qWins = result.quickWins || [];
+        const clusters = result.keywordClusters || [];
+
+        const existing = getSeoDataForWorkspace(wsId) || {};
+
+        const storagePayload = {
+          ...existing,
+          websiteUrl: websiteUrl || '',
+          seedKeyword: seedKeyword,
+          onSiteKeywords: onSite,
+          rankingKeywords: sanitizedRankings,
+          competitors: comps,
+          competitorGaps: gaps,
+          opportunityKeywords: opps,
+          quickWins: qWins,
+          keywordClusters: clusters,
+          dataIntegritySummary: result.dataIntegritySummary || null,
+          agentsExecutionSummary: result.agentsExecutionSummary || null,
+          generatedAt: new Date().toISOString()
+        };
+
+        saveSeoDataForWorkspace(wsId, storagePayload);
+        return { success: true, payload: storagePayload };
+      } else {
+        throw new Error(result.error || 'Audit returned no data');
+      }
+    } catch (err) {
+      console.error('Background SEO Audit Error:', err);
+      return { success: false, error: err.message };
+    } finally {
+      setIsSeoAuditingMap(prev => ({ ...prev, [wsId]: false }));
+    }
+  };
+
   // Active Generated Content payload shared between Content Studio and Creative Studio
   const [generatedContent, setGeneratedContentState] = useState(() => {
     try {
@@ -1773,12 +2045,7 @@ export const WorkspaceProvider = ({ children }) => {
     allowAnalytics: true,
   });
 
-  const setAppearance = (val) => {
-    setAppearanceState(val);
-    try {
-      localStorage.setItem('aisa_appearance', val);
-    } catch (e) { }
-  };
+
 
   const setAccentColor = (val) => {
     setAccentColorState(val);
@@ -1803,28 +2070,6 @@ export const WorkspaceProvider = ({ children }) => {
       localStorage.setItem('aisa_multi_schedule_reminder', val);
     } catch (e) { }
   };
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    setAppearance(nextTheme);
-  };
-
-  useEffect(() => {
-    let effectiveTheme = appearance;
-    if (appearance === 'system') {
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      effectiveTheme = prefersDark ? 'dark' : 'light';
-    }
-
-    if (effectiveTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    }
-  }, [appearance]);
 
   const ACCENT_COLOR_MAP = {
     default: {
@@ -1942,15 +2187,7 @@ export const WorkspaceProvider = ({ children }) => {
     applyPaletteToCSS(palette);
   }, [accentColor]);
 
-  // Theme & Role
-  const [theme, setTheme] = useState(() => {
-    try {
-      const saved = localStorage.getItem('aisa_theme');
-      return saved || 'dark';
-    } catch (e) {
-      return 'dark';
-    }
-  });
+  // User & Role State
   const [user, setUserState] = useState(() => {
     try {
       const savedName = localStorage.getItem('aisa_user_name');
@@ -2016,15 +2253,7 @@ export const WorkspaceProvider = ({ children }) => {
   };
 
 
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    }
-  }, [theme]);
+
 
   // Workspace & Brand DNA Memory
   // Workspace & Brand DNA Memory - Persistent User State
@@ -2661,7 +2890,7 @@ export const WorkspaceProvider = ({ children }) => {
   return (
     <WorkspaceContext.Provider value={{
       activeModule, setActiveModule, goBack, canGoBack, navigationHistory,
-      theme, toggleTheme,
+      theme, setTheme, toggleTheme,
       user, setUser, loginUser, logout,
       activeRole, setActiveRole,
       workspaces, activeWorkspaceId, setActiveWorkspaceId, activeWorkspace, addWorkspace, updateWorkspace, deleteWorkspace,
@@ -2701,6 +2930,8 @@ export const WorkspaceProvider = ({ children }) => {
       // End-to-End Pipeline State & Actions
       brandDnaData, setBrandDnaData,
       seoSearchData, setSeoSearchData,
+      seoSearchDataMap, isSeoAuditingMap,
+      saveSeoDataForWorkspace, getSeoDataForWorkspace, runSeoAuditInBackground,
       generatedStrategy, setGeneratedStrategy,
       sendContentToApprovals: (payload) => {
         const newItem = {
@@ -2776,4 +3007,7 @@ export const WorkspaceProvider = ({ children }) => {
   );
 };
 
-export const useWorkspace = () => useContext(WorkspaceContext);
+export const useWorkspace = () => {
+  const context = useContext(WorkspaceContext);
+  return context || DEFAULT_WORKSPACE_CONTEXT;
+};

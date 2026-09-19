@@ -15,27 +15,27 @@ export const PipelineSpotlight = () => {
   ];
 
   return (
-    <section className="py-20 bg-slate-900/60 text-slate-100 border-b border-slate-800/60">
+    <section className="py-20 bg-slate-100/60 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-xs font-extrabold text-cyan-300">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-100/80 dark:bg-cyan-950/80 border border-cyan-200 dark:border-cyan-500/30 text-xs font-extrabold text-cyan-800 dark:text-cyan-300 shadow-sm">
             <span>SPOTLIGHT: 2-AGENT VISION ARCHITECTURE</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-white leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
             Two AI agents. One on-brand creative.
           </h2>
-          <p className="text-base sm:text-lg text-slate-400">
+          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
             Our 2-Agent Vision Architecture pairs product reference photos with autonomous prompt synthesis and 8K commercial rendering.
           </p>
         </div>
 
         {/* Visual Flow Diagram */}
-        <div className="rounded-3xl bg-slate-950 border border-slate-800 p-6 sm:p-10 space-y-8 shadow-2xl">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-6">
-            <span className="text-xs font-mono text-slate-400">Pipeline Flow Diagram</span>
-            <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-extrabold border border-emerald-500/30">
+        <div className="rounded-3xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-6 sm:p-10 space-y-8 shadow-xl">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">Pipeline Flow Diagram</span>
+            <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-xs font-extrabold border border-emerald-500/30">
               100% Governed Execution
             </span>
           </div>
@@ -45,12 +45,12 @@ export const PipelineSpotlight = () => {
               const IconComp = node.icon;
               return (
                 <React.Fragment key={idx}>
-                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 text-center flex flex-col items-center justify-center hover:border-slate-700 transition-all">
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 text-center flex flex-col items-center justify-center hover:border-slate-300 dark:hover:border-slate-700 transition-all">
                     <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${node.color}`}>
                       <IconComp className="w-5 h-5" />
                     </div>
-                    <p className="text-xs font-extrabold text-white leading-tight">{node.name}</p>
-                    <p className="text-[10px] font-mono text-slate-400">{node.desc}</p>
+                    <p className="text-xs font-extrabold text-slate-900 dark:text-white leading-tight">{node.name}</p>
+                    <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{node.desc}</p>
                   </div>
                 </React.Fragment>
               );

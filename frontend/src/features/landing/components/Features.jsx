@@ -118,18 +118,18 @@ export const Features = () => {
   ];
 
   return (
-    <section id="features" className="py-20 bg-slate-950 text-slate-100 border-b border-slate-800/60 scroll-mt-20">
+    <section id="features" className="py-20 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 scroll-mt-20 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-extrabold text-indigo-400">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-extrabold text-indigo-600 dark:text-indigo-400 shadow-sm">
             <span>UNIFIED ENGINE CAPABILITIES</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-white leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
             12 Integrated Modules. One Governed Platform.
           </h2>
-          <p className="text-base sm:text-lg text-slate-400">
+          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
             Everything your team needs to scrape brand guidelines, plan 30-day strategies, render 8K ad visual assets, and publish content.
           </p>
         </div>
@@ -142,22 +142,22 @@ export const Features = () => {
               <div
                 key={feat.id}
                 onClick={() => setActiveModule(feat.targetModule)}
-                className="rounded-3xl bg-slate-900/60 border border-slate-800/80 p-6 flex flex-col justify-between space-y-4 hover:border-indigo-500/40 hover:bg-slate-900/90 transition-all duration-300 cursor-pointer group shadow-lg"
+                className="rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 p-6 flex flex-col justify-between space-y-4 hover:border-indigo-400 dark:hover:border-indigo-500/40 hover:bg-slate-50/80 dark:hover:bg-slate-900/90 transition-all duration-300 cursor-pointer group shadow-md"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition-transform">
                       <IconComp className="w-6 h-6" />
                     </div>
-                    <span className="text-[10px] font-extrabold tracking-wider px-2.5 py-1 rounded-full bg-slate-950 text-slate-400 border border-slate-800 font-mono">
+                    <span className="text-[10px] font-extrabold tracking-wider px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 font-mono">
                       {feat.badge}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-indigo-300 transition-colors">
+                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
                     {feat.title}
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     {feat.desc}
                   </p>
                 </div>

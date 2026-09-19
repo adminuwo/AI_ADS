@@ -35,17 +35,18 @@ import { CustomToastContainer } from './components/modals/CustomToastContainer';
 import { PlanGate } from './components/layout/PlanGate';
 
 const MainContent = () => {
+  const workspace = useWorkspace() || {};
   const {
-    activeModule,
-    isAISAAssistantOpen,
-    setIsAISAAssistantOpen,
-    user,
-    loginUser,
-    customAlert,
-    closeCustomAlert,
-    toast,
-    closeToast
-  } = useWorkspace();
+    activeModule = 'landing',
+    isAISAAssistantOpen = false,
+    setIsAISAAssistantOpen = () => {},
+    user = null,
+    loginUser = () => {},
+    customAlert = null,
+    closeCustomAlert = () => {},
+    toast = null,
+    closeToast = () => {}
+  } = workspace;
 
   React.useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });

@@ -40,19 +40,19 @@ export const FAQ = () => {
   };
 
   return (
-    <section id="faq" className="py-20 bg-slate-950 text-slate-100 border-b border-slate-800/60 scroll-mt-20">
+    <section id="faq" className="py-20 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 scroll-mt-20 transition-colors duration-300">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Section Header */}
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-extrabold text-cyan-400">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-extrabold text-cyan-600 dark:text-cyan-400 shadow-sm">
             <HelpCircle className="w-4 h-4" />
             <span>FREQUENTLY ASKED QUESTIONS</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black font-['Outfit'] tracking-tight text-white leading-tight">
+          <h2 className="text-3xl sm:text-4xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
             Everything You Need to Know
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
             Clear, honest answers about our platform, credit models, data governance, and pricing.
           </p>
         </div>
@@ -67,17 +67,17 @@ export const FAQ = () => {
             return (
               <div 
                 key={idx}
-                className="rounded-2xl bg-slate-900/60 border border-slate-800/80 overflow-hidden hover:border-slate-700 transition-all"
+                className="rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm"
               >
                 <button
                   id={headerId}
                   aria-expanded={isOpen}
                   aria-controls={contentId}
                   onClick={() => toggleAccordion(idx)}
-                  className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-white hover:text-indigo-300 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-2xl"
+                  className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-2xl"
                 >
                   <span>{faq.q}</span>
-                  <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180 text-indigo-400' : ''}`} />
+                  <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180 text-indigo-600 dark:text-indigo-400' : ''}`} />
                 </button>
 
                 {isOpen && (
@@ -85,7 +85,7 @@ export const FAQ = () => {
                     id={contentId}
                     role="region"
                     aria-labelledby={headerId}
-                    className="px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/60 pt-4 animate-in fade-in duration-200"
+                    className="px-5 pb-5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed border-t border-slate-200 dark:border-slate-800/60 pt-4 animate-in fade-in duration-200"
                   >
                     {faq.a}
                   </div>
@@ -97,11 +97,11 @@ export const FAQ = () => {
 
         {/* Bottom Contact CTA */}
         <div className="text-center pt-4">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-600 dark:text-slate-400">
             Have a question not answered here?{' '}
             <button
               onClick={() => setActiveModule('login')}
-              className="text-indigo-400 hover:underline font-bold cursor-pointer"
+              className="text-indigo-600 dark:text-indigo-400 hover:underline font-bold cursor-pointer"
             >
               Contact our platform support
             </button>

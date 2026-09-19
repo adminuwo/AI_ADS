@@ -99,7 +99,20 @@ const Toast = ({ message, type = 'error', onClose }) => {
 };
 
 export const SeoModule = () => {
-  const { activeWorkspace, setActiveModule, seoSearchData, setSeoSearchData, t } = useWorkspace();
+  const { 
+    activeWorkspace, 
+    setActiveModule, 
+    seoSearchData, 
+    setSeoSearchData,
+    seoSearchDataMap,
+    isSeoAuditingMap,
+    saveSeoDataForWorkspace,
+    getSeoDataForWorkspace,
+    runSeoAuditInBackground,
+    t 
+  } = useWorkspace();
+
+  const wsId = activeWorkspace?._id || activeWorkspace?.id || activeWorkspace?.brandName || 'ws_default';
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [seedKeyword, setSeedKeyword] = useState('');
   const [intent, setIntent] = useState('Commercial');
@@ -111,6 +124,8 @@ export const SeoModule = () => {
   const [copiedIdx, setCopiedIdx] = useState(null);
   const [toast, setToast] = useState(null);
   const [initialized, setInitialized] = useState(false);
+
+  const isAuditing = clusterLoading || Boolean(isSeoAuditingMap[wsId]);
 
   // Tab View Controls
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'onSite' | 'rankings' | 'competitors' | 'opportunities' | 'clusters'
@@ -164,11 +179,8 @@ export const SeoModule = () => {
   };
 
   const saveSeoData = useCallback((dataObj) => {
-    const wsId = activeWorkspace._id || activeWorkspace.id || activeWorkspace.brandName;
-    const storageKey = `aisa_seo_${wsId}`;
-    if (setSeoSearchData) setSeoSearchData(dataObj);
-    try { localStorage.setItem(storageKey, JSON.stringify(dataObj)); } catch (e) { }
-  }, [activeWorkspace, setSeoSearchData]);
+    saveSeoDataForWorkspace(wsId, dataObj);
+  }, [wsId, saveSeoDataForWorkspace]);
 
   // Generate Technical SEO Blueprint for selected keyword
   const handleGenerateBrief = async (targetKw, targetIntent) => {
@@ -192,6 +204,13 @@ export const SeoModule = () => {
       if (res.success && res.brief) {
         setBrief(res.brief);
         showToast(`Technical SEO Blueprint synthesized for "${kw}"`, 'success');
+
+        const currentData = getSeoDataForWorkspace(wsId) || {};
+        saveSeoDataForWorkspace(wsId, {
+          ...currentData,
+          brief: res.brief,
+          selectedKeyword: kw
+        });
       } else {
         throw new Error(res.error || 'Blueprint generation failed');
       }
@@ -204,76 +223,45 @@ export const SeoModule = () => {
     }
   };
 
-  // Run full Multi-Agent Live Audit
+  // Run full Multi-Agent Live Audit (Runs globally in background)
   const handleRunMultiAgentAudit = async (seed) => {
     const kw = seed || seedKeyword || getDefaultSeed();
+    const targetUrl = websiteUrl || activeWorkspace.domainUrl || activeWorkspace.website || '';
     setClusterLoading(true);
 
     try {
       const ctx = getBrandContext();
-      const result = await seoAPI.clusterKeywords({
+      const res = await runSeoAuditInBackground({
+        wsId,
         seedKeyword: kw,
-        websiteUrl: websiteUrl || activeWorkspace.domainUrl || activeWorkspace.website || '',
-        ...ctx,
-        count: 12
+        websiteUrl: targetUrl,
+        brandContext: ctx
       });
 
-      if (result.success) {
-        const onSite = (result.onSiteKeywords || []).map(k => ({
+      if (res && res.success && res.payload) {
+        const payload = res.payload;
+        const sanitizedOnSite = (payload.onSiteKeywords || []).map(k => ({
           ...k,
           source: formatCleanSource(k.source)
         }));
-        const currentDomain = websiteUrl || activeWorkspace.domainUrl || '';
-        const rawRankings = result.rankingKeywords || [];
-        const sanitizedRankings = rawRankings.map(k => {
-          const isVerified = isExactGoogleGroundingPosition(k, currentDomain);
-          return {
-            ...k,
-            isVerifiedSerp: isVerified,
-            badge: isVerified ? 'VERIFIED RANK' : 'RANKING UNVERIFIED',
-            rankingPosition: isVerified ? k.rankingPosition : 'Ranking Unverified'
-          };
-        });
-        const comps = result.competitors || [];
-        const gaps = result.competitorGaps || [];
-        const opps = result.opportunityKeywords || [];
-        const qWins = result.quickWins || [];
-        const clusters = result.keywordClusters || [];
-
-        setOnSiteKeywords(onSite);
-        setRankingKeywords(sanitizedRankings);
-        setCompetitors(comps);
-        setCompetitorGaps(gaps);
-        setOpportunityKeywords(opps);
-        setQuickWins(qWins);
-        setKeywordClusters(clusters);
+        setOnSiteKeywords(sanitizedOnSite);
+        setRankingKeywords(payload.rankingKeywords || []);
+        setCompetitors(payload.competitors || []);
+        setCompetitorGaps(payload.competitorGaps || []);
+        setOpportunityKeywords(payload.opportunityKeywords || []);
+        setQuickWins(payload.quickWins || []);
+        setKeywordClusters(payload.keywordClusters || []);
         setSeedKeyword(kw);
-        setAgentSummary(result.agentsExecutionSummary || null);
-        setDataIntegrity(result.dataIntegritySummary || null);
+        setAgentSummary(payload.agentsExecutionSummary || null);
+        setDataIntegrity(payload.dataIntegritySummary || null);
         setInitialized(true);
 
-        const storagePayload = {
-          websiteUrl: websiteUrl || activeWorkspace.domainUrl || '',
-          seedKeyword: kw,
-          onSiteKeywords: onSite,
-          rankingKeywords: rankings,
-          competitors: comps,
-          competitorGaps: gaps,
-          opportunityKeywords: opps,
-          quickWins: qWins,
-          keywordClusters: clusters,
-          dataIntegritySummary: result.dataIntegritySummary || null,
-          brief
-        };
-        saveSeoData(storagePayload);
+        showToast(`Audit Complete: ${sanitizedOnSite.length} On-Page, ${(payload.rankingKeywords || []).length} SERP, ${(payload.competitorGaps || []).length} Gaps, ${(payload.opportunityKeywords || []).length} Opportunities`, 'success');
 
-        showToast(`Audit Complete: ${onSite.length} On-Page, ${rankings.length} SERP, ${gaps.length} Gaps, ${opps.length} Opportunities`, 'success');
-
-        // Auto-generate brief for first top opportunity or seed
-        const firstKw = opps[0]?.term || onSite[0]?.term || kw;
+        const firstKw = payload.opportunityKeywords?.[0]?.term || sanitizedOnSite[0]?.term || kw;
         handleGenerateBrief(firstKw, intent);
       } else {
-        throw new Error('Pipeline returned no data');
+        throw new Error(res?.error || 'Pipeline returned no data');
       }
     } catch (err) {
       console.error('Multi-Agent audit failed:', err);
@@ -283,54 +271,37 @@ export const SeoModule = () => {
     }
   };
 
-  // Load from workspace / cache on mount
+  // Load from workspace / cache on mount or when global data updates
   useEffect(() => {
-    const ws = activeWorkspace;
+    const ws = activeWorkspace || {};
     const initialUrl = ws.domainUrl || ws.website || '';
     setWebsiteUrl(initialUrl);
 
-    const wsId = ws._id || ws.id || ws.brandName;
-    const storageKey = `aisa_seo_${wsId}`;
-    let cached = null;
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) cached = JSON.parse(raw);
-    } catch (e) { }
+    const currentWsId = ws._id || ws.id || ws.brandName || 'ws_default';
+    const cached = getSeoDataForWorkspace(currentWsId);
 
-    if (cached && (cached.onSiteKeywords?.length > 0 || cached.keywordsList?.length > 0)) {
-      const rawCachedRankings = cached.rankingKeywords || [];
-      const sanitizedCachedRankings = rawCachedRankings.map(k => {
-        const isVerified = isExactGoogleGroundingPosition(k);
-        const posStr = isVerified
-          ? (k.rankingPosition && k.rankingPosition.startsWith('Verified ') ? k.rankingPosition : `Verified ${k.rankingPosition || 'Position #1'}`)
-          : 'Ranking Unverified';
-        return {
-          ...k,
-          isVerifiedSerp: isVerified,
-          badge: isVerified ? 'VERIFIED RANK' : 'RANKING UNVERIFIED',
-          rankingPosition: posStr
-        };
-      });
-      const sanitizedOnSite = (cached.onSiteKeywords || cached.keywordsList || []).map(k => ({
+    if (cached && (cached.onSiteKeywords?.length > 0 || cached.rankingKeywords?.length > 0 || cached.competitorGaps?.length > 0)) {
+      const sanitizedOnSite = (cached.onSiteKeywords || []).map(k => ({
         ...k,
         source: formatCleanSource(k.source)
       }));
       setSeedKeyword(cached.seedKeyword || getDefaultSeed());
       setOnSiteKeywords(sanitizedOnSite);
-      setRankingKeywords(sanitizedCachedRankings);
+      setRankingKeywords(cached.rankingKeywords || []);
       setCompetitors(cached.competitors || []);
       setCompetitorGaps(cached.competitorGaps || []);
       setOpportunityKeywords(cached.opportunityKeywords || []);
       setQuickWins(cached.quickWins || []);
       setKeywordClusters(cached.keywordClusters || []);
       if (cached.dataIntegritySummary) setDataIntegrity(cached.dataIntegritySummary);
+      if (cached.agentsExecutionSummary) setAgentSummary(cached.agentsExecutionSummary);
       if (cached.brief) setBrief(cached.brief);
       setInitialized(true);
     } else {
       const defaultSeed = getDefaultSeed();
       setSeedKeyword(defaultSeed);
     }
-  }, [activeWorkspace._id || activeWorkspace.id || activeWorkspace.brandName]);
+  }, [activeWorkspace?._id || activeWorkspace?.id || activeWorkspace?.brandName || 'ws_default', seoSearchDataMap]);
 
   const totalAnalyzedKeywords = onSiteKeywords.length + rankingKeywords.length + competitorGaps.length + opportunityKeywords.length;
 
@@ -436,12 +407,12 @@ export const SeoModule = () => {
           <div className="md:col-span-1 flex">
             <button
               onClick={() => handleRunMultiAgentAudit(seedKeyword)}
-              disabled={clusterLoading}
-              className="w-full btn-primary px-3 py-2.5 text-xs font-bold whitespace-nowrap shadow-lg shadow-brand-500/20 flex items-center justify-center gap-1.5"
+              disabled={isAuditing}
+              className="w-full btn-primary px-3 py-2.5 text-xs font-bold whitespace-nowrap shadow-lg shadow-brand-500/20 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
               title="Crawl live URL and analyze SERP rankings"
             >
-              {clusterLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-              <span>{clusterLoading ? '...' : 'Audit'}</span>
+              {isAuditing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+              <span>{isAuditing ? '...' : 'Audit'}</span>
             </button>
           </div>
         </div>
@@ -525,15 +496,33 @@ export const SeoModule = () => {
         )}
       </div>
 
-      {/* Main Empty / Launch Screen */}
-      {!initialized ? (
-        <div className="text-center py-16 px-6 rounded-3xl glass-card border border-dashed border-slate-200 dark:border-slate-800 max-w-2xl mx-auto space-y-4">
+      {/* Main Empty / Loading / Launch Screen */}
+      {isAuditing ? (
+        <div className="text-center py-16 px-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 max-w-2xl mx-auto space-y-4 shadow-xl">
           <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 flex items-center justify-center mx-auto text-cyan-500 border border-cyan-500/20 shadow-lg">
-            {clusterLoading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Search className="w-8 h-8" />}
+            <Loader2 className="w-8 h-8 animate-spin" />
           </div>
           <div className="space-y-1 max-w-md mx-auto">
             <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-              {clusterLoading ? 'Autonomous SEO Agents Crawling...' : 'Enter Website URL to Launch Intelligence Audit'}
+              Autonomous SEO Agents Crawling...
+            </h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Crawls live HTML tags, discovers verified Google SERP rankings, detects real competitors, and calculates exact keyword gaps.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-brand-500 text-white font-extrabold text-xs shadow-lg">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Orchestrating Audit in Background...</span>
+          </div>
+        </div>
+      ) : !initialized ? (
+        <div className="text-center py-16 px-6 rounded-3xl glass-card border border-dashed border-slate-200 dark:border-slate-800 max-w-2xl mx-auto space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 flex items-center justify-center mx-auto text-cyan-500 border border-cyan-500/20 shadow-lg">
+            <Search className="w-8 h-8" />
+          </div>
+          <div className="space-y-1 max-w-md mx-auto">
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+              Enter Website URL to Launch Intelligence Audit
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
               Crawls live HTML tags, discovers verified Google SERP rankings, detects real competitors, and calculates exact keyword gaps.
@@ -541,10 +530,10 @@ export const SeoModule = () => {
           </div>
           <button
             onClick={() => handleRunMultiAgentAudit(seedKeyword || getDefaultSeed())}
-            disabled={clusterLoading}
-            className="btn-primary text-xs px-6 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20"
+            disabled={isAuditing}
+            className="btn-primary text-xs px-6 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
           >
-            {clusterLoading ? 'Orchestrating Audit...' : 'Run Verified SEO Analysis'}
+            Run Verified SEO Analysis
           </button>
         </div>
       ) : (
@@ -1218,10 +1207,10 @@ export const SeoModule = () => {
           {/* Floating Action Button */}
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
             <button
-              onClick={() => setActiveModule('strategy')}
+              onClick={() => setActiveModule('campaigns')}
               className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-full font-extrabold text-xs shadow-2xl hover:bg-brand-500 hover:scale-105 active:scale-95 transition-all"
             >
-              <span>Proceed to Strategy Studio</span>
+              <span>Proceed to Campaign</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

@@ -33,18 +33,18 @@ export const Governance = () => {
   ];
 
   return (
-    <section className="py-20 bg-slate-950 text-slate-100 border-b border-slate-800/60">
+    <section className="py-20 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-extrabold text-emerald-400">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/80 dark:bg-slate-900 border border-emerald-200 dark:border-slate-800 text-xs font-extrabold text-emerald-800 dark:text-emerald-400 shadow-sm">
             <span>ENTERPRISE GOVERNANCE & BRAND SAFETY</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-white leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
             Built for agencies. Safe for brands.
           </h2>
-          <p className="text-base sm:text-lg text-slate-400">
+          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
             Maintain strict control over brand reputation with built-in human-in-the-loop gates and multi-tenant security.
           </p>
         </div>
@@ -56,16 +56,16 @@ export const Governance = () => {
             return (
               <div 
                 key={idx}
-                className="rounded-3xl bg-slate-900/60 border border-slate-800/80 p-8 space-y-4 hover:border-indigo-500/30 transition-all shadow-xl flex items-start gap-5"
+                className="rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 p-8 space-y-4 hover:border-indigo-300 dark:hover:border-indigo-500/30 transition-all shadow-lg flex items-start gap-5"
               >
-                <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0">
                   <IconComp className={`w-6 h-6 ${p.color}`} />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-extrabold text-white font-['Outfit']">
+                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white font-['Outfit']">
                     {p.title}
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     {p.desc}
                   </p>
                 </div>
