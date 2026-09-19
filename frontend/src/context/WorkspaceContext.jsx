@@ -4,8 +4,8 @@ import { API_BASE } from '../config/api';
 const WorkspaceContext = createContext();
 
 const MODULE_TO_PATH = {
-  landing: '/landing-page',
-  landingpage: '/landing-page',
+  landing: '/',
+  landingpage: '/',
   login: '/sign-in-create-account',
   signin: '/sign-in-create-account',
   register: '/sign-in-create-account',

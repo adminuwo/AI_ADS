@@ -146,16 +146,25 @@ export const Login = ({ onLoginSuccess }) => {
 
         {/* Brand Header */}
         <div className="text-center mb-7 flex flex-col items-center justify-center">
-          <div className="flex items-center justify-center gap-3.5">
-            <img src="/logo.png" alt="AI Ads™ Logo" className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 drop-shadow-md" />
+          <div className="flex flex-col items-center justify-center gap-3">
+            <img 
+              src="/logo_transparent.png?v=9" 
+              alt="AI Ads™ Logo" 
+              className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 object-contain shrink-0 drop-shadow-xl transition-transform hover:scale-105" 
+              onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png?v=9'; }}
+            />
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight flex items-center justify-center">
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 bg-clip-text text-transparent leading-none">
+              <span className="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500 bg-clip-text text-transparent leading-none">
                 AI Ads
               </span>
-              <sup className="text-sm font-extrabold text-cyan-400 ml-1 font-sans -mt-3 select-none">TM</sup>
+              <sup className="text-xs sm:text-sm font-extrabold text-amber-500 ml-1.5 font-sans -mt-3 select-none flex items-center gap-0.5">
+                <span className="w-2 h-[1.5px] bg-amber-400/60 rounded-full inline-block"></span>
+                TM
+                <span className="w-2 h-[1.5px] bg-amber-400/60 rounded-full inline-block"></span>
+              </sup>
             </h1>
           </div>
-          <p className="text-slate-500 text-sm mt-2 font-medium">
+          <p className="text-slate-500 text-sm mt-2.5 font-medium">
             {mode === 'login' ? 'Sign in to your workspace' : 'Create your enterprise workspace account'}
           </p>
         </div>

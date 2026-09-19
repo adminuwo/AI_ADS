@@ -30,10 +30,10 @@
     "multer": "^2.2.0",
     "node-vibrant": "^4.0.4",
     "nodemailer": "^9.0.5",
-
     "officeparser": "^7.5.0",
     "openai": "^7.1.0",
     "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.20.2",
     "puppeteer": "^25.9.0",
     "socket.io": "^4.8.3",
     "uuid": "^14.0.1"
