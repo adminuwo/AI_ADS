@@ -23,7 +23,9 @@ import {
   User,
   ChevronUp,
   Lock,
-  Sparkles
+  Sparkles,
+  PanelLeftClose,
+  PanelLeft
 } from 'lucide-react';
 
 export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: propSetIsMobile }) => {
@@ -47,8 +49,28 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileCardRef = useRef(null);
 
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('aisa_sidebar_collapsed') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
   const isMobileMenuOpen = propIsMobile !== undefined ? propIsMobile : contextIsMobile;
   const setIsMobileMenuOpen = propSetIsMobile || contextSetIsMobile;
+
+  const toggleSidebar = () => {
+    if (window.innerWidth < 1024) {
+      if (setIsMobileMenuOpen) setIsMobileMenuOpen(!isMobileMenuOpen);
+    } else {
+      setIsCollapsed(prev => {
+        const next = !prev;
+        try { localStorage.setItem('aisa_sidebar_collapsed', String(next)); } catch (e) {}
+        return next;
+      });
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -184,31 +206,48 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
         />
       )}
 
-      <aside className={`h-screen bg-gradient-to-b from-slate-50/95 via-purple-50/40 to-slate-50/95 dark:from-[#0b0f19] dark:via-[#131127] dark:to-[#0b0f19] backdrop-blur-xl border-r border-purple-200/50 dark:border-slate-800/80 shadow-[8px_0_30px_rgba(139,92,246,0.08)] dark:shadow-[8px_0_30px_rgba(0,0,0,0.4)] flex flex-col justify-between transition-all duration-300 z-50 fixed lg:sticky top-0 left-0 w-64 select-none ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`h-screen bg-gradient-to-b from-slate-50/95 via-purple-50/40 to-slate-50/95 dark:from-[#0b0f19] dark:via-[#131127] dark:to-[#0b0f19] backdrop-blur-xl border-r border-purple-200/50 dark:border-slate-800/80 shadow-[8px_0_30px_rgba(139,92,246,0.08)] dark:shadow-[8px_0_30px_rgba(0,0,0,0.4)] flex flex-col justify-between transition-all duration-300 z-50 fixed lg:sticky top-0 left-0 select-none ${isCollapsed ? 'w-20' : 'w-64'} ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl w-64' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="flex flex-col h-full overflow-hidden">
           {/* Top Header / Logo */}
-          <div className="h-20 flex items-center justify-between px-3.5 sm:px-4 shrink-0 border-b border-purple-100/50 dark:border-slate-800/60 bg-white/70 dark:bg-[#070b19]/80 backdrop-blur-xl relative">
+          <div className={`h-20 flex items-center ${isCollapsed ? 'justify-center px-2' : 'justify-between px-3 sm:px-4'} shrink-0 border-b border-purple-100/50 dark:border-slate-800/60 bg-white/70 dark:bg-[#070b19]/80 backdrop-blur-xl relative`}>
             <div className="absolute top-0 left-0 right-0 h-[3px] panch-tattva-ribbon z-40" />
-            <div className="flex items-center gap-2.5 min-w-0 pt-1.5 sm:pt-2">
+            <div 
+              onClick={toggleSidebar}
+              className={`flex items-center ${isCollapsed ? 'justify-center w-full h-full py-2' : 'gap-2.5 min-w-0 pt-1.5 sm:pt-2 flex-1'} cursor-pointer group select-none transition-all active:scale-95`}
+              title={isCollapsed ? "Click logo to expand sidebar (Open)" : "Click logo to collapse sidebar (Close)"}
+            >
               <img 
                 src="/logo_icon_only.png?v=10" 
                 alt="AI ADS™ Logo" 
-                className="w-14 h-14 sm:w-[58px] sm:h-[58px] 2xl:w-[62px] 2xl:h-[62px] object-contain shrink-0 drop-shadow-md dark:drop-shadow-[0_0_14px_rgba(255,255,255,0.3)] transition-transform hover:scale-105" 
+                className={`${isCollapsed ? 'w-11 h-11 sm:w-12 sm:h-12' : 'w-13 h-13 sm:w-[54px] sm:h-[54px]'} object-contain shrink-0 drop-shadow-md dark:drop-shadow-[0_0_14px_rgba(255,255,255,0.4)] transition-transform group-hover:scale-110`} 
                 onError={(e) => { e.target.onerror = null; e.target.src = '/logo_transparent.png?v=10'; }}
               />
-              <div className="flex items-center font-black text-xl sm:text-2xl tracking-tight leading-none min-w-0">
-                <span className="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500 bg-clip-text text-transparent drop-shadow-xs truncate">
-                  AI Ads
-                </span>
-                <sup className="text-[9px] sm:text-[9.5px] font-extrabold text-amber-500 ml-1 font-sans -mt-2.5 select-none bg-amber-400/15 border border-amber-400/30 px-1 rounded-md shrink-0">TM</sup>
-              </div>
+              {!isCollapsed && (
+                <div className="flex items-center font-black text-xl sm:text-2xl tracking-tight leading-none min-w-0">
+                  <span className="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500 bg-clip-text text-transparent drop-shadow-xs truncate">
+                    AI Ads
+                  </span>
+                  <sup className="text-[9px] sm:text-[9.5px] font-extrabold text-amber-500 ml-1 font-sans -mt-2.5 select-none bg-amber-400/15 border border-amber-400/30 px-1 rounded-md shrink-0">TM</sup>
+                </div>
+              )}
             </div>
+
+            {/* Desktop collapse indicator button (Visible when expanded) */}
+            {!isCollapsed && (
+              <button 
+                onClick={toggleSidebar}
+                className="hidden lg:flex p-1.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 transition-all cursor-pointer shrink-0 ml-1"
+                title="Collapse Sidebar (Close)"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
+            )}
 
             {/* Mobile close button */}
             {isMobileMenuOpen && (
               <button 
                 onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(false)}
-                className="lg:hidden p-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-all"
+                className="lg:hidden p-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
                 title="Close Navigation Menu"
               >
                 <X className="w-4 h-4" />
@@ -217,7 +256,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
           </div>
 
           {/* Clean Navigation Item List (Seamless vertical flow, no lower empty gaps) */}
-          <nav className="px-3 pt-2.5 pb-2 flex-1 flex flex-col justify-start overflow-y-auto lg:overflow-hidden hover:lg:overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <nav className="px-2 pt-2.5 pb-2 flex-1 flex flex-col justify-start overflow-y-auto lg:overflow-hidden hover:lg:overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <div className="space-y-1.5 2xl:space-y-2">
               {modules.map((m) => {
                 const Icon = m.icon;
@@ -230,7 +269,8 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                   <button
                     key={m.id}
                     onClick={() => handleNavClick(m.id)}
-                    className={`w-full relative flex items-center justify-between px-3 py-1.5 2xl:py-2 rounded-xl text-[12.5px] 2xl:text-[13px] transition-all duration-200 text-left group ${
+                    title={m.label}
+                    className={`w-full relative flex items-center ${isCollapsed ? 'justify-center px-2 py-2' : 'justify-between px-3 py-1.5 2xl:py-2'} rounded-xl text-[12.5px] 2xl:text-[13px] transition-all duration-200 text-left group ${
                       isActive 
                         ? `bg-gradient-to-r ${m.gradient} text-white font-bold shadow-md scale-[1.01]` 
                         : 'bg-white/70 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800/90 border border-slate-200/50 dark:border-slate-800/60 shadow-2xs hover:shadow-sm hover:border-purple-200 dark:hover:border-purple-800/50 hover:translate-x-0.5 font-semibold'
@@ -244,33 +284,35 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                       }`}>
                         <Icon className="w-4 h-4" style={!isActive && m.color !== 'spectrum' ? { color: m.color } : {}} />
                       </div>
-                      <span className="truncate">{m.label}</span>
+                      {!isCollapsed && <span className="truncate">{m.label}</span>}
                     </div>
 
-                    <div className="flex items-center gap-1 shrink-0">
-                      {isModuleLocked && (
-                        <span className={`flex items-center gap-0.5 text-[8.5px] 2xl:text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 ml-1 shadow-2xs ${
-                          isActive
-                            ? 'bg-white/25 text-white border border-white/40 backdrop-blur-xs'
-                            : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-                        }`}>
-                          <Lock className="w-2.5 h-2.5" />
-                          <span>PRO</span>
-                        </span>
-                      )}
-                    </div>
+                    {!isCollapsed && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        {isModuleLocked && (
+                          <span className={`flex items-center gap-0.5 text-[8.5px] 2xl:text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 ml-1 shadow-2xs ${
+                            isActive
+                              ? 'bg-white/25 text-white border border-white/40 backdrop-blur-xs'
+                              : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                          }`}>
+                            <Lock className="w-2.5 h-2.5" />
+                            <span>PRO</span>
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </button>
                 );
               })}
             </div>
 
             {/* Horizontal Action Buttons: PLAN & SETTINGS (Flows seamlessly below 11th module) */}
-            <div className="mt-2.5 2xl:mt-3.5 pt-2 pb-0.5 px-0.5 flex items-center gap-2.5 shrink-0 border-t border-purple-100/50 dark:border-slate-800/50">
+            <div className={`mt-2.5 2xl:mt-3.5 pt-2 pb-0.5 px-0.5 flex items-center ${isCollapsed ? 'flex-col gap-2' : 'gap-2.5'} shrink-0 border-t border-purple-100/50 dark:border-slate-800/50`}>
               {/* PLAN */}
               <button
                 key="plan_btn"
                 onClick={() => handleNavClick('plan')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition-all duration-200 shadow-2xs cursor-pointer ${
+                className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all duration-200 shadow-2xs cursor-pointer ${
                   activeModule === 'settings' && activeSettingsTab === 'billing'
                     ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-emerald-500/30 font-extrabold'
                     : 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 dark:border-emerald-500/30'
@@ -278,14 +320,14 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 title={t('plan', 'Subscription & Billing Plan')}
               >
                 <Crown className="w-3.5 h-3.5 shrink-0 text-emerald-500 dark:text-emerald-400" />
-                <span>PLAN</span>
+                {!isCollapsed && <span>PLAN</span>}
               </button>
 
               {/* SETTINGS */}
               <button
                 key="settings_btn"
                 onClick={() => handleNavClick('settings')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition-all duration-200 shadow-2xs cursor-pointer ${
+                className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all duration-200 shadow-2xs cursor-pointer ${
                   activeModule === 'settings' && activeSettingsTab === 'account'
                     ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white shadow-cyan-500/30 font-extrabold'
                     : 'bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/20 dark:border-cyan-500/30'
@@ -293,7 +335,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 title={t('settings', 'Account Settings')}
               >
                 <Sliders className="w-3.5 h-3.5 shrink-0 text-cyan-500 dark:text-cyan-400" />
-                <span>SETTINGS</span>
+                {!isCollapsed && <span>SETTINGS</span>}
               </button>
             </div>
           </nav>
@@ -351,7 +393,8 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
             {/* Active User / Workspace Footer Card (Clickable to trigger popover) */}
             <div 
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="flex items-center justify-between p-1.5 px-2 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/80 shadow-2xs hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700/50 transition-all cursor-pointer select-none group"
+              className={`flex items-center ${isCollapsed ? 'justify-center p-1.5' : 'justify-between p-1.5 px-2'} rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/80 shadow-2xs hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700/50 transition-all cursor-pointer select-none group`}
+              title={user?.name || 'Account & Settings'}
             >
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <div className="w-7.5 h-7.5 2xl:w-8 2xl:h-8 rounded-lg p-0.5 bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-400 shadow-xs shadow-purple-500/20 shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
@@ -363,32 +406,35 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                     )}
                   </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11.5px] 2xl:text-xs font-bold text-slate-900 dark:text-white truncate leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                    {user?.name || user?.email?.split('@')[0] || 'Agency Admin'}
-                  </p>
-                  <p className="text-[9.5px] text-slate-500 dark:text-slate-400 truncate">
-                    {user?.plan || activeWorkspace?.subscriptionTier || 'Agency / Scale'}
-                  </p>
-                </div>
+                {!isCollapsed && (
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11.5px] 2xl:text-xs font-bold text-slate-900 dark:text-white truncate leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                      {user?.name || user?.email?.split('@')[0] || 'Agency Admin'}
+                    </p>
+                    <p className="text-[9.5px] text-slate-500 dark:text-slate-400 truncate">
+                      {user?.plan || activeWorkspace?.subscriptionTier || 'Agency / Scale'}
+                    </p>
+                  </div>
+                )}
               </div>
 
-              {/* Direct Theme Switcher Button (Sun / Moon) */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleTheme();
-                }}
-                className="p-1.5 rounded-lg bg-gradient-to-r from-amber-500/15 to-orange-500/15 dark:from-violet-500/20 dark:to-indigo-500/20 border border-amber-400/30 dark:border-violet-500/30 text-amber-500 dark:text-violet-300 hover:scale-110 transition-all shrink-0 ml-1 cursor-pointer"
-                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              >
-                {theme === 'dark' ? (
-                  <Sun className="w-3.5 h-3.5 text-amber-400 hover:scale-110 transition-transform" />
-                ) : (
-                  <Moon className="w-3.5 h-3.5 text-violet-600 dark:text-violet-300 hover:scale-110 transition-transform" />
-                )}
-              </button>
+              {!isCollapsed && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleTheme();
+                  }}
+                  className="p-1.5 rounded-lg bg-gradient-to-r from-amber-500/15 to-orange-500/15 dark:from-violet-500/20 dark:to-indigo-500/20 border border-amber-400/30 dark:border-violet-500/30 text-amber-500 dark:text-violet-300 hover:scale-110 transition-all shrink-0 ml-1 cursor-pointer"
+                  title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                  {theme === 'dark' ? (
+                    <Sun className="w-3.5 h-3.5 text-amber-400 hover:scale-110 transition-transform" />
+                  ) : (
+                    <Moon className="w-3.5 h-3.5 text-violet-600 dark:text-violet-300 hover:scale-110 transition-transform" />
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
