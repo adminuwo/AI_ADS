@@ -74,7 +74,7 @@ const MainContent = () => {
   }
 
   const isWebsiteBuilder = ['websiteBuilder', 'websitebuilder', 'builder'].includes(activeModule);
-  const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
   const isStarterUser = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
 
   if (isWebsiteBuilder && !isStarterUser) {

@@ -3,8 +3,8 @@ import { useWorkspace } from '../../context/WorkspaceContext';
 import { Lock, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const PlanGate = ({ children, moduleName, moduleId, requiredTier = 'Pro / Growth' }) => {
-  const { user, setIsSettingsModalOpen, setActiveSettingsTab, setActiveModule } = useWorkspace();
-  const planNorm = (user?.plan || 'starter').toLowerCase();
+  const { user, activeWorkspace, setIsSettingsModalOpen, setActiveSettingsTab, setActiveModule } = useWorkspace();
+  const planNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
 
   const isStarter = planNorm === 'starter' || planNorm === 'base' || planNorm === 'free';
   

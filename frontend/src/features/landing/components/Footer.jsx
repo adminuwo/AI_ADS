@@ -21,11 +21,11 @@ export const Footer = () => {
           {/* Brand Info Column */}
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 p-0.5 flex items-center justify-center">
-                <div className="w-full h-full bg-slate-950 rounded-[6px] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-indigo-400" />
-                </div>
-              </div>
+              <img 
+                src="/logo_icon_only.png?v=10" 
+                alt="AI ADS™ Logo" 
+                className="w-8 h-8 object-contain drop-shadow-sm" 
+              />
               <span className="font-['Outfit'] font-black text-xl text-slate-900 dark:text-white tracking-tight">
                 AI ADS<sup className="text-[10px] text-amber-500 dark:text-amber-400 font-bold ml-0.5">TM</sup>
               </span>

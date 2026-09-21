@@ -2552,7 +2552,12 @@ export const WorkspaceProvider = ({ children }) => {
     }
   };
 
-  const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId || w._id === activeWorkspaceId) || workspaces[0] || {
+  const rawWs = workspaces.find(w => w.id === activeWorkspaceId || w._id === activeWorkspaceId) || workspaces[0];
+  const activeWorkspace = rawWs ? {
+    ...rawWs,
+    logoUrl: rawWs.logoUrl || rawWs.profile?.logoUrl || rawWs.brandDnaProfile?.logoUrl || rawWs.faviconUrl || '',
+    domainUrl: rawWs.domainUrl || rawWs.profile?.website || rawWs.website || ''
+  } : {
     id: 'ws_empty',
     brandName: 'No Brand Loaded',
     domainUrl: 'https://',

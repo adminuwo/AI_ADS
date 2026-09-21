@@ -57,7 +57,7 @@ export const DashboardModule = () => {
     return 'Good evening';
   })();
 
-  const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
   const isStarter = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
 
   const handleWebsiteBuilderClick = () => {

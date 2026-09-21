@@ -191,10 +191,10 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
             <div className="absolute top-0 left-0 right-0 h-[3px] panch-tattva-ribbon z-40" />
             <div className="flex items-center gap-2.5 min-w-0 pt-1.5 sm:pt-2">
               <img 
-                src="/logo_transparent.png?v=9" 
+                src="/logo_icon_only.png?v=10" 
                 alt="AI ADS™ Logo" 
-                className="w-16 h-16 sm:w-[68px] sm:h-[68px] 2xl:w-[72px] 2xl:h-[72px] object-contain shrink-0 drop-shadow-md dark:drop-shadow-[0_0_14px_rgba(255,255,255,0.3)] transition-transform hover:scale-105" 
-                onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png?v=9'; }}
+                className="w-14 h-14 sm:w-[58px] sm:h-[58px] 2xl:w-[62px] 2xl:h-[62px] object-contain shrink-0 drop-shadow-md dark:drop-shadow-[0_0_14px_rgba(255,255,255,0.3)] transition-transform hover:scale-105" 
+                onError={(e) => { e.target.onerror = null; e.target.src = '/logo_transparent.png?v=10'; }}
               />
               <div className="flex items-center font-black text-xl sm:text-2xl tracking-tight leading-none min-w-0">
                 <span className="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500 bg-clip-text text-transparent drop-shadow-xs truncate">
@@ -222,7 +222,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
               {modules.map((m) => {
                 const Icon = m.icon;
                 const isActive = activeModule === m.id;
-                const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+                const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
                 const isStarterUser = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
                 const isModuleLocked = isStarterUser && ['campaigns', 'approvals', 'websiteBuilder', 'websitebuilder', 'builder'].includes(m.id);
 
@@ -368,7 +368,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                     {user?.name || user?.email?.split('@')[0] || 'Agency Admin'}
                   </p>
                   <p className="text-[9.5px] text-slate-500 dark:text-slate-400 truncate">
-                    {user?.plan || 'Enterprise'}
+                    {user?.plan || activeWorkspace?.subscriptionTier || 'Agency / Scale'}
                   </p>
                 </div>
               </div>

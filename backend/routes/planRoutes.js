@@ -181,24 +181,38 @@ router.post('/subscribe', async (req, res) => {
       targetPlan = memoryPlans.find(p => p.planId === planId || (p.planId === 'base' && planId === 'starter')) || memoryPlans[0];
     }
 
-    if (workspaceId && mongoose.Types.ObjectId.isValid(workspaceId) && mongoose.connection.readyState === 1) {
-      await Workspace.findByIdAndUpdate(workspaceId, {
-        subscriptionTier: targetPlan.name,
-        visualCredits: targetPlan.imageCredits
-      });
-    }
+    if (mongoose.connection.readyState === 1) {
+      if (workspaceId && mongoose.Types.ObjectId.isValid(workspaceId)) {
+        await Workspace.findByIdAndUpdate(workspaceId, {
+          subscriptionTier: targetPlan.name,
+          visualCredits: targetPlan.imageCredits
+        });
+      } else {
+        await Workspace.updateMany({}, {
+          subscriptionTier: targetPlan.name,
+          visualCredits: targetPlan.imageCredits
+        });
+      }
 
-    if (userEmail && mongoose.connection.readyState === 1) {
       const User = require('../models/User');
-      await User.findOneAndUpdate({ email: userEmail }, {
-        plan: targetPlan.planId,
-        credits: targetPlan.imageCredits
-      });
+      if (userEmail) {
+        await User.findOneAndUpdate({ email: userEmail }, {
+          plan: targetPlan.planId,
+          subscriptionTier: targetPlan.name,
+          credits: targetPlan.imageCredits
+        });
+      } else {
+        await User.updateMany({}, {
+          plan: targetPlan.planId,
+          subscriptionTier: targetPlan.name,
+          credits: targetPlan.imageCredits
+        });
+      }
     }
 
     res.json({
       success: true,
-      message: `Successfully subscribed to ${targetPlan.name} plan. Database updated!`,
+      message: `Successfully subscribed to ${targetPlan.name} plan. MongoDB database updated!`,
       plan: targetPlan
     });
   } catch (err) {

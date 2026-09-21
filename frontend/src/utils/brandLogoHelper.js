@@ -41,9 +41,9 @@ export function getBrandLogoUrl(brandName = '', domainUrl = '', logoUrl = '', fa
   if (typeof brandName === 'object' && brandName !== null) {
     const opts = brandName;
     name = opts.brandName || opts.brand || '';
-    domain = opts.domainUrl || opts.domain || '';
-    logo = opts.logoUrl || '';
-    favicon = opts.faviconUrl || '';
+    domain = opts.domainUrl || opts.domain || opts.website || opts.profile?.website || '';
+    logo = opts.logoUrl || opts.logo || opts.profile?.logoUrl || '';
+    favicon = opts.faviconUrl || opts.favicon || '';
   }
 
   // 1. Try formatted/proxied logo or favicon
@@ -62,6 +62,9 @@ export function getBrandLogoUrl(brandName = '', domainUrl = '', logoUrl = '', fa
   if (!cleanDomain && name) {
     const cleanName = String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
     const knownDomains = {
+      patanjali: 'patanjaliayurved.net',
+      patanjaliayurved: 'patanjaliayurved.net',
+      patanjaliayurvednet: 'patanjaliayurved.net',
       jiohotstar: 'jiohotstar.com',
       hotstar: 'hotstar.com',
       jio: 'jio.com',

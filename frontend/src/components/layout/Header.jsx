@@ -50,13 +50,12 @@ export const Header = () => {
   const workspaceRef = useRef(null);
 
   const getPlanDisplayName = () => {
-    const rawPlan = user?.plan || user?.subscriptionTier || user?.planName || 'Enterprise';
+    const rawPlan = user?.plan || activeWorkspace?.subscriptionTier || user?.subscriptionTier || user?.planName || 'Agency / Scale';
     const lower = String(rawPlan).toLowerCase();
     if (lower.includes('enterprise')) return 'Enterprise Suite';
-    if (lower.includes('agency')) return 'Agency Pro';
-    if (lower.includes('pro')) return 'Pro Plan';
-    if (lower.includes('starter') || lower.includes('base')) return 'Starter Plan';
-    if (lower.includes('growth')) return 'Growth Plan';
+    if (lower.includes('agency') || lower.includes('scale')) return 'Agency / Scale';
+    if (lower.includes('pro') || lower.includes('growth')) return 'Pro / Growth';
+    if (lower.includes('starter') || lower.includes('base') || lower.includes('free')) return 'Starter Plan';
 
     const cleaned = String(rawPlan).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     return cleaned.endsWith('Plan') || cleaned.endsWith('Suite') || cleaned.endsWith('Tier') ? cleaned : `${cleaned} Plan`;
@@ -111,10 +110,19 @@ export const Header = () => {
           >
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs p-0.5 sm:p-1 border border-slate-200 dark:border-slate-700">
               <img 
-                src={getBrandLogoUrl({ brandName: activeWorkspace?.brandName, domainUrl: activeWorkspace?.domainUrl, logoUrl: activeWorkspace?.logoUrl, faviconUrl: activeWorkspace?.faviconUrl })} 
+                src={getBrandLogoUrl({ 
+                  brandName: activeWorkspace?.brandName, 
+                  domainUrl: activeWorkspace?.domainUrl || activeWorkspace?.profile?.website, 
+                  logoUrl: activeWorkspace?.logoUrl || activeWorkspace?.profile?.logoUrl || activeWorkspace?.faviconUrl, 
+                  faviconUrl: activeWorkspace?.faviconUrl 
+                })} 
                 alt={activeWorkspace?.brandName} 
                 className="w-full h-full object-contain"
-                onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${(activeWorkspace?.brandName || 'google').toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }} 
+                onError={(e) => { 
+                  const targetDomain = (activeWorkspace?.domainUrl || activeWorkspace?.profile?.website || activeWorkspace?.brandName || 'google')
+                    .replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split('?')[0];
+                  e.target.src = `https://www.google.com/s2/favicons?domain=${targetDomain}&sz=256`; 
+                }} 
               />
             </div>
             <div className="min-w-0">
@@ -143,10 +151,19 @@ export const Header = () => {
                   >
                     <div className="flex items-center gap-2.5 truncate">
                       <img 
-                        src={getBrandLogoUrl({ brandName: ws.brandName, domainUrl: ws.domainUrl, logoUrl: ws.logoUrl, faviconUrl: ws.faviconUrl })} 
+                        src={getBrandLogoUrl({ 
+                          brandName: ws.brandName, 
+                          domainUrl: ws.domainUrl || ws.profile?.website, 
+                          logoUrl: ws.logoUrl || ws.profile?.logoUrl || ws.faviconUrl, 
+                          faviconUrl: ws.faviconUrl 
+                        })} 
                         alt={ws.brandName} 
                         className="w-5 h-5 rounded-lg object-contain bg-white shrink-0 border border-slate-200 dark:border-slate-700"
-                        onError={(e) => { e.target.src = `https://www.google.com/s2/favicons?domain=${(ws.brandName || 'google').toLowerCase().replace(/[^a-z0-9]/g, '')}.com&sz=256`; }}
+                        onError={(e) => { 
+                          const targetDomain = (ws.domainUrl || ws.profile?.website || ws.brandName || 'google')
+                            .replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split('?')[0];
+                          e.target.src = `https://www.google.com/s2/favicons?domain=${targetDomain}&sz=256`; 
+                        }}
                       />
                       <span className="truncate">{ws.brandName}</span>
                     </div>

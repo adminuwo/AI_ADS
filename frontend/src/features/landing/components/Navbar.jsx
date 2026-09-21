@@ -31,11 +31,11 @@ export const Navbar = () => {
           className="flex items-center gap-3 cursor-pointer group"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-indigo-400" />
-            </div>
-          </div>
+          <img 
+            src="/logo_icon_only.png?v=10" 
+            alt="AI ADS™ Logo" 
+            className="w-10 h-10 object-contain group-hover:scale-105 transition-transform drop-shadow-sm" 
+          />
           <div className="flex items-center font-black text-2xl tracking-tight leading-none text-slate-900 dark:text-white">
             <span className="font-['Outfit'] bg-gradient-to-r from-slate-900 via-indigo-900 to-indigo-600 dark:from-white dark:via-slate-100 dark:to-indigo-200 bg-clip-text text-transparent">
               AI ADS

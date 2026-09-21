@@ -148,10 +148,10 @@ export const Login = ({ onLoginSuccess }) => {
         <div className="text-center mb-7 flex flex-col items-center justify-center">
           <div className="flex flex-col items-center justify-center gap-3">
             <img 
-              src="/logo_transparent.png?v=9" 
+              src="/logo_icon_only.png?v=10" 
               alt="AI Ads™ Logo" 
               className="w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 object-contain shrink-0 drop-shadow-xl transition-transform hover:scale-105" 
-              onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png?v=9'; }}
+              onError={(e) => { e.target.onerror = null; e.target.src = '/logo_transparent.png?v=10'; }}
             />
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight flex items-center justify-center">
               <span className="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500 bg-clip-text text-transparent leading-none">
