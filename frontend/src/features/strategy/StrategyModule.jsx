@@ -9,7 +9,8 @@ import {
   MousePointerClick, Edit3, Sparkles, PieChart, Calendar, DollarSign,
   Megaphone, BookOpen, Clock, ChevronRight, Star, Lightbulb, Rocket,
   Hash, Video, FileText, MessageSquare, Filter, Play, Award, BarChart2,
-  ArrowUpRight, Flame, X, RefreshCw, UploadCloud, Image as ImageIcon, Trash2, Plus
+  ArrowUpRight, Flame, X, RefreshCw, UploadCloud, Image as ImageIcon, Trash2, Plus,
+  MapPin, Search, Compass, Bot, Lock
 } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -116,6 +117,7 @@ const formatPostTitle = (title, directive) => {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export const StrategyModule = () => {
   const {
+    user,
     activeWorkspace,
     setActiveModule,
     updateWorkspace,
@@ -127,6 +129,20 @@ export const StrategyModule = () => {
     setGeneratedContent,
     t
   } = useWorkspace();
+
+  const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
+
+  const [selectedStrategyType, setSelectedStrategyType] = useState(() => {
+    const planNorm = (user?.plan || 'starter').toLowerCase();
+    const isLocked = planNorm === 'starter' || planNorm === 'base' || planNorm === 'free';
+    if (isLocked) return 'aiBrand';
+
+    const strat = activeWorkspace?.currentStrategy;
+    if (strat?.activeStrategyType && strat.activeStrategyType !== 'campaign') return strat.activeStrategyType;
+    if (strat?.customStrategy) return 'custom';
+    return 'aiBrand';
+  });
 
 
   // Core strategy fields
@@ -142,6 +158,10 @@ export const StrategyModule = () => {
   const [thirtyDayPlan,     setThirtyDayPlan]      = useState([]);
   const [funnel,            setFunnel]             = useState({ awareness: '', nurturing: '', conversion: '' });
   const [audience,          setAudience]           = useState([]);
+  const [gtmStrategy,       setGtmStrategy]       = useState(null);
+  const [seoStrategy,       setSeoStrategy]       = useState(null);
+  const [geoStrategy,       setGeoStrategy]       = useState(null);
+  const [geoSeoGtmTab,      setGeoSeoGtmTab]      = useState('gtm');
 
   // UI state
   const [selectedWeek,  setSelectedWeek]  = useState('ALL');
@@ -149,17 +169,20 @@ export const StrategyModule = () => {
   const [isGenerating,  setIsGenerating]  = useState(false);
   const [isSaving,      setIsSaving]      = useState(false);
   const [editingField,  setEditingField]  = useState(null);
-  const [activeTab,     setActiveTab]     = useState(() => sessionStorage.getItem('strategyActiveTab') || 'overview'); // overview | plan | campaigns
+  const [activeTab,     setActiveTab]     = useState(() => {
+    const saved = sessionStorage.getItem('strategyActiveTab');
+    return (saved && saved !== 'campaigns') ? saved : 'overview';
+  }); // overview | plan
   const [showSaveToast, setShowSaveToast] = useState(false);
   const [showRegenToast, setShowRegenToast] = useState(false);
   const [isSavedState,  setIsSavedState]  = useState(false);
 
   useEffect(() => {
     const targetTab = sessionStorage.getItem('strategyActiveTab');
-    if (targetTab) {
+    if (targetTab && targetTab !== 'campaigns') {
       setActiveTab(targetTab);
-      sessionStorage.removeItem('strategyActiveTab');
     }
+    sessionStorage.removeItem('strategyActiveTab');
   }, []);
 
   // Build Campaign Modal State
@@ -408,30 +431,56 @@ export const StrategyModule = () => {
   useEffect(() => {
     const strat = activeWorkspace.currentStrategy;
     
-    if (strat && !isLegacyStrategy(strat)) {
-      setBusinessGoal(strat.businessGoal || '');
-      setLeadMagnet(strat.leadMagnet || '');
-      setPrimaryCta(strat.primaryCta || '');
-      setPostingFrequency(strat.postingFrequency || 'Daily');
-      setBudgetSuggestions(strat.budgetSuggestions || '');
-      setBestPlatforms(strat.bestPlatforms || []);
-      setContentPillars(strat.contentPillars || activeWorkspace.contentPillars || []);
-      setCampaignIdeas(strat.campaignIdeas || []);
-      setThirtyDayPlan(strat.thirtyDayPlan || []);
-      setFunnel(strat.funnel || { awareness: '', nurturing: '', conversion: '' });
-      setAudience(strat.audience || (activeWorkspace.targetAudience || []).slice(0, 4));
-      if (strat.channelMix && strat.channelMix.length > 0) setChannelMix(strat.channelMix);
-      if (strat.customImageBriefs && Array.isArray(strat.customImageBriefs)) setCustomImageBriefs(strat.customImageBriefs);
-      if (strat.customStrategy) setCustomStrategy(strat.customStrategy);
-      setGeneratedDoc(true);
+    if (!strat) {
+      if (activeWorkspace.id || activeWorkspace._id) {
+        handleGenerate();
+      }
       return;
     }
 
-    // Otherwise automatically trigger fresh AI Strategy generation
-    if (activeWorkspace.id || activeWorkspace._id) {
+    if (strat.customImageBriefs && Array.isArray(strat.customImageBriefs)) {
+      setCustomImageBriefs(strat.customImageBriefs);
+    }
+    if (strat.customStrategy) {
+      setCustomStrategy(strat.customStrategy);
+    }
+
+    // Determine target strategy object based on selected Strategy Type
+    let target = null;
+    if (selectedStrategyType === 'campaign' && !isCampaignLocked) {
+      target = strat.campaignStrategy || (strat.campaignName ? strat : null);
+    } else if (selectedStrategyType === 'custom') {
+      target = strat.customStrategy || null;
+    } else if (selectedStrategyType === 'aiBrand') {
+      target = strat.aiBrandStrategy || (strat.thirtyDayPlan ? strat : null);
+      if (target && target.campaignName) {
+        target = { ...target };
+        delete target.campaignName;
+        delete target.campaignId;
+      }
+    }
+
+    if (target && ((target.thirtyDayPlan && target.thirtyDayPlan.length > 0) || (target.posts && target.posts.length > 0))) {
+      setBusinessGoal(target.businessGoal || deriveGoal(activeWorkspace));
+      setLeadMagnet(target.leadMagnet || deriveLeadMagnet(activeWorkspace));
+      setPrimaryCta(target.primaryCta || deriveCta(activeWorkspace));
+      setPostingFrequency(target.postingFrequency || 'Daily');
+      setBudgetSuggestions(target.budgetSuggestions || '60% Organic content marketing & SEO / 40% Paid retargeting.');
+      setBestPlatforms(target.bestPlatforms || ['LinkedIn', 'Google SEO Blog', 'Email Newsletter', 'Instagram & Reels']);
+      setContentPillars(target.contentPillars || activeWorkspace.contentPillars || []);
+      setCampaignIdeas(target.campaignIdeas || []);
+      setThirtyDayPlan(target.thirtyDayPlan || target.posts || []);
+      setFunnel(target.funnel || { awareness: '', nurturing: '', conversion: '' });
+      setAudience(target.audience || (activeWorkspace.targetAudience || []).slice(0, 4));
+      if (target.channelMix && target.channelMix.length > 0) setChannelMix(target.channelMix);
+      if (target.gtmStrategy) setGtmStrategy(target.gtmStrategy);
+      if (target.seoStrategy) setSeoStrategy(target.seoStrategy);
+      if (target.geoStrategy) setGeoStrategy(target.geoStrategy);
+      setGeneratedDoc(true);
+    } else if (selectedStrategyType === 'aiBrand' && !isGenerating) {
       handleGenerate();
     }
-  }, [activeWorkspace.id || activeWorkspace._id]);
+  }, [activeWorkspace.id || activeWorkspace._id, selectedStrategyType, activeWorkspace.currentStrategy]);
 
   // ─── Save ─────────────────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
@@ -442,6 +491,7 @@ export const StrategyModule = () => {
       postingFrequency, budgetSuggestions, bestPlatforms,
       contentPillars, campaignIdeas, thirtyDayPlan, funnel, audience,
       customImageBriefs, customStrategy,
+      gtmStrategy, seoStrategy, geoStrategy,
     };
     await updateWorkspace(activeWorkspace.id || activeWorkspace._id, { currentStrategy: updatedStrategy });
     setIsSaving(false);
@@ -454,7 +504,8 @@ export const StrategyModule = () => {
     }, 3000);
   }, [activeWorkspace, businessGoal, leadMagnet, primaryCta, channelMix,
       postingFrequency, budgetSuggestions, bestPlatforms, contentPillars,
-      campaignIdeas, thirtyDayPlan, funnel, audience, updateWorkspace]);
+      campaignIdeas, thirtyDayPlan, funnel, audience, customImageBriefs, customStrategy,
+      gtmStrategy, seoStrategy, geoStrategy, updateWorkspace]);
 
   // ─── Generate AI Strategy ─────────────────────────────────────────────────
   const handleGenerate = async () => {
@@ -778,6 +829,63 @@ export const StrategyModule = () => {
         </div>
       )}
 
+      {/* ══════════ 3-STRATEGY SELECTOR BAR ══════════ */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-md mb-4 w-full flex-wrap sm:flex-nowrap backdrop-blur-md">
+        {/* Strategy 1: AI Brand Strategy */}
+        <button
+          onClick={() => setSelectedStrategyType('aiBrand')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all duration-200 cursor-pointer ${
+            selectedStrategyType === 'aiBrand'
+              ? 'bg-gradient-to-r from-brand-600 via-purple-600 to-indigo-600 text-white shadow-md shadow-brand-500/20'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+          }`}
+        >
+          <Bot className="w-4 h-4 text-amber-300 fill-amber-300" />
+          <span>AI Brand Strategy</span>
+          <span className="px-1.5 py-0.5 rounded-md bg-white/20 text-[9px] font-black uppercase">Brand DNA</span>
+        </button>
+
+        {/* Strategy 2: Campaign Strategy */}
+        <button
+          onClick={() => setSelectedStrategyType('campaign')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all duration-200 cursor-pointer ${
+            selectedStrategyType === 'campaign'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+          }`}
+        >
+          <Target className="w-4 h-4 text-emerald-300" />
+          <span>Campaign Strategy</span>
+          {isCampaignLocked ? (
+            <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-500 dark:text-amber-300 text-[9px] font-black border border-amber-500/30 flex items-center gap-0.5">
+              <Lock className="w-2.5 h-2.5" /> PRO
+            </span>
+          ) : (activeWorkspace.currentStrategy?.campaignStrategy || activeWorkspace.currentStrategy?.campaignName) ? (
+            <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[9px] font-extrabold">Active</span>
+          ) : (
+            <span className="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[9px] font-medium">Not Created</span>
+          )}
+        </button>
+
+        {/* Strategy 3: Image Brief Strategy */}
+        <button
+          onClick={() => setSelectedStrategyType('custom')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all duration-200 cursor-pointer ${
+            selectedStrategyType === 'custom'
+              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-500/20'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+          }`}
+        >
+          <UploadCloud className="w-4 h-4 text-purple-300" />
+          <span>Image Brief Strategy</span>
+          {customStrategy ? (
+            <span className="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[9px] font-extrabold">Ready</span>
+          ) : (
+            <span className="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[9px] font-medium">Upload Brief</span>
+          )}
+        </button>
+      </div>
+
       {/* ══════════ HEADER ══════════ */}
       <div className="relative overflow-hidden p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-purple-500/8 via-indigo-500/5 to-pink-500/8 dark:from-purple-950/30 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-800/40 shadow-md backdrop-blur-xl">
         {/* Decorative background orbs */}
@@ -793,13 +901,13 @@ export const StrategyModule = () => {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-brand-600 via-purple-600 to-indigo-600 dark:from-brand-300 dark:via-purple-300 dark:to-indigo-300 bg-clip-text text-transparent leading-none tracking-tight">
-                  {t('strategyTitle', 'Marketing Strategy & Roadmap')}
+                  {selectedStrategyType === 'campaign' ? 'Campaign Marketing Strategy' : selectedStrategyType === 'custom' ? 'Image Brief Visual Strategy' : t('strategyTitle', 'Marketing Strategy & Roadmap')}
                 </h1>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-semibold">
-                  AI-generated 30-day growth blueprint for{' '}
+                  {selectedStrategyType === 'campaign' ? 'Integrated GTM, SEO & GEO roadmap derived from your active campaign.' : selectedStrategyType === 'custom' ? 'Custom 30-day visual social roadmap generated from reference image brief.' : 'AI-generated 30-day growth blueprint for '}{' '}
                   <span className="font-black text-brand-600 dark:text-brand-300 px-1.5 py-0.5 rounded-md bg-brand-500/10 border border-brand-500/20">{activeWorkspace.brandName}</span>
                 </p>
-                {activeWorkspace.currentStrategy?.campaignName && (
+                {activeWorkspace.currentStrategy?.campaignName && selectedStrategyType === 'campaign' && (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-200 text-xs font-black mt-1.5 shadow-sm">
                     <Target className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span>Campaign Focus: <strong>{activeWorkspace.currentStrategy.campaignName}</strong></span>
@@ -819,7 +927,6 @@ export const StrategyModule = () => {
               <div className="flex items-center gap-1 mt-2 bg-white/60 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-1.5 w-fit flex-wrap border border-purple-200/50 dark:border-purple-800/40 shadow-inner">
                 {[
                   { id: 'overview',   label: t('overviewTab', 'Overview'),   icon: BarChart2 },
-                  { id: 'campaigns',  label: t('campaignsTab', 'Campaigns'),  icon: Megaphone },
                   { id: 'plan',       label: t('masterStrategyTab', '30 Day Strategy'), icon: Calendar  },
                   ...(customStrategy ? [{ id: 'custom', label: 'Custom Strategy', icon: Sparkles, isCustom: true }] : []),
                 ].map(tab => (
@@ -856,7 +963,7 @@ export const StrategyModule = () => {
               <span>Upload Image Brief</span>
             </button>
 
-            {activeTab !== 'custom' && (
+            {activeTab !== 'custom' && selectedStrategyType === 'aiBrand' && (
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating}
@@ -880,8 +987,69 @@ export const StrategyModule = () => {
         </div>
       </div>
 
-      {/* ══════════ EMPTY STATE (NOT GENERATED) ══════════ */}
-      {!generatedDoc && (
+      {/* ══════════ CONTEXTUAL EMPTY & LOCKED STATES ══════════ */}
+      {selectedStrategyType === 'campaign' && isCampaignLocked && (
+        <div className="text-center py-16 p-8 rounded-3xl glass-card border border-brand-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white mt-6 shadow-2xl relative overflow-hidden">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mx-auto mb-4 text-amber-400 shadow-lg">
+            <Lock className="w-7 h-7 text-amber-400" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full border border-amber-500/40">
+            Pro Feature Locked
+          </span>
+          <h3 className="text-xl font-extrabold text-white mt-3 mb-2">Campaign Strategy is Locked on Starter Plan</h3>
+          <p className="text-xs text-slate-300 max-w-md mx-auto mb-6 leading-relaxed">
+            Campaign-driven strategy roadmaps require the <strong className="text-brand-400">Pro / Growth</strong> subscription plan. Upgrade now to unlock autonomous campaigns and campaign strategies.
+          </p>
+          <button
+            onClick={() => setActiveModule('settings')}
+            className="btn-primary text-xs flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 hover:scale-105 transition-all cursor-pointer font-extrabold"
+          >
+            <Sparkles className="w-4 h-4 text-amber-300" />
+            <span>Upgrade Plan to Unlock</span>
+          </button>
+        </div>
+      )}
+
+      {selectedStrategyType === 'campaign' && !isCampaignLocked && !activeWorkspace.currentStrategy?.campaignStrategy && !activeWorkspace.currentStrategy?.campaignName && (
+        <div className="text-center py-16 p-8 rounded-3xl glass-card border border-dashed border-slate-300 dark:border-slate-700 mt-6">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 text-emerald-500 shadow-sm">
+            <Target className="w-7 h-7" />
+          </div>
+          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2">No Campaign Strategy Created Yet</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
+            Build a campaign in the Campaigns module to automatically generate an integrated 30-day Go-To-Market, SEO, and GEO campaign strategy.
+          </p>
+          <button
+            onClick={() => setActiveModule('campaigns')}
+            className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-xs flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all cursor-pointer font-extrabold"
+          >
+            <Target className="w-4 h-4 text-white" />
+            <span>Proceed to Campaign Module →</span>
+          </button>
+        </div>
+      )}
+
+      {selectedStrategyType === 'custom' && !customStrategy && (
+        <div className="text-center py-16 p-8 rounded-3xl glass-card border border-dashed border-purple-300 dark:border-purple-800/60 mt-6">
+          <div className="w-14 h-14 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center mx-auto mb-4 text-purple-400 shadow-sm">
+            <UploadCloud className="w-7 h-7" />
+          </div>
+          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2">No Image Brief Strategy Generated Yet</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
+            Upload a reference product image and enter custom visual instructions to generate an image-guided 30-day social media roadmap.
+          </p>
+          <button
+            onClick={() => setShowImageBriefModal(true)}
+            className="btn-primary bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl shadow-lg shadow-purple-500/20 hover:scale-105 transition-all cursor-pointer font-extrabold"
+          >
+            <UploadCloud className="w-4 h-4 text-white" />
+            <span>Upload Image Brief</span>
+          </button>
+        </div>
+      )}
+
+      {/* ══════════ DEFAULT AI BRAND EMPTY STATE (NOT GENERATED) ══════════ */}
+      {selectedStrategyType === 'aiBrand' && !generatedDoc && (
         <div className="text-center py-20 rounded-3xl glass-card border border-dashed border-slate-200 dark:border-slate-700 mt-6">
           <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-brand-500/20 to-purple-500/10 flex items-center justify-center mx-auto mb-4">
             <Rocket className="w-8 h-8 text-brand-500" />
@@ -1203,6 +1371,279 @@ export const StrategyModule = () => {
             )}
           </div>
 
+          {/* ══════════ ROW: GTM, SEO & GEO STRATEGY INTELLIGENCE ══════════ */}
+          <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-indigo-500/8 via-purple-500/5 to-cyan-500/8 dark:from-slate-900/95 dark:to-slate-900/90 border border-indigo-200/60 dark:border-indigo-900/40 shadow-sm backdrop-blur-md space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-600 via-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-md">
+                    <Rocket className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                    GTM, SEO &amp; GEO Marketing Engine
+                  </h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold border border-emerald-500/30">
+                    Plan Topics Integrated
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                  Autonomous Go-To-Market launch phases, organic search keyword clusters, and regional geo-targeting derived directly from your campaign plan.
+                </p>
+              </div>
+
+              {/* Sub-tabs: GTM | SEO | GEO */}
+              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-fit self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setGeoSeoGtmTab('gtm')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    geoSeoGtmTab === 'gtm'
+                      ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white'
+                  }`}
+                >
+                  <Rocket className="w-3.5 h-3.5" />
+                  <span>Go-To-Market (GTM)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGeoSeoGtmTab('seo')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    geoSeoGtmTab === 'seo'
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-white'
+                  }`}
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>SEO Strategy</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGeoSeoGtmTab('geo')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    geoSeoGtmTab === 'geo'
+                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white'
+                  }`}
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>GEO Targeting</span>
+                </button>
+              </div>
+            </div>
+
+            {/* TAB CONTENT: GTM */}
+            {geoSeoGtmTab === 'gtm' && (
+              <div className="space-y-5 animate-in fade-in duration-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-indigo-200/50 dark:border-indigo-900/30 space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                      <Target className="w-3.5 h-3.5" /> Ideal Customer Profile (ICP)
+                    </span>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                      {gtmStrategy?.targetIcp || (audience[0] ? `Primary: ${audience[0]} seeking immediate solutions for: ${businessGoal}` : 'Decision-makers and high-intent buyers evaluating modern solutions.')}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-purple-200/50 dark:border-purple-900/30 space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                      <Compass className="w-3.5 h-3.5" /> Value Proposition &amp; Positioning
+                    </span>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                      {gtmStrategy?.valuePositioning || `${activeWorkspace.brandName} positions as the definitive accelerator to achieve: ${businessGoal}.`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 4-Phase Launch Funnel */}
+                <div>
+                  <h3 className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-indigo-500" /> 4-Phase GTM Rollout (Aligned with 30-Day Plan Topics)
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {(gtmStrategy?.launchPhases || [
+                      { phase: 'Phase 1: Market Seeding (Days 1–7)', focus: 'Problem awareness & industry friction points', kpi: 'Reach & impressions' },
+                      { phase: 'Phase 2: Value Demonstration (Days 8–14)', focus: 'Feature deep dives & step-by-step solutions', kpi: 'Saves & engagement' },
+                      { phase: 'Phase 3: Authority & Trust (Days 15–21)', focus: 'Social proof, case studies & comparisons', kpi: 'Lead captures' },
+                      { phase: 'Phase 4: High-Urgency Conversion (Days 22–30)', focus: 'Direct CTAs & closing offers', kpi: 'Goal conversions' }
+                    ]).map((lp, idx) => (
+                      <div key={idx} className="p-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-indigo-100 dark:border-indigo-900/40 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">Phase {idx + 1}</span>
+                          <span className="text-[9px] font-bold text-slate-400 uppercase">Week {idx + 1}</span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">{lp.phase || lp.name}</p>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-2">{lp.focus}</p>
+                        <div className="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                          KPI: {lp.kpi}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Activation Milestones & Growth Loops */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> GTM Activation Milestones
+                    </span>
+                    <ul className="space-y-1.5">
+                      {(gtmStrategy?.activationMilestones || [
+                        'Milestone 1: 10,000+ targeted reach on problem-awareness topics',
+                        'Milestone 2: 500+ qualified engagements on solution spotlight posts',
+                        'Milestone 3: High conversion velocity on lead magnet and primary CTA'
+                      ]).map((m, idx) => (
+                        <li key={idx} className="text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
+                          <span>{m}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-purple-500/5 border border-purple-500/20 space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                      <TrendingUp className="w-3.5 h-3.5" /> Viral Growth Loop
+                    </span>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                      {gtmStrategy?.growthLoops || `Built-in referral incentive & social sharing prompt immediately after user achieves their first milestone with ${activeWorkspace.brandName}.`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: SEO */}
+            {geoSeoGtmTab === 'seo' && (
+              <div className="space-y-5 animate-in fade-in duration-200">
+                {/* Keywords derived from topics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-teal-200/50 dark:border-teal-900/30 space-y-3">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-teal-700 dark:text-teal-300 flex items-center gap-1.5">
+                      <Search className="w-3.5 h-3.5" /> Primary Target Keywords (Extracted from Plan)
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(seoStrategy?.primaryKeywords || [
+                        `${activeWorkspace.brandName.toLowerCase()} solutions`,
+                        `${(businessGoal || '').slice(0, 25).toLowerCase()}`,
+                        `best ${activeWorkspace.industryCategory || 'business'} tool`,
+                        'how to scale operations'
+                      ]).map((kw, i) => (
+                        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-500/10 text-teal-800 dark:text-teal-200 font-bold text-xs border border-teal-500/20">
+                          <Hash className="w-3 h-3 text-teal-600" /> {kw}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-cyan-200/50 dark:border-cyan-900/30 space-y-3">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-cyan-700 dark:text-cyan-300 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" /> High-Intent Long-Tail Search Queries
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(seoStrategy?.longTailKeywords || [
+                        `how to achieve ${businessGoal.slice(0, 30)}`,
+                        `best software for ${activeWorkspace.brandName}`,
+                        `step by step guide for ${activeWorkspace.industryCategory || 'growth'}`
+                      ]).map((query, i) => (
+                        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-500/10 text-cyan-800 dark:text-cyan-200 font-semibold text-xs border border-cyan-500/20">
+                          🔍 "{query}"
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Search Intent Mix */}
+                <div className="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 space-y-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Search Intent Mapping
+                  </span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {(seoStrategy?.searchIntentMix || [
+                      { intent: 'Informational', percentage: 45, description: 'Problem-awareness & how-to content mapped to Week 1 & 2' },
+                      { intent: 'Commercial Investigation', percentage: 35, description: 'Comparisons, features & use-cases mapped to Week 2 & 3' },
+                      { intent: 'Transactional', percentage: 20, description: 'Direct acquisition, demo booking & downloads mapped to Week 4' }
+                    ]).map((item, idx) => (
+                      <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{item.intent}</span>
+                          <span className="text-xs font-black text-teal-600 dark:text-teal-400">{item.percentage}%</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                          <div className="h-full rounded-full bg-teal-500" style={{ width: `${item.percentage}%` }} />
+                        </div>
+                        <p className="text-[10.5px] text-slate-500 dark:text-slate-400">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* On-Page & Schema */}
+                <div className="p-4 rounded-2xl bg-teal-500/5 border border-teal-500/20 space-y-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-teal-700 dark:text-teal-300 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5" /> On-Page SEO &amp; Schema Directives
+                  </span>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                    {seoStrategy?.onPageDirectives || 'Target primary keywords in H1 headers and opening 100 words. Implement Product/Software schema on conversion pages and FAQ schema on educational blogs.'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: GEO */}
+            {geoSeoGtmTab === 'geo' && (
+              <div className="space-y-5 animate-in fade-in duration-200">
+                {/* Priority Hubs */}
+                <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-blue-200/50 dark:border-blue-900/30 space-y-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-blue-600" /> Priority Geographic Markets &amp; Metros
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {(geoStrategy?.priorityRegions || [
+                      'Tier-1 Metros (Delhi NCR, Mumbai, Bengaluru)',
+                      'High-Growth Tech Corridors (Hyderabad, Pune, Chennai)',
+                      'Emerging Commercial Hubs (Ahmedabad, Kolkata, Chandigarh)'
+                    ]).map((reg, i) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 text-blue-800 dark:text-blue-200 font-bold text-xs border border-blue-500/20">
+                        <MapPin className="w-3 h-3 text-blue-500" /> {reg}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Regional Messaging Hooks */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Regional Messaging Hooks (Localized Angles for Plan Topics)
+                  </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {(geoStrategy?.regionalHooks || [
+                      { region: 'Tech & Startup Metros (Bengaluru, Hyderabad)', hook: `Rapid digital adoption, automation efficiency, and tech-forward integration with ${activeWorkspace.brandName}.` },
+                      { region: 'Commercial Centers (Mumbai, Delhi NCR)', hook: `Enterprise compliance, regulatory peace of mind, and high-stakes ROI.` },
+                      { region: 'Tier-2 Fast-Growing Cities', hook: `Modern, cost-effective alternative to legacy tools with instant local support.` }
+                    ]).map((rh, idx) => (
+                      <div key={idx} className="p-3.5 rounded-xl bg-white/60 dark:bg-slate-900/60 border border-blue-100 dark:border-blue-900/40 space-y-1">
+                        <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 block">{rh.region}</span>
+                        <p className="text-xs text-slate-700 dark:text-slate-300 leading-snug">{rh.hook}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Geo Distribution Tactics */}
+                <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 space-y-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5" /> Geo-Distribution &amp; Local Advertising Tactics
+                  </span>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                    {geoStrategy?.geoDistributionTactics || 'Deploy geo-fenced social advertising around major business districts. Use regional city references in high-converting ad copy variations.'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* ROW 4: Funnel Architecture */}
           <div className="p-6 rounded-3xl bg-gradient-to-br from-rose-500/6 via-purple-500/4 to-emerald-500/6 dark:from-slate-900/90 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-900/40 shadow-sm backdrop-blur-md space-y-5">
             <div className="flex items-center justify-between">
@@ -1370,10 +1811,22 @@ export const StrategyModule = () => {
                         </div>
                         <div>
                           <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Day {item.day} · Week {week}</p>
-                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${getPlatformColor(item.platform)}`}>
-                            <PIcon className="w-2.5 h-2.5" />
-                            {item.platform?.split('/')[0]?.trim() || 'Content'}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${getPlatformColor(item.platform)}`}>
+                              <PIcon className="w-2.5 h-2.5" />
+                              {item.platform?.split('/')[0]?.trim() || 'Content'}
+                            </span>
+                            {item.gtmStage && (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20">
+                                🚀 {item.gtmStage.split(':')[0]}
+                              </span>
+                            )}
+                            {item.geoTarget && (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20">
+                                📍 {item.geoTarget.split('(')[0].trim()}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       
@@ -1412,6 +1865,14 @@ export const StrategyModule = () => {
                         <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">{item.topic}</p>
                       )}
                     </div>
+
+                    {/* SEO Keyword Tag */}
+                    {item.seoKeywords && (
+                      <div className="flex items-center gap-1 text-[10px] font-semibold text-teal-700 dark:text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-md w-fit border border-teal-500/20">
+                        <Search className="w-2.5 h-2.5 text-teal-600" />
+                        <span className="truncate">SEO: {item.seoKeywords}</span>
+                      </div>
+                    )}
 
                     {/* Action item */}
                     {item.actionItem && !loadingRegenDays[item.day] && (
@@ -1495,84 +1956,7 @@ export const StrategyModule = () => {
         </div>
       )}
 
-      {/* ══════════ TAB: CAMPAIGNS ══════════ */}
-      {activeTab === 'campaigns' && (
-        <div className="space-y-5">
 
-          {/* Campaign Ideas */}
-          <div className="space-y-4">
-            <h2 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
-              <Megaphone className="w-4 h-4 text-brand-500" /> Campaign Ideas
-              <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{campaignIdeas.length}</span>
-            </h2>
-            {campaignIdeas.length === 0 && (
-              <div className="text-center py-16 rounded-3xl bg-white/70 dark:bg-slate-900/80 border border-dashed border-purple-200 dark:border-slate-700">
-                <Lightbulb className="w-10 h-10 text-amber-400 mx-auto mb-3" />
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white mb-2">No Campaign Ideas Yet</h3>
-                <p className="text-sm text-slate-500 mb-4">Generate your master strategy to get AI-powered campaign concepts.</p>
-                <button onClick={handleGenerate} disabled={isGenerating} className="btn-primary text-sm flex items-center gap-2 mx-auto px-5 py-2 rounded-xl disabled:opacity-50">
-                  <Zap className="w-4 h-4 text-amber-300 fill-amber-300" /> Generate Strategy
-                </button>
-              </div>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {campaignIdeas.map((idea, i) => {
-                const gradients = [
-                  'from-violet-500 to-indigo-600',
-                  'from-emerald-500 to-teal-500',
-                  'from-amber-500 to-orange-500',
-                  'from-pink-500 to-rose-500',
-                  'from-blue-500 to-cyan-500',
-                  'from-purple-500 to-pink-500',
-                ];
-                return (
-                  <div key={i} className="group relative p-6 rounded-2xl bg-white/80 dark:bg-slate-900/85 border border-purple-200/60 dark:border-slate-800 hover:border-purple-400 shadow-sm hover:shadow-md transition-all duration-300 space-y-3">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center shadow-xs shrink-0`}>
-                        <Megaphone className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Campaign {i+1}</span>
-                          <Award className="w-3.5 h-3.5 text-amber-400" />
-                        </div>
-                        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">{idea.title}</h3>
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-14">{idea.desc}</p>
-                    <div className="pl-14 flex items-center gap-2">
-                      <button
-                        onClick={() => { setSelectedCampaignIdea(idea); setCampaignDuration('30'); setBuildCampaignModal(true); }}
-                        className="flex items-center gap-1.5 text-[11px] font-bold text-brand-600 dark:text-brand-400 hover:underline transition-all hover:gap-2"
-                      >
-                        <ArrowUpRight className="w-3 h-3" /> Build Campaign
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Funnel (repeated here for campaign context) */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-rose-500/6 via-purple-500/4 to-emerald-500/6 dark:from-slate-900/90 dark:to-slate-900/90 border border-purple-200/60 dark:border-slate-800 space-y-5">
-            <h2 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
-              <Layers className="w-4 h-4 text-brand-500" /> Campaign Funnel Strategy
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {funnelStages.map((stage, i) => (
-                <div key={stage.label} className={`p-5 rounded-2xl border ${stage.border} ${stage.bg} space-y-3`}>
-                  <div>
-                    <span className={`text-xs font-extrabold ${stage.text} block`}>{stage.label}</span>
-                    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${stage.badge}`}>{stage.mix} Content Mix</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed">{stage.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ══════════ TAB: CUSTOM STRATEGY (30-DAY SOCIAL MEDIA POST GENERATION) ══════════ */}
       {activeTab === 'custom' && customStrategy && (
@@ -1960,166 +2344,7 @@ export const StrategyModule = () => {
         document.body
       )}
 
-      {/* ══════════ BUILD CAMPAIGN MODAL ══════════ */}
-      {buildCampaignModal && selectedCampaignIdea && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200 p-3 sm:p-4 overflow-y-auto">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto my-auto">
 
-            {/* Modal Header */}
-            <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-md shrink-0">
-                  <Megaphone className="w-4.5 h-4.5 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight">Build Campaign</h2>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug break-words">{selectedCampaignIdea.title}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setBuildCampaignModal(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors shrink-0"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-4 sm:p-6 space-y-5">
-
-              {/* Campaign Goal Preview */}
-              <div className="p-3.5 rounded-2xl bg-brand-500/5 dark:bg-brand-500/10 border border-brand-500/20 flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <Target className="w-3.5 h-3.5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-extrabold text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-0.5">Campaign Goal</p>
-                  <p className="text-xs font-semibold text-slate-800 dark:text-white leading-snug">{selectedCampaignIdea.desc}</p>
-                </div>
-              </div>
-
-              {/* Duration Selector */}
-              <div className="space-y-3">
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5 text-brand-500" />
-                  Campaign Duration
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="1"
-                    max="365"
-                    value={campaignDuration}
-                    onChange={(e) => setCampaignDuration(e.target.value)}
-                    className="flex-1 min-w-0 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-extrabold text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all"
-                    placeholder="e.g. 30"
-                  />
-                  <span className="px-3.5 py-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 font-black text-xs uppercase tracking-wider shrink-0">Days</span>
-                </div>
-                {/* Quick Presets */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Quick:</span>
-                  {[7, 14, 21, 30, 60, 90].map(d => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setCampaignDuration(String(d))}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ${
-                        campaignDuration === String(d)
-                          ? 'bg-brand-600 text-white border-brand-600 shadow-sm'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-500 hover:text-brand-600'
-                      }`}
-                    >
-                      {d}d
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Divider with Optional label */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100 dark:border-slate-800" /></div>
-                <div className="relative flex justify-center">
-                  <span className="px-3 bg-white dark:bg-slate-900 text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                    Or Choose Action
-                    <span className="px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Optional</span>
-                  </span>
-                </div>
-              </div>
-
-              {/* Action Options */}
-              <div className="space-y-3">
-
-                {/* Option 1: Enter Manually */}
-                <button
-                  onClick={() => {
-                    setBuildCampaignModal(false);
-                    setActiveModule('campaigns');
-                  }}
-                  className="w-full group flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-brand-500 dark:hover:border-brand-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-brand-500/5 dark:hover:bg-brand-500/10 transition-all duration-200 text-left"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-400 to-slate-600 group-hover:from-brand-500 group-hover:to-indigo-600 flex items-center justify-center shadow-sm shrink-0 transition-all duration-200">
-                    <Edit3 className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-extrabold text-slate-800 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">Enter Campaign Manually</p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Set up goals, platforms &amp; schedule yourself in Campaign Builder</p>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-500 shrink-0 transition-colors" />
-                </button>
-
-                {/* Option 2: Generate Multiple Campaigns */}
-                <button
-                  onClick={() => {
-                    setBuildCampaignModal(false);
-                    setActiveModule('campaigns');
-                  }}
-                  className="w-full group flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-violet-500 dark:hover:border-violet-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-violet-500/5 dark:hover:bg-violet-500/10 transition-all duration-200 text-left"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-sm shrink-0">
-                    <Sparkles className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-extrabold text-slate-800 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">Generate Multiple Campaigns</p>
-                      <span className="px-1.5 py-0.5 rounded-full bg-violet-500/15 text-violet-700 dark:text-violet-300 text-[8px] font-extrabold uppercase tracking-wider">AI · 1 Month</span>
-                    </div>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">AI generates full campaign suite for {activeWorkspace.brandName}</p>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-violet-500 shrink-0 transition-colors" />
-                </button>
-
-              </div>
-            </div>
-
-            {/* Modal Footer — Primary CTA */}
-            <div className="px-4 sm:px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row sm:items-center justify-end gap-3">
-              <button
-                onClick={() => setBuildCampaignModal(false)}
-                className="w-full sm:w-auto px-4 py-2.5 text-xs font-bold rounded-xl text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
-              >
-                Cancel
-              </button>
-              <button
-                disabled={!campaignDuration || Number(campaignDuration) < 1}
-                onClick={() => {
-                  const days = Number(campaignDuration) || 30;
-                  const goal = selectedCampaignIdea?.desc || '';
-                  setBuildCampaignModal(false);
-                  handleGenerateForCampaign(days, goal);
-                }}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white text-sm font-extrabold shadow-lg shadow-brand-500/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Rocket className="w-4 h-4" />
-                Proceed to Strategy
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-          </div>
-        </div>,
-        document.body
-      )}
 
       {/* ══════════ MODAL: UPLOAD IMAGE & CUSTOM DIRECTIVE ══════════ */}
       {showImageBriefModal && createPortal(

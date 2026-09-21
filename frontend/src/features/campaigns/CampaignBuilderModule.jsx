@@ -259,10 +259,23 @@ const CampaignCard = ({ campaign, onSelect, onDelete }) => (
             e.stopPropagation();
             onSelect(campaign);
           }}
-          className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-1 transition-colors"
+          className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors ${
+            (campaign.totalPosts > 0)
+              ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+              : 'bg-brand-500/10 hover:bg-brand-500/20 text-brand-700 dark:text-brand-300'
+          }`}
         >
-          <Target className="w-3 h-3" />
-          {campaign.aiGeneratedStrategy ? 'View Strategy' : 'Generate Strategy'}
+          {campaign.totalPosts > 0 ? (
+            <>
+              <Target className="w-3 h-3" />
+              {campaign.aiGeneratedStrategy ? 'View Strategy' : 'Generate Strategy'}
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-3 h-3" />
+              Generate Plan
+            </>
+          )}
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(campaign._id); }}
@@ -308,9 +321,9 @@ const CampaignDetail = ({ campaign, onBack }) => {
 
   useEffect(() => { loadPosts(); }, [loadPosts]);
 
-  const handleGenerateStrategyAndGoToPlan = async () => {
-    sessionStorage.setItem('strategyActiveTab', 'plan');
-    if (campaignStrategy) {
+  const handleGenerateStrategyAndGoToPlan = async (force = false) => {
+    sessionStorage.setItem('strategyActiveTab', 'overview');
+    if (campaignStrategy && !force && campaignStrategy.gtmStrategy) {
       setActiveModule('strategy');
       return;
     }
@@ -325,7 +338,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
           await updateWorkspace(workspaceId, { currentStrategy: result.strategy });
         }
       }
-      sessionStorage.setItem('strategyActiveTab', 'plan');
+      sessionStorage.setItem('strategyActiveTab', 'overview');
       setActiveModule('strategy');
     } catch (err) {
       setError(err.message || 'Failed to generate campaign strategy');
@@ -343,6 +356,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
         planToUse && planToUse.length > 0 ? { strategyPlan: planToUse } : {}
       );
       setPosts(result.posts || []);
+      setCampaignStrategy(null);
       setSuccessToast(`Plan ready: ${result.posts?.length || 0} scheduled posts created!`);
       setTimeout(() => setSuccessToast(''), 4000);
     } catch (err) {
@@ -402,23 +416,48 @@ const CampaignDetail = ({ campaign, onBack }) => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <button
-            onClick={handleGenerateStrategyAndGoToPlan}
-            disabled={generatingStrategy}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm disabled:opacity-60"
-          >
-            {generatingStrategy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Target className="w-3.5 h-3.5" />}
-            {generatingStrategy ? 'Generating Strategy...' : 'Generate Strategy'}
-          </button>
+          {posts.length > 0 ? (
+            <>
+              <button
+                onClick={() => handleGenerateStrategyAndGoToPlan(false)}
+                disabled={generatingStrategy}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm disabled:opacity-60 cursor-pointer"
+              >
+                {generatingStrategy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Target className="w-3.5 h-3.5" />}
+                {generatingStrategy ? 'Generating Strategy...' : campaignStrategy?.gtmStrategy ? 'View Strategy' : 'Generate Strategy'}
+              </button>
 
-          <button
-            onClick={() => handleGeneratePlan()}
-            disabled={generatingPlan}
-            className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold flex items-center gap-2 transition-colors disabled:opacity-60"
-          >
-            {generatingPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-            {generatingPlan ? 'Generating Plan...' : posts.length > 0 ? 'Regenerate Plan' : 'Generate AI Plan'}
-          </button>
+              {campaignStrategy?.gtmStrategy && (
+                <button
+                  onClick={() => handleGenerateStrategyAndGoToPlan(true)}
+                  disabled={generatingStrategy}
+                  className="px-3 py-2 rounded-xl border border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer"
+                  title="Regenerate Strategy with GEO, SEO & GTM from Plan Topics"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Regenerate Strategy</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => handleGeneratePlan()}
+                disabled={generatingPlan}
+                className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold flex items-center gap-2 transition-colors disabled:opacity-60 cursor-pointer"
+              >
+                {generatingPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                {generatingPlan ? 'Generating Plan...' : 'Regenerate Plan'}
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => handleGeneratePlan()}
+              disabled={generatingPlan}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-brand-500/25 disabled:opacity-60 cursor-pointer"
+            >
+              {generatingPlan ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              {generatingPlan ? 'Generating Plan...' : 'Generate Plan'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -538,10 +577,22 @@ const CampaignDetail = ({ campaign, onBack }) => {
           <Loader2 className="w-6 h-6 animate-spin text-brand-500" />
         </div>
       ) : posts.length === 0 ? (
-        <div className="p-12 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 text-center space-y-3">
-          <Sparkles className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600" />
-          <p className="text-sm font-bold text-slate-500 dark:text-slate-400">No posts yet</p>
-          <p className="text-xs text-slate-400 dark:text-slate-500">Click "Generate AI Plan" to create a complete content calendar with AI-crafted posts for each day and platform.</p>
+        <div className="p-12 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 mx-auto flex items-center justify-center">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No plan generated yet</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Click "Generate Plan" to create a complete content calendar with AI-crafted posts for each day and platform.</p>
+          </div>
+          <button
+            onClick={() => handleGeneratePlan()}
+            disabled={generatingPlan}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-brand-500/20 disabled:opacity-60 cursor-pointer"
+          >
+            {generatingPlan ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {generatingPlan ? 'Generating Plan...' : 'Generate Plan'}
+          </button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -584,23 +635,41 @@ const CampaignDetail = ({ campaign, onBack }) => {
         </div>
       )}
 
-      {/* ══════════ STICKY FLOATING GENERATE STRATEGY BUTTON ══════════ */}
+      {/* ══════════ STICKY FLOATING ACTION BUTTON ══════════ */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300 shrink-0">
-        <button
-          onClick={handleGenerateStrategyAndGoToPlan}
-          disabled={generatingStrategy}
-          className="flex items-center gap-2.5 px-6 py-3.5 bg-[#0077b6] hover:bg-[#0096c7] text-white rounded-full font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-2xl shadow-[#0077b6]/40 border border-white/20 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md whitespace-nowrap disabled:opacity-60"
-          title="Generate strategy and open 30-day plan directly"
-        >
-          {generatingStrategy ? (
-            <Loader2 className="w-5 h-5 text-white animate-spin shrink-0" />
-          ) : (
-            <Target className="w-5 h-5 text-white shrink-0" />
-          )}
-          <span className="tracking-wide">
-            {generatingStrategy ? 'Generating Strategy...' : 'Generate Strategy'}
-          </span>
-        </button>
+        {posts.length === 0 ? (
+          <button
+            onClick={() => handleGeneratePlan()}
+            disabled={generatingPlan}
+            className="flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white rounded-full font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-2xl shadow-brand-500/40 border border-white/20 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md whitespace-nowrap disabled:opacity-60"
+            title="Generate AI Campaign Plan"
+          >
+            {generatingPlan ? (
+              <Loader2 className="w-5 h-5 text-white animate-spin shrink-0" />
+            ) : (
+              <Sparkles className="w-5 h-5 text-white shrink-0" />
+            )}
+            <span className="tracking-wide">
+              {generatingPlan ? 'Generating Plan...' : 'Generate Plan'}
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={() => handleGenerateStrategyAndGoToPlan(false)}
+            disabled={generatingStrategy}
+            className="flex items-center gap-2.5 px-6 py-3.5 bg-[#0077b6] hover:bg-[#0096c7] text-white rounded-full font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-2xl shadow-[#0077b6]/40 border border-white/20 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md whitespace-nowrap disabled:opacity-60"
+            title="Generate strategy and open 30-day plan directly"
+          >
+            {generatingStrategy ? (
+              <Loader2 className="w-5 h-5 text-white animate-spin shrink-0" />
+            ) : (
+              <Target className="w-5 h-5 text-white shrink-0" />
+            )}
+            <span className="tracking-wide">
+              {generatingStrategy ? 'Generating Strategy...' : campaignStrategy?.gtmStrategy ? 'View Strategy' : 'Generate Strategy'}
+            </span>
+          </button>
+        )}
       </div>
     </div>
   );
