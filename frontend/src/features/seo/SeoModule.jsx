@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import { seoAPI } from '../../services/api';
+import { seoAPI, strategyAPI } from '../../services/api';
 import {
   Search, Layers, FileText, Code2, Sparkles, Send, ShieldAlert,
   TrendingUp, BarChart3, Tag, Hash, ChevronRight, Copy, Check,
@@ -100,6 +100,7 @@ const Toast = ({ message, type = 'error', onClose }) => {
 
 export const SeoModule = () => {
   const { 
+    user,
     activeWorkspace, 
     setActiveModule, 
     seoSearchData, 
@@ -111,6 +112,31 @@ export const SeoModule = () => {
     runSeoAuditInBackground,
     t 
   } = useWorkspace();
+
+  const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
+  const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
+
+  const handleProceedToStrategy = async () => {
+    if (isGeneratingStrategy) return;
+    setIsGeneratingStrategy(true);
+    try {
+      const workspaceId = activeWorkspace?.id || activeWorkspace?._id || 'default_ws';
+      const seoContext = {
+        primaryKeyword: selectedKeyword?.keyword || seedKeyword || activeWorkspace?.brandName || '',
+        searchIntent: selectedKeyword?.intent || intent || 'Commercial',
+        contentClusters: brief?.contentIdeas || brief?.recommendedArticles || [],
+        targetRegion: brief?.targetRegion || 'National Hubs'
+      };
+      await strategyAPI.generate(workspaceId, { seoContext });
+      setActiveModule('strategy');
+    } catch (err) {
+      console.warn('[SEO Module] Direct Strategy generation notice:', err.message);
+      setActiveModule('strategy');
+    } finally {
+      setIsGeneratingStrategy(false);
+    }
+  };
 
   const wsId = activeWorkspace?._id || activeWorkspace?.id || activeWorkspace?.brandName || 'ws_default';
   const [websiteUrl, setWebsiteUrl] = useState('');
@@ -1206,13 +1232,34 @@ export const SeoModule = () => {
 
           {/* Floating Action Button */}
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-            <button
-              onClick={() => setActiveModule('campaigns')}
-              className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-full font-extrabold text-xs shadow-2xl hover:bg-brand-500 hover:scale-105 active:scale-95 transition-all"
-            >
-              <span>Proceed to Campaign</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            {isCampaignLocked ? (
+              <button
+                onClick={handleProceedToStrategy}
+                disabled={isGeneratingStrategy}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-extrabold text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60 cursor-pointer"
+              >
+                {isGeneratingStrategy ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>Generating Strategy...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
+                    <span>Generate AI Strategy</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={() => setActiveModule('campaigns')}
+                className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-full font-extrabold text-xs shadow-2xl hover:bg-brand-500 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                <span>Proceed to Campaign</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       )}

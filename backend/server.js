@@ -946,7 +946,7 @@ const { generateJSON } = require('./services/aiService');
 
 app.post('/api/workspace/:id/generate-strategy', async (req, res) => {
   const { id } = req.params;
-  const { campaignId, campaignName, campaignGoal, targetAudience, platforms, budget, postingFrequency } = req.body || {};
+  const { campaignId, campaignName, campaignGoal, targetAudience, platforms, budget, postingFrequency, seoContext, strategyType } = req.body || {};
 
   try {
     let workspace = null;
@@ -975,7 +975,7 @@ app.post('/api/workspace/:id/generate-strategy', async (req, res) => {
       : 'Top industry competitors & alternatives';
     const audienceStr = targetAudience || (workspace.targetAudience || []).join(', ') || brandProfile?.structuredIdentity?.target_audience || 'Target buyers & consumers';
 
-    console.log(`[Strategy Engine] Generating AI Marketing Roadmap for: ${brandName} (${industry})${campaignName ? ` for Campaign: ${campaignName}` : ''}...`);
+    console.log(`[Strategy Engine] Generating AI Marketing Roadmap for: ${brandName} (${industry})${campaignName ? ` for Campaign: ${campaignName}` : ''}${seoContext ? ' [with SEO context]' : ''}...`);
 
     const campaignContext = campaignName ? `
 ═══════════════════════════════════════════════════════
@@ -988,8 +988,18 @@ ${postingFrequency ? `- Posting Frequency: ${postingFrequency}` : ''}
 NOTE: Tailor this entire strategy, business goal, lead magnet, funnel, and 30-day content plan directly to achieve this campaign objective!
 ═══════════════════════════════════════════════════════` : '';
 
+    const seoContextBlock = seoContext ? `
+═══════════════════════════════════════════════════════
+SEO INTELLIGENCE BRIEF (ALIGN STRATEGY DIRECTLY TO THIS):
+- Primary Keyword: "${seoContext.primaryKeyword || seoContext.focusKeyword || seoContext.keyword || ''}"
+- Search Intent: "${seoContext.searchIntent || 'Informational & Commercial'}"
+- Content Clusters / Focus: "${Array.isArray(seoContext.contentClusters) ? seoContext.contentClusters.map(c => c.pillarTopic || c.title || c).join(', ') : (seoContext.topic || seoContext.notes || '')}"
+- Target Location: "${seoContext.targetRegion || seoContext.geoTarget || 'All Regions'}"
+NOTE: Seamlessly incorporate these high-intent SEO keywords and search topics into the business goal, lead magnet, and 30-day daily content topics!
+═══════════════════════════════════════════════════════` : '';
+
     const prompt = `You are a Chief Marketing Officer (CMO) and Growth Strategist.
-Generate a comprehensive, actionable, premium 30-day marketing strategy and roadmap for this brand:${campaignContext}
+Generate a comprehensive, actionable, premium 30-day marketing strategy and roadmap for this brand:${campaignContext}${seoContextBlock}
 
 ═══════════════════════════════════════════════════════
 BRAND DNA & COMPETITOR CONTEXT:
@@ -1155,22 +1165,63 @@ Return ONLY valid JSON.`;
         if (mongoose.Types.ObjectId.isValid(campaignId)) {
           const existingPosts = await CampaignPost.find({ campaignId }).sort({ date: 1, createdAt: 1 });
           if (existingPosts && existingPosts.length > 0 && Array.isArray(strategy.thirtyDayPlan)) {
+            const geos = ['Tier-1 Metros (Delhi NCR, Mumbai, Bengaluru)', 'Tech Hubs (Bengaluru, Hyderabad)', 'Commercial Hubs (Mumbai, Ahmedabad)', 'Regional Markets (Chennai, Pune)'];
             strategy.thirtyDayPlan = strategy.thirtyDayPlan.map((d, idx) => {
               const match = existingPosts[idx];
-              if (match) {
-                const topic = match.postObjective || match.topic || match.postFor || d.topic;
-                return {
-                  ...d,
-                  day: idx + 1,
-                  title: topic,
-                  topic: topic,
-                  platform: match.platform || d.platform,
-                  pillar: match.postFor || match.contentType || d.pillar,
-                  actionItem: d.actionItem || match.prompt || match.captionPrompt,
-                };
-              }
-              return d;
+              const topic = match ? (match.postObjective || match.topic || match.postFor || d.topic) : d.topic;
+              const gtmStage = idx < 7 ? 'Phase 1: Market Seeding' : idx < 14 ? 'Phase 2: Solution Proof' : idx < 21 ? 'Phase 3: Authority & Trust' : 'Phase 4: Conversion Sprint';
+              const cleanWords = (topic || '').replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3).slice(0, 3).join(' ');
+              const seoKeywords = cleanWords ? `${cleanWords} online` : `${brandName} solutions`;
+              const geoTarget = geos[idx % geos.length];
+
+              return {
+                ...d,
+                day: idx + 1,
+                title: topic,
+                topic: topic,
+                platform: match?.platform || d.platform,
+                pillar: match?.postFor || match?.contentType || d.pillar,
+                gtmStage,
+                seoKeywords,
+                geoTarget,
+                actionItem: d.actionItem || match?.prompt || match?.captionPrompt || `Execute ${topic} [GTM: ${gtmStage}] [SEO: ${seoKeywords}] [GEO: ${geoTarget}]`,
+              };
             });
+
+            if (!strategy.gtmStrategy) {
+              strategy.gtmStrategy = {
+                targetIcp: `${audienceStr} seeking: ${strategy.businessGoal || 'Growth'}`,
+                valuePositioning: `${campaignName || brandName} delivers core value through specialized capabilities`,
+                launchPhases: [
+                  { phase: 'Phase 1: Market Seeding', focus: 'Problem awareness topics', kpi: 'Reach & impressions' },
+                  { phase: 'Phase 2: Solution Proof', focus: 'Feature deep-dives', kpi: 'Product engagement' },
+                  { phase: 'Phase 3: Authority & Trust', focus: 'Social proof and case studies', kpi: 'Lead captures' },
+                  { phase: 'Phase 4: Conversion Sprint', focus: 'Direct CTAs and closing offers', kpi: 'Conversions' }
+                ],
+                activationMilestones: ['Milestone 1: 10k Impressions', 'Milestone 2: 500 Engagements', 'Milestone 3: Target Conversions'],
+                growthLoops: 'Advocacy and user referral incentives'
+              };
+            }
+            if (!strategy.seoStrategy) {
+              strategy.seoStrategy = {
+                primaryKeywords: existingPosts.slice(0, 5).map(p => `${(p.postObjective || p.topic || '').slice(0, 25)} online`),
+                longTailKeywords: [`best ${brandName} solutions in India`, `how to solve ${industry} challenges`],
+                searchIntentMix: [
+                  { intent: 'Informational', percentage: 45, description: 'Educational guides' },
+                  { intent: 'Commercial', percentage: 35, description: 'Solution comparison' },
+                  { intent: 'Transactional', percentage: 20, description: 'Direct acquisition' }
+                ],
+                contentClusters: [{ pillarTopic: `${brandName} Core`, clusterArticles: existingPosts.slice(0, 4).map(p => p.postObjective || p.topic) }],
+                onPageDirectives: 'Target primary keywords in title tags, H1, and meta descriptions.'
+              };
+            }
+            if (!strategy.geoStrategy) {
+              strategy.geoStrategy = {
+                priorityRegions: ['Tier-1 Metros (Delhi NCR, Mumbai, Bengaluru)', 'Tech Hubs (Hyderabad, Pune)', 'Tier-2 Growth Cities'],
+                regionalHooks: [{ region: 'Metro Hubs', hook: 'High-speed efficiency' }, { region: 'Growth Cities', hook: 'Accessible modern solutions' }],
+                geoDistributionTactics: 'Geo-targeted social ads and city-specific keywords.'
+              };
+            }
           }
           await Campaign.findByIdAndUpdate(campaignId, { aiGeneratedStrategy: strategy });
         }
@@ -1179,9 +1230,37 @@ Return ONLY valid JSON.`;
       }
     }
 
+    // Multi-Strategy Management: AI Brand Strategy vs Campaign Strategy vs Custom Image Brief Strategy
+    const existingStrategy = workspace.currentStrategy || {};
+    const existingAiBrand = existingStrategy.aiBrandStrategy || null;
+    const existingCampaign = existingStrategy.campaignStrategy || null;
+    const existingCustom = existingStrategy.customStrategy || null;
+    const existingBriefs = existingStrategy.customImageBriefs || [];
+
+    let updatedAiBrand = existingAiBrand;
+    let updatedCampaign = existingCampaign;
+    let activeType = existingStrategy.activeStrategyType || 'aiBrand';
+
+    if (campaignName || campaignId) {
+      updatedCampaign = { ...strategy };
+      activeType = 'campaign';
+    } else {
+      updatedAiBrand = { ...strategy };
+      activeType = 'aiBrand';
+    }
+
+    const mergedStrategy = {
+      ...strategy, // top level fields for backwards compatibility
+      activeStrategyType: activeType,
+      aiBrandStrategy: updatedAiBrand,
+      campaignStrategy: updatedCampaign,
+      customStrategy: existingCustom,
+      customImageBriefs: existingBriefs,
+    };
+
     try {
       if (mongoose.Types.ObjectId.isValid(id)) {
-        await Workspace.findByIdAndUpdate(id, { currentStrategy: strategy }, { new: true });
+        await Workspace.findByIdAndUpdate(id, { currentStrategy: mergedStrategy }, { new: true });
       }
     } catch (e) {
       console.log('MongoDB Update Note for strategy:', e.message);
@@ -1189,10 +1268,10 @@ Return ONLY valid JSON.`;
 
     const index = memoryWorkspaces.findIndex(w => w.id === id || w._id === id);
     if (index !== -1) {
-      memoryWorkspaces[index].currentStrategy = strategy;
+      memoryWorkspaces[index].currentStrategy = mergedStrategy;
     }
 
-    res.json({ success: true, strategy });
+    res.json({ success: true, strategy: mergedStrategy });
   } catch (err) {
     console.error('[Strategy Engine] Error:', err.message);
     res.status(500).json({ success: false, error: err.message });
@@ -1249,17 +1328,23 @@ app.post('/api/workspace/:id/generate-custom-strategy', async (req, res) => {
       posts: result.posts
     };
 
-    if (workspace && workspace._id) {
+    if (workspace) {
       try {
         const currentStrat = workspace.currentStrategy || {};
         const updatedBriefs = [customBrief, ...(currentStrat.customImageBriefs || [])];
-        await Workspace.findByIdAndUpdate(id, {
-          currentStrategy: {
-            ...currentStrat,
-            customImageBriefs: updatedBriefs,
-            customStrategy: newCustomStrat
-          }
-        });
+        const mergedStrat = {
+          ...currentStrat,
+          activeStrategyType: 'custom',
+          customImageBriefs: updatedBriefs,
+          customStrategy: newCustomStrat
+        };
+        if (workspace._id && mongoose.Types.ObjectId.isValid(workspace._id)) {
+          await Workspace.findByIdAndUpdate(workspace._id, { currentStrategy: mergedStrat });
+        }
+        const index = memoryWorkspaces.findIndex(w => w.id === id || w._id === id);
+        if (index !== -1) {
+          memoryWorkspaces[index].currentStrategy = mergedStrat;
+        }
       } catch (dbErr) {
         console.warn('[Custom Strategy Endpoint] DB update note:', dbErr.message);
       }

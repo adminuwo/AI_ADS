@@ -1,14 +1,14 @@
 :root {
-  --primary-color: #C2410C;
-  --secondary-color: #78350F;
+  --primary-color: #8D6E63;
+  --secondary-color: #D7CCC8;
   --accent-color: #F59E0B;
-  --font-family: 'Playfair Display', system-ui, sans-serif;
+  --font-family: 'Montserrat', system-ui, sans-serif;
   --heading-font: 'Playfair Display', serif;
-  --bg-color: #FFFDF9;
-  --text-color: #291809;
-  --text-muted: #7C6758;
+  --bg-color: #FAFAF9;
+  --text-color: #1C1917;
+  --text-muted: #78716C;
   --card-bg: #FFFFFF;
-  --card-border: #F5E6D3;
+  --card-border: #E7E5E4;
   --hero-min-height: 80vh;
   --hero-text-align: left;
   --radius-sm: 0.375rem;

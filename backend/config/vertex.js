@@ -17,12 +17,20 @@ if (fs.existsSync(keyFilePath)) {
 }
 
 // Initialize @google/genai in direct API Key Mode or Vertex AI Mode
-const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+const rawKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
-if (apiKey && apiKey !== 'your_gemini_api_key_here') {
+const isPlaceholderKey = (key) => {
+  if (!key) return true;
+  const k = key.trim().toLowerCase();
+  return k.includes('paste') || k.includes('your') || k.includes('placeholder') || k.includes('here') || k === 'your_gemini_api_key_here';
+};
+
+const hasValidKey = rawKey && !isPlaceholderKey(rawKey);
+
+if (hasValidKey) {
   delete process.env.GOOGLE_GENAI_USE_VERTEXAI;
   try {
-    aiClient = new GoogleGenAI({ apiKey });
+    aiClient = new GoogleGenAI({ apiKey: rawKey.trim() });
     globalAiClient = aiClient;
     useVertexAI = false;
     console.log('✅ @google/genai initialized using direct Gemini API key');
