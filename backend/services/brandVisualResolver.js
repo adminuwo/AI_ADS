@@ -275,63 +275,40 @@ const BRAND_VISUAL_POOLS = {
 };
 
 function detectVisualDomain(prompt = '', brand = '', topic = '', industry = '') {
-  // Strip platform brand names from polluting the domain test
-  const cleanBrand = /^(ai\s*ads?|my\s*brand|brand|default|untitled)$/i.test(brand.trim()) ? '' : brand.trim();
-  const text = `${prompt} ${cleanBrand} ${topic} ${industry}`.toLowerCase();
+  const text = `${prompt} ${brand} ${topic} ${industry}`.toLowerCase();
 
-  // 1. Food & Dining / Beverages / Sweets / Snacks
-  if (/food|dining|restaurant|cafe|coffee|burger|pizza|sushi|culinary|chef|sweet|mithai|kaju|namkeen|bakery|cake|zomato|swiggy|beverage|tea|dish|recipe/i.test(text)) {
-    return 'FOOD_BEVERAGE_DINING';
-  }
-
-  // 2. Fashion & Apparel / Footwear
-  if (/fashion|apparel|clothing|dress|shirt|footwear|sneakers|shoes|boutique|streetwear|runway|outfit|model|textile|couture|nike|puma|adidas|zara/i.test(text)) {
-    return 'FASHION_APPAREL_FOOTWEAR';
-  }
-
-  // 3. Beauty & Skincare / Cosmetics
-  if (/beauty|skincare|cosmetics|serum|makeup|cream|lotion|spa|perfume|fragrance|wellness|nykaa|mamaearth|lipstick/i.test(text)) {
-    return 'BEAUTY_SKINCARE_COSMETICS';
-  }
-
-  // 4. Jewelry & Luxury
-  if (/jewelry|jewellery|diamond|gold|necklace|ring|earring|gemstone|bracelet|tanishq|luxury watch|solitaire|silver/i.test(text)) {
-    return 'JEWELRY_LUXURY';
-  }
-
-  // 5. Travel & Transit
   if (/bus|coach|travel|trip|transit|commute|passenger|ticket|booking|route|highway|tour|flight|airline|train|cab|taxi|mobility/i.test(text)) {
     return 'BUS_TRAVEL_TRANSIT';
   }
-
-  // 6. Real Estate & Home Decor
-  if (/real estate|property|villa|apartment|home|furniture|sofa|interior|architecture|penthouse/i.test(text)) {
-    return 'REAL_ESTATE_HOME';
-  }
-
-  // 7. Health & Wellness / Fitness
-  if (/health|hospital|doctor|dental|dentist|clinic|teeth|medicine|pharma|gym|fitness|workout|yoga/i.test(text)) {
-    return 'HEALTHCARE_WELLNESS';
-  }
-
-  // 8. Automotive
-  if (/car|auto|automotive|supercar|vehicle|tata motors|tesla|bmw|engine|dealership|ev/i.test(text)) {
-    return 'AUTOMOTIVE_MOBILITY';
-  }
-
-  // 9. Stationery & Office
   if (/nataraj|pencil|pen|stationery|eraser|sharpener|ruler|notebook|drawing|sketch|student|school|exam|writing|paper|journal/i.test(text)) {
     return 'STATIONERY_WRITING_OFFICE';
   }
-
-  // 10. E-commerce / Retail Physical Goods
+  if (/saas|software|dashboard|cloud|ai ads|aisa|platform|analytics|api|developer|crm|app|mobile app|digital product|cyber|fintech/i.test(text)) {
+    return 'TECH_SAAS_AI_SOFTWARE';
+  }
+  if (/fashion|apparel|clothing|dress|shirt|footwear|sneakers|shoes|boutique|streetwear|runway|outfit|model|textile|couture|nike|puma|adidas|zara/i.test(text)) {
+    return 'FASHION_APPAREL_FOOTWEAR';
+  }
+  if (/beauty|skincare|cosmetics|serum|makeup|cream|lotion|spa|perfume|fragrance|wellness|nykaa|mamaearth/i.test(text)) {
+    return 'BEAUTY_SKINCARE_COSMETICS';
+  }
+  if (/jewelry|jewellery|diamond|gold|necklace|ring|earring|gemstone|bracelet|tanishq|luxury watch|solitaire/i.test(text)) {
+    return 'JEWELRY_LUXURY';
+  }
+  if (/food|dining|restaurant|cafe|coffee|burger|pizza|sushi|culinary|chef|sweet|mithai|kaju|namkeen|bakery|cake|zomato|swiggy/i.test(text)) {
+    return 'FOOD_BEVERAGE_DINING';
+  }
+  if (/health|hospital|doctor|dental|dentist|clinic|teeth|medicine|pharma|gym|fitness|workout|yoga/i.test(text)) {
+    return 'HEALTHCARE_WELLNESS';
+  }
+  if (/car|auto|automotive|supercar|vehicle|tata motors|tesla|bmw|engine|dealership|ev/i.test(text)) {
+    return 'AUTOMOTIVE_MOBILITY';
+  }
+  if (/real estate|property|villa|apartment|home|furniture|sofa|interior|architecture|penthouse/i.test(text)) {
+    return 'REAL_ESTATE_HOME';
+  }
   if (/ecommerce|e-commerce|retail|shop|shopping|store|order|delivery|package|cart/i.test(text)) {
     return 'ECOMMERCE_RETAIL';
-  }
-
-  // 11. Explicit Tech & Software ONLY (never because of generic words like 'app' or platform name)
-  if (/software development|saas platform|cloud infrastructure|cybersecurity|developer tools|database service|fintech/i.test(text)) {
-    return 'TECH_SAAS_AI_SOFTWARE';
   }
 
   return 'GENERAL_BUSINESS';

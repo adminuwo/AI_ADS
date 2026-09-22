@@ -38,7 +38,6 @@ function craftBrandAdPrompt({
   tagline = '',
   companyDescription = '',
   brandColors = [],
-  products = [],
   topic = 'Brand Campaign',
   postType = 'image',
   platform = 'instagram',
@@ -47,113 +46,58 @@ function craftBrandAdPrompt({
   seed
 }) {
   const colorsList = brandColors && brandColors.length > 0 ? brandColors.join(', ') : inferBrandColors(brandName, companyDescription).join(', ');
-  const cleanBrand = (brandName || 'Brand').trim();
+  const cleanBrand = brandName.trim();
   const cleanLogoUrl = logoUrl ? logoUrl.trim() : '';
 
-  // Clean brand name for domain detection (ignore generic workspace names like "AI ADS" or "Brand")
-  const brandForDomain = /^(ai\s*ads?|my\s*brand|brand|default|untitled)$/i.test(cleanBrand) ? '' : cleanBrand;
-
-  // Extract products
-  const productsArray = Array.isArray(products)
-    ? products.filter(Boolean).map(p => typeof p === 'string' ? p.trim() : (p.name || p.title || '')).filter(Boolean)
-    : (typeof products === 'string' && products.trim() ? [products.trim()] : []);
-  const productsListStr = productsArray.join(', ');
-
-  const seedNum = typeof seed === 'number' ? seed : Math.floor(Math.random() * 1000000);
-  const featuredProduct = productsArray.length > 0 ? productsArray[seedNum % productsArray.length] : '';
-
-  // ─── 1. DEEP DOMAIN & TOPIC ANALYSIS ───────────────────────────────────────
+  // ─── 1. DEEP TOPIC ANALYSIS ───────────────────────────────────────────────
   const rawTopic = (topic || 'Commercial Brand Campaign').trim();
   const topicLower = rawTopic.toLowerCase();
-
-  // Combine domain text prioritizing verified industry, company description, and products
-  const domainContext = `${industry} ${companyDescription} ${productsListStr} ${brandForDomain}`.toLowerCase();
-  const fullContext = `${domainContext} ${topicLower}`.toLowerCase();
+  const textContext = `${cleanBrand} ${industry} ${companyDescription} ${rawTopic}`.toLowerCase();
 
   let sceneDetails = '';
+  const isOfferSale = /offer|discount|deal|countdown|sale|special|coupon|promo|limited|exclusive/i.test(topicLower);
+  const isFamilyPhoto = /family photo|vintage family|family picture|family portrait|ancestor|grandma|grandfather|family member|origin story/i.test(topicLower);
+  const isBehindTheScenes = /behind the scenes|maker|craft|kitchen|bottling|factory|team|production|making|handcrafted|floor|unboxing/i.test(topicLower);
+  const isIngredientFarm = /ingredient|farm|harvest|chili|datil|fresh tomatoes|field|grow|farmer|organic/i.test(topicLower);
+  const isRecipeDish = /recipe|dish|plate|meal|wing|burger|pairing|cooking|culinary|brunch|chef|taste/i.test(topicLower);
+  const isProductHero = /bottle|packaging|product|shelf|label|display|introduction|launch|collection/i.test(topicLower);
+  const isHeritageOrigin = /heritage|origin|history|throwback|family recipe|30-year|traditional/i.test(textContext);
+  const isTestimonial = /testimonial|customer|review|challenge|fan|community|patio|friends|lifestyle|story/i.test(topicLower);
+  const isFoodTourLocal = /food tour|st\. augustine|exploring|local spots|community|partnership|local love/i.test(topicLower);
+  const isTechSaas = /saas|software|app|ai|platform|analytics|dashboard|tech|digital|automation|cloud/i.test(textContext);
+  const isFashionApparel = /fashion|apparel|clothing|wear|style|boutique|outfit|footwear|sneaker/i.test(textContext);
+  const isHealthWellness = /health|fitness|wellness|workout|gym|clinic|care|skin|beauty/i.test(textContext);
 
-  // Specific domain detection
-  const isFoodBeverage = /food|beverage|dining|restaurant|cafe|coffee|tea|bakery|cake|bread|snack|namkeen|sweet|mithai|burger|pizza|pasta|dish|recipe|culinary|chef|meal|bistro|sauce|spice|chili|farm|organic|grocery|dairy|chocolate|cocktail|juice/i.test(fullContext);
-  const isFashionApparel = /fashion|apparel|clothing|dress|shirt|tshirt|jeans|hoodie|jacket|suit|footwear|sneaker|shoes|boots|bag|handbag|wallet|boutique|streetwear|runway|outfit|wear|textile|couture/i.test(fullContext);
-  const isBeautyCosmetics = /beauty|skincare|cosmetic|makeup|serum|cream|lotion|moisturizer|cleanser|lipstick|perfume|fragrance|spa|haircare|shampoo|salon|wellness/i.test(fullContext) && !isFoodBeverage;
-  const isJewelryLuxury = /jewelry|jewellery|diamond|gold|silver|necklace|ring|earring|bracelet|gemstone|luxury watch|timepiece|solitaire|platinum/i.test(fullContext);
-  const isTravelTransit = /travel|trip|tourism|hotel|resort|vacation|tour|flight|airline|bus|transit|commute|passenger|ticket|booking|highway|destination|luggage|adventure|getaway/i.test(fullContext);
-  const isRealEstateHome = /real estate|property|villa|apartment|home|house|penthouse|interior|decor|furniture|sofa|chair|table|living room|architecture|builder/i.test(fullContext);
-  const isHealthFitness = /fitness|workout|gym|trainer|yoga|crossfit|nutrition|supplement|protein|doctor|dental|clinic|medical|healthcare/i.test(fullContext) && !isFoodBeverage;
-  const isStationeryCraft = /stationery|pencil|pen|notebook|paper|book|student|school|academy|course|learning|education|craft|handmade|pottery|ceramic|art/i.test(fullContext);
-  const isAutomotive = /car|auto|automotive|vehicle|motorcycle|bike|ev|engine|supercar|drive|dealership/i.test(fullContext);
-
-  // ONLY treat as Tech/SaaS if the brand's verified business industry explicitly says software/tech, NOT just because of platform name
-  const isExplicitTechSoftware = /software development|saas platform|cybersecurity|cloud infrastructure|database provider|api service|developer tools/i.test(domainContext) &&
-    !isFoodBeverage && !isFashionApparel && !isBeautyCosmetics && !isJewelryLuxury && !isTravelTransit && !isRealEstateHome;
-
-  // Topic angle modifiers
-  const isOfferSale = /offer|discount|deal|countdown|sale|special|coupon|promo|limited|exclusive|festive/i.test(topicLower);
-  const isBehindTheScenes = /behind the scenes|maker|craft|kitchen|bottling|factory|team|production|making|handcrafted|workshop|unboxing/i.test(topicLower);
-  const isTestimonial = /testimonial|customer|review|challenge|fan|community|happy customer|patio|friends|lifestyle/i.test(topicLower);
-
-  // Construct domain-authentic, product-centered scenes
-  if (isFoodBeverage) {
-    const itemToFeature = featuredProduct || rawTopic;
-    if (isBehindTheScenes) {
-      sceneDetails = `Warm authentic behind-the-scenes culinary kitchen scene for ${cleanBrand}, artisanal chef preparing "${itemToFeature}", rustic counter, fresh raw ingredients and spices, soft morning bistro light`;
-    } else if (isOfferSale) {
-      sceneDetails = `Eye-catching commercial food promotion for ${cleanBrand} showcasing delicious "${itemToFeature}", enticing gourmet presentation on a rich rustic wooden tabletop, brand color accents (${colorsList}), dynamic warm appetite lighting`;
-    } else {
-      sceneDetails = `Mouth-watering gourmet commercial food photography for ${cleanBrand} showcasing "${itemToFeature}", delicate steam rising, artfully plated on a stone or rustic wooden surface with fresh garnishes, rich textures, warm ambient bistro lighting, Michelin-guide commercial standard`;
-    }
+  if (isOfferSale) {
+    sceneDetails = `High-impact commercial promotional offer display for ${cleanBrand} focusing on "${rawTopic}", sleek announcement presentation, brand color accents (${colorsList}), polished studio commercial advertising photography`;
+  } else if (isFamilyPhoto) {
+    sceneDetails = `Authentic warm family photo portrait for ${cleanBrand} illustrating "${rawTopic}", sepia-toned film photography, emotional storytelling and heritage connection, 35mm film commercial visual`;
+  } else if (isBehindTheScenes) {
+    sceneDetails = `Authentic behind-the-scenes craft production for ${cleanBrand} highlighting "${rawTopic}", small-batch artisanal team in modern workspace, authentic craftsmanship photography`;
+  } else if (isIngredientFarm) {
+    sceneDetails = `Vibrant close-up macro photography of fresh natural ingredients focusing on "${rawTopic}" for ${cleanBrand}, rustic wooden surface with morning dew drops, farm-to-table natural lighting`;
+  } else if (isProductHero) {
+    sceneDetails = `Sleek product hero presentation for ${cleanBrand} highlighting "${rawTopic}", prominently displayed on an elegant reflective tabletop with brand color accents (${colorsList}), commercial product advertising shot`;
+  } else if (isFoodTourLocal) {
+    sceneDetails = `Sunlit historic street scene with outdoor dining patio featuring ${cleanBrand} for "${rawTopic}", warm travel lifestyle photography`;
+  } else if (isRecipeDish) {
+    sceneDetails = `Mouth-watering gourmet dish presentation for ${cleanBrand} showcasing "${rawTopic}", rich aroma steam, warm bistro lighting, macro food photography`;
+  } else if (isHeritageOrigin) {
+    sceneDetails = `Nostalgic vintage editorial scene celebrating ${cleanBrand}'s heritage and origin story around "${rawTopic}", warm morning sunbeams, editorial commercial photography`;
+  } else if (isTestimonial) {
+    sceneDetails = `High-energy outdoor lifestyle scene with satisfied customers enjoying ${cleanBrand} ("${rawTopic}"), golden hour natural light, vibrant social ad visual`;
+  } else if (isTechSaas) {
+    sceneDetails = `Clean modern glass tech headquarters for ${cleanBrand} illustrating "${rawTopic}", sleek minimalist desk with high-tech workspace environment, soft studio lighting, executive aesthetic`;
   } else if (isFashionApparel) {
-    const itemToFeature = featuredProduct || rawTopic;
-    if (isBehindTheScenes) {
-      sceneDetails = `Behind-the-scenes fashion atelier and tailor workshop for ${cleanBrand}, master craftsmanship, fabric rolls, elegant garment details of "${itemToFeature}", natural studio daylight`;
-    } else {
-      sceneDetails = `High-end commercial fashion editorial for ${cleanBrand} featuring "${itemToFeature}", elegant model in contemporary outdoor street styling or minimalist sunlit studio, luxurious fabric textures and drape, brand palette highlights (${colorsList}), Vogue magazine aesthetic`;
-    }
-  } else if (isBeautyCosmetics) {
-    const itemToFeature = featuredProduct || rawTopic;
-    sceneDetails = `Pristine commercial beauty and skincare advertising photography for ${cleanBrand} highlighting "${itemToFeature}", product bottle resting on wet reflective marble vanity with fresh botanical dew drops and gentle sunbeams, crystal-clear water ripples, radiant organic luxury aesthetic`;
-  } else if (isJewelryLuxury) {
-    const itemToFeature = featuredProduct || rawTopic;
-    sceneDetails = `Exquisite ultra-luxury fine jewelry commercial hero shot of "${itemToFeature}" for ${cleanBrand}, resting on black velvet and polished obsidian stone, dramatic macro directional rim lighting capturing diamond brilliance, gold sheen, and crisp metallic reflections`;
-  } else if (isTravelTransit) {
-    sceneDetails = `Breathtaking cinematic travel lifestyle commercial photography for ${cleanBrand} celebrating "${rawTopic}", modern travelers on a scenic road journey or picturesque sun-drenched destination, golden hour horizon lighting, wanderlust atmosphere and effortless booking experience`;
-  } else if (isRealEstateHome) {
-    const itemToFeature = featuredProduct || rawTopic;
-    sceneDetails = `Architectural Digest commercial interior photography for ${cleanBrand} featuring "${itemToFeature}", sun-drenched contemporary living space with elegant high ceilings, designer furniture, warm ambient natural light streaming through floor-to-ceiling windows`;
-  } else if (isHealthFitness) {
-    const itemToFeature = featuredProduct || rawTopic;
-    sceneDetails = `Energizing commercial fitness lifestyle photography for ${cleanBrand} highlighting "${itemToFeature}", motivated athlete in a sleek bright modern training space, dynamic morning sunlight, inspiring health vitality, clean crisp advertising aesthetic`;
-  } else if (isStationeryCraft) {
-    const itemToFeature = featuredProduct || rawTopic;
-    sceneDetails = `Artisanal commercial still-life photography featuring "${itemToFeature}" for ${cleanBrand}, textured rustic wooden workbench, notebook sketches, delicate natural afternoon lighting, authentic creative craftsmanship`;
-  } else if (isAutomotive) {
-    sceneDetails = `Dynamic high-end automotive commercial photography for ${cleanBrand} illustrating "${rawTopic}", sleek vehicle on a scenic winding road at dusk, cinematic low-angle composition, dramatic headlights and rich metallic reflections`;
-  } else if (isExplicitTechSoftware) {
-    sceneDetails = `Sleek modern digital product visualization for ${cleanBrand} illustrating "${rawTopic}", minimalist holographic UI dashboard interface floating elegantly in a contemporary studio space with soft ambient brand glow (${colorsList}), futuristic executive aesthetic`;
-  } else if (featuredProduct) {
-    // Brand has real products: feature the product front and center!
-    sceneDetails = `High-impact commercial hero product photography of "${featuredProduct}" for ${cleanBrand} illustrating "${rawTopic}", prominently displayed on an elegant display pedestal with harmonious brand color accents (${colorsList}), soft diffused key lighting, award-winning packaging commercial standard`;
+    sceneDetails = `High-end fashion editorial scene for ${cleanBrand} showcasing "${rawTopic}", sunlit studio setting, elegant apparel display, Vogue editorial photography`;
+  } else if (isHealthWellness) {
+    sceneDetails = `Clean refreshing wellness lifestyle visual for ${cleanBrand} illustrating "${rawTopic}", bright serene daylight, natural botanical elements, high-end healthcare visual`;
   } else {
-    // General business/lifestyle: authentic commercial ad scene tailored to brand's topic
-    sceneDetails = `Sophisticated commercial advertising scene for ${cleanBrand} deeply expressing "${rawTopic}", authentic lifestyle atmosphere with brand color harmonies (${colorsList}), pristine focus, natural warm ambient lighting, premium commercial advertising quality`;
+    sceneDetails = `Commercial advertising studio setup for ${cleanBrand} deeply analyzing "${rawTopic}", modern architectural interior, brand colors (${colorsList}), subtle ambient lighting, pristine focus, premium commercial ad aesthetic`;
   }
 
   // ─── 2. BRAND LOGO INTEGRATION DIRECTIVE ─────────────────────────────────
-  let logoPlacementContext = 'subtle product packaging mark, elegant brand emblem, or engraved environmental branding';
-  if (isFoodBeverage) {
-    logoPlacementContext = 'artisan food packaging label, menu emblem, rustic wooden stamp, or subtle bottle/jar branding';
-  } else if (isFashionApparel) {
-    logoPlacementContext = 'woven luxury garment tag, embossed leather patch, subtle boutique packaging, or elegant storefront signage';
-  } else if (isBeautyCosmetics) {
-    logoPlacementContext = 'pristine cosmetic bottle label, embossed gold foil mark, or luxury vanity packaging';
-  } else if (isJewelryLuxury) {
-    logoPlacementContext = 'fine engraved metal hallmark, luxury velvet box emblem, or boutique presentation card';
-  } else if (isTravelTransit) {
-    logoPlacementContext = 'sleek vehicle livery, travel ticket emblem, modern transit terminal signage, or travel accessories badge';
-  } else if (isRealEstateHome) {
-    logoPlacementContext = 'elegant architectural entryway sign, tasteful designer plaque, or lifestyle interior branding';
-  }
-  const logoDirective = `with the official logo mark and brand name for "${cleanBrand}" naturally integrated directly inside the image scene architecture (${logoPlacementContext}), appearing completely native and seamless as part of the photograph`;
+  const logoDirective = `with the official logo mark and brand name for "${cleanBrand}" naturally integrated directly inside the image scene architecture (such as an elegant illuminated wall sign, background neon brand emblem, polished office desk plaque, subtle product packaging mark, or engraved environmental branding), appearing completely native and seamless as part of the photograph`;
 
   // ─── 3. STYLE MODIFIERS ───────────────────────────────────────────────────
   let styleDirective = 'commercial advertising photography, 8k resolution, photorealistic, professional studio lighting, Hasselblad H6D-100c, masterwork';
@@ -169,6 +113,7 @@ function craftBrandAdPrompt({
     styleDirective = 'ultra-luxury dark studio editorial, rich obsidian textures, polished metallic reflections, subtle gold accents, high-end commercial ad';
   }
 
+  const seedNum = typeof seed === 'number' ? seed : Math.floor(Math.random() * 1000000);
   const angles = [
     'hero product perspective with dramatic studio lighting',
     'cinematic wide editorial scene with rich depth of field',
@@ -180,8 +125,7 @@ function craftBrandAdPrompt({
 
   const cleanImageDirective = 'clean commercial photography, crisp focus, no distorted text, no mangled typography, professional advertising finish';
 
-  const productMention = featuredProduct ? `, prominently showcasing "${featuredProduct}"` : '';
-  const finalPrompt = `${sceneDetails}${productMention}, ${selectedAngle}, deep topic alignment: "${rawTopic}", authentic brand identity of ${cleanBrand} ("${tagline || rawTopic}"), brand color harmony (${colorsList}), ${logoDirective}, ${styleDirective}, ${cleanImageDirective}`;
+  const finalPrompt = `${sceneDetails}, ${selectedAngle}, deep topic alignment: "${rawTopic}", authentic brand identity of ${cleanBrand} ("${tagline || rawTopic}"), brand color harmony (${colorsList}), ${logoDirective}, ${styleDirective}, ${cleanImageDirective}`;
   return finalPrompt;
 }
 
@@ -268,40 +212,40 @@ function generateBrand3DSvg({
       
       <!-- Headline Container -->
       <rect x="36" y="36" width="${width * 0.84 - 72}" height="104" rx="20" fill="rgba(255,255,255,0.04)"/>
-      <text x="60" y="74" fill="${primaryColor}" font-family="'Inter', -apple-system, sans-serif" font-size="13" font-weight="800" letter-spacing="2">AUTHENTIC BRAND SPOTLIGHT</text>
+      <text x="60" y="74" fill="${primaryColor}" font-family="'Inter', -apple-system, sans-serif" font-size="13" font-weight="800" letter-spacing="2">BRAND DNA STRATEGIC CAMPAIGN</text>
       <text x="60" y="110" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="${is916 ? '20' : '26'}" font-weight="900">${displayTopic}</text>
 
-      <!-- Key Performance Metrics (Brand-Universal) -->
+      <!-- Key Performance Metrics -->
       <g transform="translate(36, 166)">
         <rect width="${(width * 0.84 - 96) / 3}" height="118" rx="20" fill="rgba(255,255,255,0.05)" stroke="${primaryColor}" stroke-width="1.2"/>
-        <text x="24" y="42" fill="${primaryColor}" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="800">QUALITY</text>
-        <text x="24" y="82" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="28" font-weight="900">100%</text>
-        <text x="24" y="104" fill="#94A3B8" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="600">Premium Standard</text>
+        <text x="24" y="42" fill="${primaryColor}" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="800">PERFORMANCE</text>
+        <text x="24" y="82" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="28" font-weight="900">10x</text>
+        <text x="24" y="104" fill="#94A3B8" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="600">AI Accelerated</text>
       </g>
 
       <g transform="translate(${36 + (width * 0.84 - 96) / 3 + 12}, 166)">
         <rect width="${(width * 0.84 - 96) / 3}" height="118" rx="20" fill="rgba(255,255,255,0.05)" stroke="${accentColor}" stroke-width="1.2"/>
-        <text x="24" y="42" fill="${accentColor}" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="800">SATISFACTION</text>
-        <text x="24" y="82" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="28" font-weight="900">5.0 ★</text>
-        <text x="24" y="104" fill="#94A3B8" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="600">Top Customer Choice</text>
+        <text x="24" y="42" fill="${accentColor}" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="800">MARKET REACH</text>
+        <text x="24" y="82" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="28" font-weight="900">GLOBAL</text>
+        <text x="24" y="104" fill="#94A3B8" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="600">Enterprise Standard</text>
       </g>
 
       <g transform="translate(${36 + ((width * 0.84 - 96) / 3) * 2 + 24}, 166)">
         <rect width="${(width * 0.84 - 96) / 3}" height="118" rx="20" fill="rgba(255,255,255,0.05)" stroke="#10B981" stroke-width="1.2"/>
-        <text x="24" y="42" fill="#6EE7B7" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="800">COMMUNITY</text>
-        <text x="24" y="82" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="28" font-weight="900">VERIFIED</text>
-        <text x="24" y="104" fill="#94A3B8" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="600">Authentic Brand</text>
+        <text x="24" y="42" fill="#6EE7B7" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="800">ACCURACY</text>
+        <text x="24" y="82" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="28" font-weight="900">99.9%</text>
+        <text x="24" y="104" fill="#94A3B8" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="600">Verified Architecture</text>
       </g>
 
       <!-- Customer Quote Banner inside Card -->
       <g transform="translate(36, 314)">
         <rect width="${width * 0.84 - 72}" height="106" rx="20" fill="rgba(255,255,255,0.04)" stroke="url(#glassBorder)" stroke-width="1"/>
         <text x="28" y="42" fill="#E2E8F0" font-family="'Inter', -apple-system, sans-serif" font-size="14" font-weight="600" font-style="italic">
-          "Exceptional quality, genuine craftsmanship, and unforgettable value from ${bName}."
+          "Pioneering intelligence, breakthrough performance, and transformative scale for ${bName}."
         </text>
         <circle cx="42" cy="78" r="13" fill="${primaryColor}"/>
         <text x="42" y="83" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="12" font-weight="900" text-anchor="middle">✓</text>
-        <text x="68" y="82" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="13" font-weight="800">Official ${bName} Showcase · Authentic Products &amp; Experience</text>
+        <text x="68" y="82" fill="#FFFFFF" font-family="'Inter', -apple-system, sans-serif" font-size="13" font-weight="800">Verified ${bName} Brand DNA Profile · Quality Guaranteed</text>
       </g>
     </g>
 
@@ -362,7 +306,6 @@ async function _executeBrandAdImageGeneration({
   industry,
   tagline,
   companyDescription,
-  products = [],
   prompt,
   customPrompt,
   topic = 'Brand Campaign',
@@ -379,7 +322,6 @@ async function _executeBrandAdImageGeneration({
   let resolvedTagline = tagline;
   let resolvedDescription = companyDescription;
   let resolvedLogoUrl = logoUrl || brandLogo || '';
-  let resolvedProducts = Array.isArray(products) ? [...products] : (products ? [products] : []);
   let domainUrl = '';
 
   if (workspaceId) {
@@ -392,26 +334,13 @@ async function _executeBrandAdImageGeneration({
         resolvedDescription = resolvedDescription || ws.metaDescription || ws.positioningSummary;
         resolvedLogoUrl = resolvedLogoUrl || ws.logoUrl || ws.logo;
         domainUrl = ws.domainUrl || ws.website || '';
-        if (resolvedProducts.length === 0 && Array.isArray(ws.coreProductsServices) && ws.coreProductsServices.length > 0) {
-          resolvedProducts = [...ws.coreProductsServices];
-        }
       }
       const bp = await BrandProfile.findOne({ workspaceId });
       if (bp) {
         resolvedTagline = resolvedTagline || bp.tagline;
-        resolvedIndustry = resolvedIndustry || bp.industryCategory || bp.targetIndustry || bp.structuredIdentity?.industry || bp.industry;
-        resolvedDescription = resolvedDescription || bp.companyDescription || bp.companyOverviewText || bp.extractedBrandSummary;
+        resolvedIndustry = resolvedIndustry || bp.industry;
+        resolvedDescription = resolvedDescription || bp.companyDescription;
         resolvedLogoUrl = resolvedLogoUrl || bp.logoUrl || bp.logo;
-
-        if (resolvedProducts.length === 0) {
-          if (Array.isArray(bp.coreProductsServices) && bp.coreProductsServices.length > 0) {
-            resolvedProducts = [...bp.coreProductsServices];
-          } else if (bp.structuredIdentity?.products_services && bp.structuredIdentity.products_services.length > 0) {
-            resolvedProducts = [...bp.structuredIdentity.products_services];
-          } else if (Array.isArray(bp.products) && bp.products.length > 0) {
-            resolvedProducts = bp.products.map(p => typeof p === 'string' ? p : (p.name || p.title || '')).filter(Boolean);
-          }
-        }
       }
     } catch (e) {
       console.warn('[BrandImageAgent] DB context load note:', e.message);
@@ -438,7 +367,6 @@ async function _executeBrandAdImageGeneration({
     tagline: resolvedTagline,
     companyDescription: resolvedDescription,
     brandColors: resolvedColors,
-    products: resolvedProducts,
     topic,
     postType,
     platform,

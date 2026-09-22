@@ -85,65 +85,22 @@ exports.listAssets = async (req, res) => {
 
 
 // ─── Helper: Get brand context ────────────────────────────────────────────────
-// ─── Helper: Get brand context ────────────────────────────────────────────────
 const getBrandContext = async (workspaceId, directBrandName = '') => {
   let context = '';
-  let resolvedProducts = [];
-  let resolvedIndustry = '';
-
   if (workspaceId) {
     try {
       const ws = await Workspace.findById(workspaceId);
       if (ws) {
-        resolvedIndustry = ws.industryCategory || ws.niche || '';
-        context += `Brand Name: ${ws.brandName}\nWebsite/Domain: ${ws.domainUrl || ''}\nPrimary Business Industry: ${resolvedIndustry}\nTagline: ${ws.tagline || ''}\nMission: ${ws.missionStatement || ''}\nPositioning: ${ws.positioningSummary || ''}\nContent Pillars: ${(ws.contentPillars || []).join(', ')}\nTarget Audience: ${(ws.targetAudience || []).join(', ')}\n`;
-        if (Array.isArray(ws.coreProductsServices) && ws.coreProductsServices.length > 0) {
-          resolvedProducts = [...ws.coreProductsServices];
-        }
+        context += `Brand Name: ${ws.brandName}\nDomain: ${ws.domainUrl}\nIndustry: ${ws.industryCategory}\nTagline: ${ws.tagline || ''}\nMission: ${ws.missionStatement || ''}\nPositioning: ${ws.positioningSummary || ''}\nContent Pillars: ${(ws.contentPillars || []).join(', ')}\nTarget Audience: ${(ws.targetAudience || []).join(', ')}\n`;
       }
       const brand = await BrandProfile.findOne({ workspaceId });
-      if (brand) {
-        resolvedIndustry = brand.industryCategory || brand.targetIndustry || brand.structuredIdentity?.industry || resolvedIndustry;
-        if (resolvedIndustry) context += `Verified Industry/Niche: ${resolvedIndustry}\n`;
-        const desc = brand.companyDescription || brand.companyOverviewText || brand.extractedBrandSummary;
-        if (desc) context += `Company Overview & What We Do: ${desc}\n`;
-
-        let prods = [];
-        if (Array.isArray(brand.coreProductsServices) && brand.coreProductsServices.length > 0) {
-          prods = brand.coreProductsServices;
-        } else if (brand.structuredIdentity?.products_services && brand.structuredIdentity.products_services.length > 0) {
-          prods = brand.structuredIdentity.products_services;
-        } else if (Array.isArray(brand.products) && brand.products.length > 0) {
-          prods = brand.products.map(p => typeof p === 'string' ? p : (p.name || p.title || '')).filter(Boolean);
-        }
-
-        if (prods.length > 0) {
-          resolvedProducts = Array.from(new Set([...resolvedProducts, ...prods]));
-        }
-
-        if (brand.structuredIdentity) {
-          context += '\nBrand Structured Identity:\n' + JSON.stringify(brand.structuredIdentity, null, 2);
-        }
-      }
-
-      if (resolvedProducts.length > 0) {
-        context += `\nCORE PRODUCTS / SERVICES OFFERED BY COMPANY:\n- ${resolvedProducts.join('\n- ')}\n`;
-      }
-    } catch (e) {
-      console.warn('[ContentController] getBrandContext notice:', e.message);
-    }
+      if (brand && brand.structuredIdentity) context += '\n' + JSON.stringify(brand.structuredIdentity, null, 2);
+    } catch {}
   }
-
   if (!context && directBrandName) {
     context = `Brand Name: ${directBrandName}`;
   }
-
-  // Create an object that stringifies cleanly when used in templates, while exposing structured properties
-  const result = new String(context);
-  result.context = context;
-  result.products = resolvedProducts;
-  result.industry = resolvedIndustry;
-  return result;
+  return context;
 };
 
 // ─── Helper: Clean markdown formatting & symbols ─────────────────────────────
@@ -200,16 +157,14 @@ BRAND DNA CONTEXT:
 ${brandContext}
 ═══════════════════════════════════════════════════════` : ''}${activeDirectives}
 
-CRITICAL DOMAIN & PRODUCT-CENTRIC DIRECTIVES:
-1. GROUNDED IN REAL BRAND CONTEXT: Ground all copy, hooks, and visual prompts strictly in the company's actual business domain and real products/services listed in Brand DNA.
-2. ABSOLUTELY NO UNWANTED TECH BIAS: DO NOT assume or force a tech, software, SaaS, or coding angle unless the brand explicitly manufactures IT/software products. If the brand sells food, fashion, travel, beauty, real estate, education, healthcare, or physical consumer goods, talk specifically about their real products, taste, craft, style, or customer lifestyle.
-3. HOOK: Write a pattern-interrupt hook (First 3 seconds / 2 lines) that stops scrolling immediately.
-4. CAPTION COPY: Use the PAS (Problem-Agitate-Solve) or AIDA (Attention-Interest-Desire-Action) framework. Weave the brand's actual product benefits seamlessly.
-5. SEO & KEYWORDS: Naturally integrate 2-3 high-ranking search intent keywords into the body copy.
-6. CTA (Call To Action): Create an irresistible, friction-free action step (e.g. "Comment 'GUIDE' for link", "Save this post for later", or "Tap bio link").
-7. HASHTAGS: Provide 10-12 curated hashtags: 3 brand tags, 5 high-intent niche tags, and 3 viral community tags.
-8. IMAGE PROMPT: Write a photorealistic commercial advertising photography prompt depicting the brand's actual product or authentic customer lifestyle setting (e.g., gourmet dish on a rustic table, apparel on a model, skincare on a sunlit marble vanity, scenic travel destination). NEVER default to a generic office desk or laptop unless the brand is an IT company.
-9. FORMATTING DIRECTIVE: Write clean readable text without asterisks (**) or markdown formatting in captions, hooks, or copy unless specifically requested by user.
+CRITICAL COPYWRITING & SEO DIRECTIVES:
+1. HOOK: Write a pattern-interrupt hook (First 3 seconds / 2 lines) that stops scrolling immediately.
+2. CAPTION COPY: Use the PAS (Problem-Agitate-Solve) or AIDA (Attention-Interest-Desire-Action) framework. Deliver genuine value and weave the brand's unique value proposition seamlessly.
+3. SEO & KEYWORDS: Naturally integrate 2-3 high-ranking search intent keywords into the body copy.
+4. CTA (Call To Action): Create an irresistible, friction-free action step (e.g. "Comment 'GUIDE' for link", "Save this post for later", or "Tap bio link").
+5. HASHTAGS: Provide 10-12 curated hashtags: 3 brand tags, 5 high-intent niche tags, and 3 viral community tags.
+6. IMAGE PROMPT: Write a photorealistic, studio-quality commercial photography prompt (e.g., "85mm lens, soft studio lighting, ultra-detailed textures, clean aesthetic, 8k resolution").
+7. FORMATTING DIRECTIVE: Write clean readable text without asterisks (**) or markdown formatting in captions, hooks, or copy unless specifically requested by user.
 
 Return a JSON object with this exact structure:
 {
@@ -259,8 +214,6 @@ Return a JSON object with this exact structure:
         topic,
         postType,
         platform,
-        products: brandContext.products || [],
-        industry: brandContext.industry || '',
         style: 'Photorealistic Commercial',
         aspect
       });
@@ -280,8 +233,7 @@ Return a JSON object with this exact structure:
         brandName: cleanBrand,
         topic,
         style: 'Photorealistic Commercial',
-        aspect,
-        industry: brandContext.industry || ''
+        aspect
       });
       postData.imagePrompt = `${topic} — ${cleanBrand} commercial advertising photography, 8k`;
       postData.imageStyle = 'Photorealistic Commercial';

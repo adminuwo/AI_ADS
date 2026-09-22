@@ -37,7 +37,6 @@ import { PlanGate } from './components/layout/PlanGate';
 const MainContent = () => {
   const workspace = useWorkspace() || {};
   const {
-    activeWorkspace,
     activeModule = 'landing',
     isAISAAssistantOpen = false,
     setIsAISAAssistantOpen = () => {},
@@ -46,7 +45,8 @@ const MainContent = () => {
     customAlert = null,
     closeCustomAlert = () => {},
     toast = null,
-    closeToast = () => {}
+    closeToast = () => {},
+    activeWorkspace = null
   } = workspace;
 
   React.useEffect(() => {
