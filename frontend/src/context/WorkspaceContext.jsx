@@ -1789,17 +1789,17 @@ export const WorkspaceProvider = ({ children }) => {
 
   const [theme, setThemeState] = useState(() => {
     try {
-      return localStorage.getItem('aisa_theme') || localStorage.getItem('aisa_appearance') || 'dark';
+      return localStorage.getItem('aisa_theme') || localStorage.getItem('aisa_appearance') || 'light';
     } catch (e) {
-      return 'dark';
+      return 'light';
     }
   });
 
   const [appearance, setAppearanceState] = useState(() => {
     try {
-      return localStorage.getItem('aisa_appearance') || 'dark';
+      return localStorage.getItem('aisa_appearance') || 'light';
     } catch (e) {
-      return 'dark';
+      return 'light';
     }
   });
 
@@ -1913,10 +1913,48 @@ export const WorkspaceProvider = ({ children }) => {
   // Target data for redirecting from Calendar or other modules directly into Content Studio
   const [studioTarget, setStudioTarget] = useState(null);
 
-  // Pipeline Shared States
-  const [brandDnaData, setBrandDnaData] = useState(null);
-  const [seoSearchData, setSeoSearchData] = useState(null);
-  const [generatedStrategy, setGeneratedStrategy] = useState(null);
+  // Pipeline Shared States — persisted to localStorage so they survive reload
+  const [brandDnaData, setBrandDnaDataState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aisa_brand_dna_data');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) { return null; }
+  });
+  const setBrandDnaData = (data) => {
+    setBrandDnaDataState(data);
+    try {
+      if (data) localStorage.setItem('aisa_brand_dna_data', JSON.stringify(data));
+      else localStorage.removeItem('aisa_brand_dna_data');
+    } catch (e) {}
+  };
+
+  const [seoSearchData, setSeoSearchDataState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aisa_seo_search_data');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) { return null; }
+  });
+  const setSeoSearchData = (data) => {
+    setSeoSearchDataState(data);
+    try {
+      if (data) localStorage.setItem('aisa_seo_search_data', JSON.stringify(data));
+      else localStorage.removeItem('aisa_seo_search_data');
+    } catch (e) {}
+  };
+
+  const [generatedStrategy, setGeneratedStrategyState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aisa_generated_strategy');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) { return null; }
+  });
+  const setGeneratedStrategy = (data) => {
+    setGeneratedStrategyState(data);
+    try {
+      if (data) localStorage.setItem('aisa_generated_strategy', JSON.stringify(data));
+      else localStorage.removeItem('aisa_generated_strategy');
+    } catch (e) {}
+  };
 
   // Global SEO Intelligence Data Map per Workspace (Persistent across tab & module changes)
   const [seoSearchDataMap, setSeoSearchDataMap] = useState(() => {
@@ -2032,18 +2070,27 @@ export const WorkspaceProvider = ({ children }) => {
     } catch (e) { }
   };
 
-  const [notificationPreferences, setNotificationPreferences] = useState({
-    emailDigest: true,
-    desktopPush: true,
-    soundEffects: true,
-    productUpdates: false,
+  const [notificationPreferences, setNotificationPreferencesState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aisa_notification_prefs');
+      return saved ? JSON.parse(saved) : { emailDigest: true, desktopPush: true, soundEffects: true, productUpdates: false };
+    } catch (e) { return { emailDigest: true, desktopPush: true, soundEffects: true, productUpdates: false }; }
   });
+  const setNotificationPreferences = (val) => {
+    setNotificationPreferencesState(val);
+    try { localStorage.setItem('aisa_notification_prefs', JSON.stringify(val)); } catch (e) {}
+  };
 
-  const [dataControlPreferences, setDataControlPreferences] = useState({
-    saveChatHistory: true,
-    shareWorkspaceLinks: true,
-    allowAnalytics: true,
+  const [dataControlPreferences, setDataControlPreferencesState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aisa_data_control_prefs');
+      return saved ? JSON.parse(saved) : { saveChatHistory: true, shareWorkspaceLinks: true, allowAnalytics: true };
+    } catch (e) { return { saveChatHistory: true, shareWorkspaceLinks: true, allowAnalytics: true }; }
   });
+  const setDataControlPreferences = (val) => {
+    setDataControlPreferencesState(val);
+    try { localStorage.setItem('aisa_data_control_prefs', JSON.stringify(val)); } catch (e) {}
+  };
 
 
 
@@ -2427,7 +2474,19 @@ export const WorkspaceProvider = ({ children }) => {
   ]);
 
   // Calendar State
-  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [calendarEvents, setCalendarEventsState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aisa_calendar_events');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) { return []; }
+  });
+  const setCalendarEvents = (eventsOrFn) => {
+    setCalendarEventsState(prev => {
+      const next = typeof eventsOrFn === 'function' ? eventsOrFn(prev) : eventsOrFn;
+      try { localStorage.setItem('aisa_calendar_events', JSON.stringify(next)); } catch (e) {}
+      return next;
+    });
+  };
 
   const [isQuickPostOpen, setIsQuickPostOpen] = useState(false);
   const [isScraperOpen, setIsScraperOpen] = useState(false);
@@ -2724,16 +2783,77 @@ export const WorkspaceProvider = ({ children }) => {
     setCalendarEvents(prev => [...newEvents, ...prev]);
   };
 
-  // ─── Global Asset Management ────────────────────────────────────────────────
+  // ─── Global Asset Management & Deduplication ──────────────────────────────────
+  const dedupeAssetsList = (assetsList) => {
+    if (!Array.isArray(assetsList)) return [];
+    const result = [];
+    const seenMap = new Map();
+
+    for (const a of assetsList) {
+      if (!a) continue;
+
+      const name = (a.name || a.title || '').trim();
+      const cleanName = name.toLowerCase();
+      const type = (a.type || a.category || 'DOCUMENT').trim().toUpperCase();
+      const platform = (a.metadata?.platform || '').trim().toLowerCase();
+      const url = (a.url || '').trim();
+      const id = (a.id || '').toString().trim();
+
+      // Build uniqueness signatures
+      const keys = [];
+      if (id) keys.push(`id:${id}`);
+      if (url && url.length > 15 && !url.includes('picsum.photos')) keys.push(`url:${url}`);
+      if (cleanName && cleanName !== 'brand asset') keys.push(`name:${cleanName}:${type}:${platform}`);
+
+      let existingIndex = -1;
+      for (const k of keys) {
+        if (seenMap.has(k)) {
+          existingIndex = seenMap.get(k);
+          break;
+        }
+      }
+
+      if (existingIndex >= 0) {
+        // Merge fields with existing entry, preserving rich data like database ID and generated image URL
+        const existing = result[existingIndex];
+        const merged = {
+          ...existing,
+          ...a,
+          url: a.url || existing.url,
+          content: a.content || existing.content,
+          id: (existing.id && !existing.id.startsWith('asset_') ? existing.id : a.id) || existing.id,
+          metadata: {
+            ...(existing.metadata || {}),
+            ...(a.metadata || {})
+          }
+        };
+        result[existingIndex] = merged;
+        for (const k of keys) {
+          seenMap.set(k, existingIndex);
+        }
+      } else {
+        const newIndex = result.length;
+        result.push(a);
+        for (const k of keys) {
+          seenMap.set(k, newIndex);
+        }
+      }
+    }
+
+    return result;
+  };
+
   const saveAssetsToLocalStorage = (assetsList, wsId) => {
     try {
-      const serialized = JSON.stringify(assetsList);
+      const deduped = dedupeAssetsList(assetsList);
+      const serialized = JSON.stringify(deduped);
       if (wsId) localStorage.setItem(`aisa_assets_${wsId}`, serialized);
       localStorage.setItem('aisa_global_assets', serialized);
     } catch (quotaErr) {
       console.warn('LocalStorage quota notice - caching stripped asset payload:', quotaErr.message);
       try {
-        const stripped = assetsList.map(a => ({
+        const deduped = dedupeAssetsList(assetsList);
+        const stripped = deduped.map(a => ({
           ...a,
           content: a.content && a.content.length > 5000 ? a.content.slice(0, 1000) + '...' : a.content
         }));
@@ -2750,9 +2870,7 @@ export const WorkspaceProvider = ({ children }) => {
       const savedWs = activeWorkspaceId ? localStorage.getItem(`aisa_assets_${activeWorkspaceId}`) : null;
       const wsArr = savedWs ? JSON.parse(savedWs) : [];
       const globalArr = savedGlobal ? JSON.parse(savedGlobal) : [];
-      const mergedMap = new Map();
-      [...wsArr, ...globalArr].forEach(a => { if (a && (a.id || a.name)) mergedMap.set(a.id || a.name, a); });
-      return Array.from(mergedMap.values());
+      return dedupeAssetsList([...wsArr, ...globalArr]);
     } catch {
       return [];
     }
@@ -2771,16 +2889,7 @@ export const WorkspaceProvider = ({ children }) => {
         const data = await res.json();
         if (data.success && Array.isArray(data.assets) && data.assets.length > 0) {
           setGlobalAssets(prev => {
-            const mergedMap = new Map();
-            // Start with DB assets, then merge existing in-memory assets so latest edits stay intact
-            [...data.assets, ...prev].forEach(a => {
-              if (a && (a.id || a.name)) {
-                const key = a.id || a.name;
-                const existing = mergedMap.get(key) || {};
-                mergedMap.set(key, { ...existing, ...a, url: a.url || existing.url });
-              }
-            });
-            const merged = Array.from(mergedMap.values());
+            const merged = dedupeAssetsList([...data.assets, ...prev]);
             saveAssetsToLocalStorage(merged, currentWs);
             return merged;
           });
@@ -2824,18 +2933,7 @@ export const WorkspaceProvider = ({ children }) => {
     } catch (e) { }
 
     setGlobalAssets(prev => {
-      const existingIdx = prev.findIndex(a => a.id === newAsset.id || (a.name === newAsset.name && a.metadata?.platform === newAsset.metadata?.platform));
-      let updated;
-      if (existingIdx >= 0) {
-        updated = [...prev];
-        updated[existingIdx] = {
-          ...updated[existingIdx],
-          ...newAsset,
-          url: newAsset.url || updated[existingIdx].url
-        };
-      } else {
-        updated = [newAsset, ...prev];
-      }
+      const updated = dedupeAssetsList([newAsset, ...prev]);
       saveAssetsToLocalStorage(updated, currentWs);
       return updated;
     });

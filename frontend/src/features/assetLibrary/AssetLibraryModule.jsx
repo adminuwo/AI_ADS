@@ -257,7 +257,59 @@ export const AssetLibraryModule = () => {
   const currentWsId = activeWorkspace?._id || activeWorkspace?.id;
   const currentBrand = activeWorkspace?.brandName;
 
-  const assets = globalAssets.filter(a => {
+  const dedupeAssets = (assetsList) => {
+    if (!Array.isArray(assetsList)) return [];
+    const result = [];
+    const seenMap = new Map();
+
+    for (const a of assetsList) {
+      if (!a) continue;
+
+      const name = (a.name || a.title || '').trim();
+      const cleanName = name.toLowerCase();
+      const type = (a.type || a.category || 'DOCUMENT').trim().toUpperCase();
+      const platform = (a.metadata?.platform || '').trim().toLowerCase();
+      const url = (a.url || '').trim();
+      const id = (a.id || '').toString().trim();
+
+      const keys = [];
+      if (id) keys.push(`id:${id}`);
+      if (url && url.length > 15 && !url.includes('picsum.photos')) keys.push(`url:${url}`);
+      if (cleanName && cleanName !== 'brand asset') keys.push(`name:${cleanName}:${type}:${platform}`);
+
+      let existingIndex = -1;
+      for (const k of keys) {
+        if (seenMap.has(k)) {
+          existingIndex = seenMap.get(k);
+          break;
+        }
+      }
+
+      if (existingIndex >= 0) {
+        const existing = result[existingIndex];
+        result[existingIndex] = {
+          ...existing,
+          ...a,
+          url: a.url || existing.url,
+          content: a.content || existing.content,
+          id: (existing.id && !existing.id.startsWith('asset_') ? existing.id : a.id) || existing.id,
+        };
+        for (const k of keys) {
+          seenMap.set(k, existingIndex);
+        }
+      } else {
+        const newIndex = result.length;
+        result.push(a);
+        for (const k of keys) {
+          seenMap.set(k, newIndex);
+        }
+      }
+    }
+
+    return result;
+  };
+
+  const rawAssets = globalAssets.filter(a => {
     if (!a) return false;
     // If active workspace is still initializing / loading on page reload, keep all global assets visible
     if (!currentWsId && !currentBrand) return true;
@@ -275,6 +327,8 @@ export const AssetLibraryModule = () => {
 
     return matchWs || matchBrand || isUnbound;
   });
+
+  const assets = dedupeAssets(rawAssets);
 
   const isSameDayAsset = (assetDate, calDate) => {
     if (!assetDate || !calDate) return false;
