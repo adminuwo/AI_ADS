@@ -37,6 +37,7 @@ import { PlanGate } from './components/layout/PlanGate';
 const MainContent = () => {
   const workspace = useWorkspace() || {};
   const {
+    activeWorkspace,
     activeModule = 'landing',
     isAISAAssistantOpen = false,
     setIsAISAAssistantOpen = () => {},
