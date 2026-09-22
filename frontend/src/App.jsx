@@ -45,7 +45,8 @@ const MainContent = () => {
     customAlert = null,
     closeCustomAlert = () => {},
     toast = null,
-    closeToast = () => {}
+    closeToast = () => {},
+    activeWorkspace = null
   } = workspace;
 
   React.useEffect(() => {
