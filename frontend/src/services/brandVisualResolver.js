@@ -103,19 +103,23 @@ const BRAND_VISUAL_POOLS = {
  * Infer the primary visual domain from prompt, brand name, and topic
  */
 export function detectVisualDomain(prompt = '', brand = '', topic = '') {
-  const text = `${prompt} ${brand} ${topic}`.toLowerCase();
+  const cleanBrand = /^(ai\s*ads?|my\s*brand|brand|default|untitled)$/i.test((brand || '').trim()) ? '' : (brand || '').trim();
+  const text = `${prompt} ${cleanBrand} ${topic}`.toLowerCase();
 
-  if (/redbus|bus|coach|travel|trip|transit|commute|passenger|ticket|booking|route|highway|tour/i.test(text)) {
+  if (/bus|coach|travel|trip|transit|commute|passenger|ticket|booking|route|highway|tour|flight|airline|train|cab|taxi|mobility/i.test(text)) {
     return 'BUS_TRAVEL_TRANSIT';
   }
-  if (/app|mobile|smartphone|software|saas|digital|platform|tech|ai|cloud|dashboard|code/i.test(text)) {
-    return 'TECH_SAAS_MOBILE';
-  }
-  if (/food|sweet|restaurant|dining|snack|namkeen|kaju|culinary|chef|bistro/i.test(text)) {
+  if (/food|sweet|restaurant|dining|snack|namkeen|kaju|culinary|chef|bistro|beverage|tea|coffee|dish|recipe|bakery|cake/i.test(text)) {
     return 'FOOD_DINING';
   }
-  if (/retail|ecommerce|shop|product|store|order|delivery|package/i.test(text)) {
+  if (/fashion|apparel|clothing|dress|shirt|footwear|sneakers|shoes|boutique|streetwear|runway|outfit|model|textile|couture|beauty|skincare|cosmetics|jewelry|jewellery/i.test(text)) {
     return 'ECOMMERCE_RETAIL';
+  }
+  if (/retail|ecommerce|shop|product|store|order|delivery|package|cart/i.test(text)) {
+    return 'ECOMMERCE_RETAIL';
+  }
+  if (/software development|saas platform|cloud infrastructure|cybersecurity|developer tools|fintech/i.test(text)) {
+    return 'TECH_SAAS_MOBILE';
   }
   return 'GENERAL_BUSINESS';
 }
