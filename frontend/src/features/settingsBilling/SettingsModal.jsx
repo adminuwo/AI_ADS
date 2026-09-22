@@ -1950,249 +1950,482 @@ export const SettingsModal = () => {
         return (
           <div className="space-y-6 pb-6">
             {/* Main Header Banner */}
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-brand-500/10 to-indigo-500/10 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-500/30 shadow-glow">
-                  <Shield className="w-6 h-6" />
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-brand-500/5 to-indigo-500/10 border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/25">
+                  <Shield className="w-5 h-5" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                      ISO-27001 & SOC-2 Governed
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400">v2.4 • Updated August 2026</span>
-                  </div>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-1">AI Ads™ Platform Privacy Policy & Data Governance</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    How your personal data, Brand DNA, and AI campaign collateral are protected, encrypted, and deleted.
+                <div className="min-w-0">
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                    AI Ads™ Privacy Policy
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+                    Updated September 2026
                   </p>
                 </div>
               </div>
+
+              <button 
+                type="button"
+                onClick={() => window.print()}
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-2xs self-stretch sm:self-auto justify-center"
+                title="Print or Save Privacy Policy as PDF"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export PDF</span>
+              </button>
             </div>
 
             {/* Quick Section Anchors */}
             <div className="flex flex-wrap gap-2 pb-2 border-b border-slate-200/80 dark:border-slate-800/80">
               <a href="#sec-collection" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                1. Data Collection
+                1. Information Collected
               </a>
               <a href="#sec-usage" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                2. AI Usage & Training
+                2. Use of Information
+              </a>
+              <a href="#sec-ai" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                3. AI Data Privacy
+              </a>
+              <a href="#sec-sharing" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                4. Third-Party Sharing
               </a>
               <a href="#sec-security" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                3. Security & AES-256
+                5. Security
               </a>
               <a href="#sec-deletion" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                4. Account Deletion
+                6. Retention & Deletion
               </a>
               <a href="#sec-rights" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                5. Rights & Controls
+                7. Your Rights
+              </a>
+              <a href="#sec-cookies" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                8. Cookies & Storage
+              </a>
+              <a href="#sec-children" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                9. Children's Privacy
+              </a>
+              <a href="#sec-updates" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                10. Updates
+              </a>
+              <a href="#sec-contact" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                11. Contact
               </a>
             </div>
 
-            {/* INFORMATION WE COLLECT */}
+            {/* 1. INFORMATION WE COLLECT */}
             <div id="sec-collection" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center font-black text-xs border border-blue-500/20">
                   01
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Information We Collect</h3>
-                  <p className="text-xs text-slate-400">Categories of personal identity, workspace assets, and system telemetry data</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">1. Information We Collect</h3>
+                  <p className="text-xs text-slate-400">Details on account, workspace, and usage data gathered when using AI Ads™</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    1.1 Personal Identity & Account Credentials
+                    1.1 Account & Registration Data
                   </h4>
                   <p>
-                    When you register on AI Ads™, we collect your email address, full name, profile avatar, role configuration (<code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-[11px]">AgencyAdmin</code>, <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-[11px]">SuperAdmin</code>), and cryptographically salted password hashes.
+                    When you create an account, we collect your email address, full name, profile picture, account role, and encrypted password credentials.
                   </p>
                 </div>
 
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    1.2 Brand DNA, Claims & Marketing Collateral
+                    1.2 Brand DNA & Workspace Assets
                   </h4>
                   <p>
-                    To enable tailored AI generation, we store brand positioning rules, value claims, target market parameters, content calendars, and campaign drafts created in your agency workspace.
+                    To generate personalized marketing content, we store brand positioning rules, value claims, target audience parameters, uploaded logos, content calendars, and campaign drafts created inside your workspace.
                   </p>
                 </div>
 
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    1.3 Real-Time Telemetry & Diagnostic Logs
+                    1.3 AI Inputs & Uploaded Collateral
                   </h4>
                   <p>
-                    We log user interaction events (such as navigation actions, website generation triggers, and error traces) to maintain system reliability. All sensitive parameters like authorization tokens and passwords are redacted prior to telemetry storage.
+                    We process text prompts, creative instructions, guidelines, and media assets you submit when generating ad copy, strategies, graphics, or landing page templates.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    1.4 Usage & Technical Logs
+                  </h4>
+                  <p>
+                    We automatically collect standard diagnostic details such as browser type, IP address, device information, and interaction timestamps to maintain platform performance and system stability.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* HOW WE USE YOUR INFORMATION */}
+            {/* 2. HOW WE USE INFORMATION */}
             <div id="sec-usage" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center font-black text-xs border border-purple-500/20">
                   02
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">How We Use Your Information</h3>
-                  <p className="text-xs text-slate-400">AI prompt tuning, transactional notifications, and service operations</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">2. How We Use Information</h3>
+                  <p className="text-xs text-slate-400">Powering AI content generation, service delivery, and transactional support</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    2.1 AI Campaign & Asset Synthesis
+                    2.1 Content Generation & Synthesis
                   </h4>
                   <p>
-                    Your Brand DNA claims and target audience settings are passed to Google Vertex AI / Gemini LLMs to synthesize on-brand ad copy, blog posts, and landing page templates.
-                  </p>
-                </div>
-
-                {/* HIGHLIGHT BOX: ZERO MODEL TRAINING GUARANTEE */}
-                <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-900 dark:text-purple-200 space-y-1">
-                  <div className="flex items-center gap-2 font-black text-xs">
-                    <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <span>🔒 ZERO THIRD-PARTY AI MODEL TRAINING GUARANTEE</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-purple-800 dark:text-purple-300">
-                    Your proprietary Brand DNA, uploaded marketing copy, and generated website assets are <strong>NEVER used to train public LLM models</strong>. Your enterprise competitive intelligence remains 100% private to your workspace.
+                    Your prompts and Brand DNA context are used to synthesize customized marketing copy, blog posts, ad strategy recommendations, and website designs.
                   </p>
                 </div>
 
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    2.2 Transactional & Security Communications
+                    2.2 Account Administration & Security
                   </h4>
                   <p>
-                    We send automated 6-digit Security OTP codes for account deletion verification, account creation welcome messages, and password reset notifications via encrypted SMTP services.
+                    We use your email to send essential account notices, security verification codes (OTP), billing updates, and password reset instructions.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    2.3 Optimization & Diagnostics
+                  </h4>
+                  <p>
+                    Technical interaction logs help our engineering team identify bug reports, optimize AI response speed, and refine user experience across our platform modules.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* DATA SECURITY & ENCRYPTION */}
-            <div id="sec-security" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+            {/* 3. AI & DATA USAGE */}
+            <div id="sec-ai" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-black text-xs border border-emerald-500/20">
+                <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-black text-xs border border-indigo-500/20">
                   03
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Data Security & Encryption Standards</h3>
-                  <p className="text-xs text-slate-400">Enterprise encryption protocols and strict tenant isolation</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">3. AI & Data Usage</h3>
+                  <p className="text-xs text-slate-400">AI prompt processing, data ownership, and model privacy guarantees</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    3.1 Encryption at Rest and in Transit
+                    3.1 How AI Processing Works
                   </h4>
                   <p>
-                    All database records in MongoDB Atlas are encrypted at rest using <strong>AES-256 algorithms</strong>. All network communications between your browser and our API servers are encrypted in transit using <strong>TLS 1.3</strong> protocol.
+                    When you request content generation, your text inputs and relevant Brand DNA context are transmitted to enterprise AI model provider APIs to synthesize targeted outputs.
                   </p>
                 </div>
 
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    3.2 Role-Based Access Control (RBAC) & Tenant Isolation
+                    3.2 Full Data Ownership
                   </h4>
                   <p>
-                    Strict workspace isolation guarantees that team members can only view resources within their assigned tenant organization. JWT authorization tokens expire automatically after 7 days.
+                    You retain 100% ownership of your Brand DNA, uploaded media assets, and all AI-generated content produced within your workspace.
+                  </p>
+                </div>
+
+                {/* NO PUBLIC MODEL TRAINING GUARANTEE */}
+                <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-900 dark:text-purple-200 space-y-1">
+                  <div className="flex items-center gap-2 font-black text-xs">
+                    <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <span>🔒 NO PUBLIC AI MODEL TRAINING GUARANTEE</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-purple-800 dark:text-purple-300">
+                    Your proprietary Brand DNA, confidential marketing copy, and generated creative collateral are <strong>never sold to third parties or used to train public AI models</strong>. Your competitive brand intelligence remains strictly private to your workspace.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* DATA RETENTION & PERMANENT ACCOUNT DELETION */}
-            <div id="sec-deletion" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+            {/* 4. THIRD-PARTY SERVICES & DATA SHARING */}
+            <div id="sec-sharing" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center font-black text-xs border border-rose-500/20">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-black text-xs border border-amber-500/20">
                   04
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Data Retention & Permanent Account Deletion</h3>
-                  <p className="text-xs text-slate-400">6-digit email OTP verification, deep database purge, and global logout</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">4. Third-Party Services & Data Sharing</h3>
+                  <p className="text-xs text-slate-400">Trusted service providers handling cloud hosting, AI processing, and payments</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    4.1 6-Digit Email Security OTP Identity Verification
+                    4.1 Essential Service Providers
                   </h4>
                   <p>
-                    To prevent accidental or malicious account removal, initiating account deletion sends a unique 6-digit security code to your registered email address. This OTP expires after 10 minutes.
+                    We partner with established third-party services to deliver core application functionality:
                   </p>
+                  <ul className="list-disc pl-5 mt-1 space-y-1 text-[11.5px] text-slate-600 dark:text-slate-300">
+                    <li>Cloud infrastructure providers for secure hosting and database storage.</li>
+                    <li>Enterprise AI model infrastructure for prompt processing and creative generation.</li>
+                    <li>Certified payment processors (such as Razorpay) for secure subscription billing handling.</li>
+                    <li>Email service providers for transactional messages and security verification codes.</li>
+                  </ul>
                 </div>
 
-                {/* HIGHLIGHT BOX: TOTAL DEEP PURGE GUARANTEE */}
-                <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 space-y-1">
-                  <div className="flex items-center gap-2 font-black text-xs">
-                    <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                    <span>🗑️ IMMEDIATE TOTAL DATABASE DEEP PURGE</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-rose-800 dark:text-rose-300">
-                    Upon verified account deletion, our backend executes an immediate permanent purge across all MongoDB collections (<code className="bg-rose-500/20 px-1 py-0.5 rounded text-[10px]">Users</code>, <code className="bg-rose-500/20 px-1 py-0.5 rounded text-[10px]">Workspaces</code>, <code className="bg-rose-500/20 px-1 py-0.5 rounded text-[10px]">BrandProfiles</code>, <code className="bg-rose-500/20 px-1 py-0.5 rounded text-[10px]">Campaigns</code>, <code className="bg-rose-500/20 px-1 py-0.5 rounded text-[10px]">WebsiteProjects</code>) and clears all client local storage caches including profile pictures.
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    4.2 No Data Monetization
+                  </h4>
+                  <p>
+                    We do not sell, rent, or trade your personal or workspace information to data brokers, advertisers, or unauthorized third parties.
                   </p>
                 </div>
 
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    4.2 Real-Time Cross-Device Logout Sync
+                    4.3 Legal Compliance
                   </h4>
                   <p>
-                    Account deletion broadcasts a real-time event via Server-Sent Events (SSE) that immediately terminates user sessions across all logged-in devices and browser windows globally.
+                    We may disclose information only when required by valid legal process, applicable law, or to protect the safety and legal rights of our platform and users.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* USER PRIVACY CONTROLS & RIGHTS */}
-            <div id="sec-rights" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+            {/* 5. DATA SECURITY */}
+            <div id="sec-security" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center font-black text-xs border border-cyan-500/20">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-black text-xs border border-emerald-500/20">
                   05
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">User Privacy Controls & Rights</h3>
-                  <p className="text-xs text-slate-400">JSON data export, telemetry toggles, and compliance contacts</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">5. Data Security</h3>
+                  <p className="text-xs text-slate-400">High-level safeguards protecting your account and workspace data</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    5.1 Exporting Your Data
+                    5.1 Protective Safeguards
                   </h4>
                   <p>
-                    You retain full ownership of your data. You may download a full structured JSON backup of your workspace positioning, Brand DNA, and campaign records from <strong>Settings &gt; Data Controls &amp; Backup</strong> at any time.
+                    We maintain administrative, technical, and physical safeguards designed to protect your data against unauthorized access, alteration, loss, or disclosure.
                   </p>
                 </div>
 
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    5.2 Data Protection Officer Contact
+                    5.2 Workspace Access Control
                   </h4>
                   <p>
-                    If you have questions regarding our privacy standards or data protection practices, please reach out to our privacy compliance team directly below.
+                    Workspace resources are strictly isolated, ensuring team members access only the organization data permitted by their designated roles.
                   </p>
                 </div>
 
+                {/* HIGH-LEVEL SECURITY OVERVIEW BOX */}
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 space-y-1">
+                  <div className="flex items-center gap-2 font-black text-xs">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>🛡️ HIGH-LEVEL TECHNICAL SECURITY OVERVIEW</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-emerald-800 dark:text-emerald-300">
+                    All network traffic and data stored in our databases use standard industry encryption protocols in transit and at rest. Account sessions are secured with authenticated access tokens.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 6. DATA RETENTION & ACCOUNT DELETION */}
+            <div id="sec-deletion" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center font-black text-xs border border-rose-500/20">
+                  06
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">6. Data Retention & Account Deletion</h3>
+                  <p className="text-xs text-slate-400">Data retention policies, self-service export, and permanent account removal</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    6.1 Retention Period
+                  </h4>
+                  <p>
+                    We retain your account and workspace data for as long as your account remains active or as necessary to provide our services.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    6.2 Account Deletion Verification
+                  </h4>
+                  <p>
+                    You can request complete account deletion from your account settings at any time. For security, initiating deletion sends a 6-digit security code to your registered email address.
+                  </p>
+                </div>
+
+                {/* PERMANENT ACCOUNT DELETION HIGHLIGHT BOX */}
+                <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 space-y-1">
+                  <div className="flex items-center gap-2 font-black text-xs">
+                    <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                    <span>🗑️ PERMANENT DATA PURGE UPON DELETION</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-rose-800 dark:text-rose-300">
+                    Once verified with your email security code, your account credentials, workspace positioning profiles, Brand DNA, and campaign records are <strong>permanently deleted from our active databases</strong>, and active sessions across all devices are logged out immediately.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 7. USER PRIVACY RIGHTS */}
+            <div id="sec-rights" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center font-black text-xs border border-cyan-500/20">
+                  07
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">7. User Privacy Rights</h3>
+                  <p className="text-xs text-slate-400">Options to access, export, modify, or delete your information</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    7.1 Data Access & Export
+                  </h4>
+                  <p>
+                    You have full ownership of your data. You can download a structured backup copy of your workspace parameters, Brand DNA, and campaign records anytime from <strong>Settings &gt; Data Controls &amp; Backup</strong>.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    7.2 Profile Updates & Correction
+                  </h4>
+                  <p>
+                    You may update your profile details, change display names, or update workspace brand preferences whenever needed inside your account management panel.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    7.3 Communication Opt-Out
+                  </h4>
+                  <p>
+                    You can manage notification preferences or unsubscribe from non-essential email updates through your settings tab or by clicking the unsubscribe link in communications.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 8. COOKIES & LOCAL DATA STORAGE */}
+            <div id="sec-cookies" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-500 flex items-center justify-center font-black text-xs border border-teal-500/20">
+                  08
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">8. Cookies & Local Data Storage</h3>
+                  <p className="text-xs text-slate-400">Essential browser storage for maintaining active login sessions and preferences</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    8.1 Essential Local Storage
+                  </h4>
+                  <p>
+                    We use browser local storage and essential session tokens to remember your login session, save your dark/light theme choices, retain sidebar layout settings, and preserve language options.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
+                    8.2 Managing Browser Storage
+                  </h4>
+                  <p>
+                    You can clear or block cookies and local storage items directly via your browser settings. Please note that clearing local storage may require you to sign in again or reconfigure UI display preferences.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 9. CHILDREN'S PRIVACY */}
+            <div id="sec-children" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-500 flex items-center justify-center font-black text-xs border border-violet-500/20">
+                  09
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">9. Children's Privacy</h3>
+                  <p className="text-xs text-slate-400">Age restrictions and commercial service scope</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p>
+                  AI Ads™ is an enterprise SaaS platform designed exclusively for business and professional marketing use. We do not knowingly solicit or collect personal information from individuals under the age of 18. If we discover that an account has been created by a minor, we will take immediate action to remove the associated account and data.
+                </p>
+              </div>
+            </div>
+
+            {/* 10. PRIVACY POLICY UPDATES */}
+            <div id="sec-updates" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center font-black text-xs border border-sky-500/20">
+                  10
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">10. Privacy Policy Updates</h3>
+                  <p className="text-xs text-slate-400">Notification of changes and policy revision procedures</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p>
+                  We may update this Privacy Policy periodically to reflect new platform features, operational practices, or legal requirements. When changes are published, we will update the "Last Updated" date at the top of this policy. For significant modifications affecting how we process your data, we will notify users via platform announcements or email notifications prior to changes taking effect.
+                </p>
+              </div>
+            </div>
+
+            {/* 11. PRIVACY CONTACT INFORMATION */}
+            <div id="sec-contact" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-black text-xs border border-indigo-500/20">
+                  11
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">11. Privacy Contact Information</h3>
+                  <p className="text-xs text-slate-400">Reach out to our privacy team for data requests or questions</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p>
+                  If you have questions, concerns, or requests regarding this Privacy Policy or how your data is handled, please contact our team:
+                </p>
+
                 {/* Questions About Privacy Card */}
-                <div className="mt-4 p-5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 space-y-2.5 shadow-sm">
+                <div className="mt-3 p-5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 space-y-2.5 shadow-sm">
                   <h4 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
                     Questions About Privacy?
                   </h4>
                   <div className="space-y-2 text-xs text-slate-800 dark:text-slate-200 font-medium">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-900 dark:text-slate-100">Email:</span>
-                      <a href="mailto:support@aiads.com" className="text-indigo-600 dark:text-indigo-400 font-bold underline hover:text-indigo-700 transition-colors">
-                        support@aiads.com
+                      <a href="mailto:admin@uwo24.com" className="text-indigo-600 dark:text-indigo-400 font-bold underline hover:text-indigo-700 transition-colors">
+                        admin@uwo24.com
                       </a>
                     </div>
                     <div className="flex items-center gap-2">
@@ -2202,6 +2435,9 @@ export const SettingsModal = () => {
                       </a>
                     </div>
                   </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                    Response time: We aim to respond to all privacy-related inquiries within 1–2 business days.
+                  </p>
                 </div>
               </div>
             </div>
@@ -2215,229 +2451,317 @@ export const SettingsModal = () => {
         return (
           <div className="space-y-6 pb-6">
             {/* Main Header Banner */}
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-brand-500/10 via-purple-500/10 to-indigo-500/10 border border-brand-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-brand-500/20 text-brand-500 flex items-center justify-center shrink-0 border border-brand-500/30 shadow-glow">
-                  <Scale className="w-6 h-6" />
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-brand-500/10 via-purple-500/5 to-indigo-500/10 border border-brand-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-brand-500/15 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 border border-brand-500/25">
+                  <Scale className="w-5 h-5" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 bg-brand-500/15 px-2.5 py-0.5 rounded-full border border-brand-500/30">
-                      Enterprise Legal Governance
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400">v2.4 • Updated August 2026</span>
-                  </div>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-1">AI Ads™ Platform Terms of Service</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Terms governing workspace licensing, AI generation usage, account obligations, and visual credit allocations.
+                <div className="min-w-0">
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                    AI Ads™ Terms of Service
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+                    Updated September 2026
                   </p>
                 </div>
               </div>
+
+              <button 
+                type="button"
+                onClick={() => window.print()}
+                className="px-3.5 py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/25 text-brand-600 dark:text-brand-400 font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-2xs self-stretch sm:self-auto justify-center"
+                title="Print or Save Terms of Service as PDF"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export PDF</span>
+              </button>
             </div>
 
             {/* Quick Section Anchors */}
             <div className="flex flex-wrap gap-2 pb-2 border-b border-slate-200/80 dark:border-slate-800/80">
+              <a href="#terms-acceptance" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                1. Agreement
+              </a>
               <a href="#terms-licensing" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                1. Licensing
+                2. Accounts & Licensing
               </a>
-              <a href="#terms-ai-ip" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                2. AI Ownership & IP
+              <a href="#terms-ip" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                3. AI Ownership & IP
               </a>
-              <a href="#terms-security" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                3. Security & OTP
+              <a href="#terms-use" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                4. Acceptable Use
               </a>
               <a href="#terms-billing" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                4. Billing & Credits
+                5. Billing & Credits
+              </a>
+              <a href="#terms-service" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                6. Service Availability
               </a>
               <a href="#terms-termination" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
-                5. Account Termination
+                7. Account Termination
+              </a>
+              <a href="#terms-liability" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                8. Liability
+              </a>
+              <a href="#terms-changes" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                9. Changes
+              </a>
+              <a href="#terms-contact" className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-200 dark:border-slate-800">
+                10. Contact Us
               </a>
             </div>
 
-            {/* ACCEPTANCE OF TERMS & WORKSPACE LICENSING */}
-            <div id="terms-licensing" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+            {/* 1. AGREEMENT & ACCEPTANCE OF TERMS */}
+            <div id="terms-acceptance" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center font-black text-xs border border-brand-500/20">
                   01
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Acceptance of Terms & Workspace Licensing</h3>
-                  <p className="text-xs text-slate-400">Binding license agreement, account registration, and role governance</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">1. Agreement & Acceptance of Terms</h3>
+                  <p className="text-xs text-slate-400">Binding license agreement between you and AI Ads™</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                <div>
-                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    1.1 Binding Enterprise License Agreement
-                  </h4>
-                  <p>
-                    By accessing or using the AI Ads™ Enterprise Platform (AISA), creating an account, or initiating AI campaign generation, you agree to be legally bound by these Terms of Service. If you are registering on behalf of an enterprise or agency, you represent that you have authority to bind your organization.
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    1.2 Workspace Role-Based Access Control (RBAC)
-                  </h4>
-                  <p>
-                    Workspaces operate under strict RBAC governance. Account owners designated as <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-[11px]">AgencyAdmin</code> or <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-[11px]">SuperAdmin</code> maintain administrative rights to manage visual credits, brand positioning memory, and team access.
-                  </p>
-                </div>
+                <p>
+                  By creating an account, accessing, or using the AI Ads™ platform, you agree to be bound by these Terms of Service and our Privacy Policy. If you are entering into these Terms on behalf of an organization or business, you represent that you have legal authority to bind that entity to these Terms.
+                </p>
               </div>
             </div>
 
-            {/* AI CONTENT GENERATION & INTELLECTUAL PROPERTY RIGHTS */}
-            <div id="terms-ai-ip" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+            {/* 2. ACCOUNT REGISTRATION & LICENSING */}
+            <div id="terms-licensing" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center font-black text-xs border border-purple-500/20">
                   02
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">AI Content Generation & Intellectual Property</h3>
-                  <p className="text-xs text-slate-400">Ownership of AI collateral, generated web apps, and acceptable usage rules</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">2. Account Registration & Licensing</h3>
+                  <p className="text-xs text-slate-400">Account security responsibilities and workspace usage rights</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    2.1 Ownership of Generated Collateral & Web Apps
+                    2.1 Account Security & Credentials
                   </h4>
                   <p>
-                    You retain 100% full commercial ownership rights over all ad copy, campaign strategy roadmaps, social posts, visual graphic designs, and web application code generated by AI Ads™ using your Brand DNA.
-                  </p>
-                </div>
-
-                {/* HIGHLIGHT BOX: IP GUARANTEE */}
-                <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-900 dark:text-purple-200 space-y-1">
-                  <div className="flex items-center gap-2 font-black text-xs">
-                    <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <span>🔒 IMMUTABLE COMMERCIAL OWNERSHIP & IP PROTECTION</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-purple-800 dark:text-purple-300">
-                    All website projects and ad creatives synthesized in your workspace belong exclusively to your organization. AI Ads™ makes zero claim of ownership over your input data or generated outputs.
+                    You are responsible for maintaining the confidentiality of your account credentials and for all activities occurring under your account. You agree to notify us immediately of any unauthorized access or security breach.
                   </p>
                 </div>
 
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    2.2 Acceptable AI Safety & Usage Compliance
+                    2.2 Platform Subscription License
                   </h4>
                   <p>
-                    You agree not to use AI Ads™ to synthesize illegal, fraudulent, defamatory, hate speech, or malicious computer code. We reserve the right to suspend workspaces violating safety guidelines.
+                    Subject to compliance with these Terms and payment of applicable plan fees, AI Ads™ grants you a limited, non-exclusive, non-transferable, revocable license to access and use the platform for your marketing and business operations.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* USER ACCOUNT SECURITY & IDENTITY GOVERNANCE */}
-            <div id="terms-security" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+            {/* 3. AI CONTENT & INTELLECTUAL PROPERTY */}
+            <div id="terms-ip" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-black text-xs border border-indigo-500/20">
                   03
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Account Security & Identity Governance</h3>
-                  <p className="text-xs text-slate-400">Password protection, 6-digit email OTPs, and session governance</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">3. AI Content & Intellectual Property</h3>
+                  <p className="text-xs text-slate-400">Ownership rights for Brand DNA inputs and generated AI collateral</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    3.1 Session Governance & Authorization
+                    3.1 Input Data & Brand DNA Ownership
                   </h4>
                   <p>
-                    Users are responsible for safeguarding their login credentials. Active sessions are authenticated via JWT tokens with a 7-day security lifespan.
+                    You retain full rights, title, and ownership of all uploaded brand positioning rules, value claims, logos, media, and marketing collateral configured in your workspace.
                   </p>
                 </div>
 
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    3.2 6-Digit Email OTP Security Checks
+                    3.2 Commercial Ownership of AI Outputs
                   </h4>
                   <p>
-                    Critical account actions (including permanent account deletion) require identity verification using a 6-digit Security OTP delivered to your registered email address.
+                    All ad copy, campaign strategies, social media posts, visual designs, and website code synthesized by AI Ads™ for your workspace belong to you for commercial use.
+                  </p>
+                </div>
+
+                {/* COMMERCIAL IP GUARANTEE BOX */}
+                <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-900 dark:text-purple-200 space-y-1">
+                  <div className="flex items-center gap-2 font-black text-xs">
+                    <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <span>🔒 IMMUTABLE COMMERCIAL IP GUARANTEE</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-purple-800 dark:text-purple-300">
+                    All website projects and ad creatives synthesized in your workspace belong exclusively to your organization. AI Ads™ makes zero claim of ownership over your input data or generated outputs.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* VISUAL CREDITS, BILLING & SUBSCRIPTION TERMS */}
-            <div id="terms-billing" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+            {/* 4. ACCEPTABLE USE POLICY */}
+            <div id="terms-use" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-black text-xs border border-emerald-500/20">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-black text-xs border border-amber-500/20">
                   04
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Visual Credits, Billing & Subscriptions</h3>
-                  <p className="text-xs text-slate-400">Visual credit metering, subscription tier upgrades, and payments</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">4. Acceptable Use Policy</h3>
+                  <p className="text-xs text-slate-400">Rules governing permitted behavior and content standards</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p>
+                  You agree not to use AI Ads™ to synthesize illegal, fraudulent, harmful, defamatory, or deceptive content, or to attempt unauthorized access to platform infrastructure or other users' workspaces. Accounts violating acceptable use policies may be suspended or terminated.
+                </p>
+              </div>
+            </div>
+
+            {/* 5. SUBSCRIPTIONS, VISUAL CREDITS & BILLING */}
+            <div id="terms-billing" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-black text-xs border border-emerald-500/20">
+                  05
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">5. Subscriptions, Visual Credits & Billing</h3>
+                  <p className="text-xs text-slate-400">Subscription plans, credit allocations, and payment processing</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    4.1 Visual Credit Allocation & Metering
+                    5.1 Subscriptions & Visual Credit Allocations
                   </h4>
                   <p>
-                    AI visual synthesis, graphic ad banner generation, and web app creation consume visual credits based on your subscription tier balance. Additional credits can be purchased via Top-Up.
+                    Platform features and AI generation modules operate according to your selected plan (Starter, Pro, Agency, Enterprise). Generation usage consumes visual credits allocated per billing cycle.
                   </p>
                 </div>
 
                 <div>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    4.2 Payments & Encrypted Transactions
+                    5.2 Payments & Renewal
                   </h4>
                   <p>
-                    All billing transactions are processed securely through PCI-DSS compliant payment gateways using AES-256 encryption. Subscriptions renew automatically unless cancelled.
+                    Paid subscriptions renew automatically on a recurring billing cycle unless cancelled prior to renewal. All payment transactions are processed securely through certified payment processing gateways.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* ACCOUNT TERMINATION & PERMANENT DATA PURGE */}
-            <div id="terms-termination" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+            {/* 6. SERVICE AVAILABILITY & MODIFICATIONS */}
+            <div id="terms-service" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center font-black text-xs border border-rose-500/20">
-                  05
+                <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-500 flex items-center justify-center font-black text-xs border border-teal-500/20">
+                  06
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Account Termination & Data Purge</h3>
-                  <p className="text-xs text-slate-400">Verified deletion, database deep purge, and cross-device logout</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">6. Service Availability & Modifications</h3>
+                  <p className="text-xs text-slate-400">Platform uptime goals and system updates</p>
                 </div>
               </div>
 
               <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                <div>
-                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    5.1 Total Deep Database & Local Storage Purge
-                  </h4>
-                  <p>
-                    Upon verified account deletion, AI Ads™ permanently purges all records across MongoDB database collections and clears browser local storage caches (including profile avatars).
-                  </p>
-                </div>
+                <p>
+                  We strive to maintain continuous platform availability and uptime. We reserve the right to modify, upgrade, or refine platform features to enhance user performance and security.
+                </p>
+              </div>
+            </div>
 
-                <div>
-                  <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wide text-brand-600 dark:text-brand-400 mb-1">
-                    5.2 Real-Time Multi-System Session Logout
-                  </h4>
-                  <p>
-                    Account termination dispatches a real-time event that logs out your account across all logged-in devices and browser windows simultaneously.
-                  </p>
+            {/* 7. ACCOUNT TERMINATION & DELETION */}
+            <div id="terms-termination" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center font-black text-xs border border-rose-500/20">
+                  07
                 </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">7. Account Termination & Deletion</h3>
+                  <p className="text-xs text-slate-400">Self-service cancellation and permanent account deletion</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p>
+                  You can cancel your subscription or initiate full account deletion at any time via your account settings panel. Upon verified deletion, your workspace positioning data, Brand DNA, and saved campaigns are permanently removed from active databases.
+                </p>
+              </div>
+            </div>
+
+            {/* 8. LIMITATION OF LIABILITY */}
+            <div id="terms-liability" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center font-black text-xs border border-cyan-500/20">
+                  08
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">8. Limitation of Liability</h3>
+                  <p className="text-xs text-slate-400">Standard legal liability boundaries</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p>
+                  AI Ads™ is provided on an "as is" and "as available" basis. To the maximum extent permitted by applicable law, AI Ads™ shall not be liable for indirect, incidental, special, or consequential damages arising from platform usage or generation outputs.
+                </p>
+              </div>
+            </div>
+
+            {/* 9. CHANGES TO TERMS */}
+            <div id="terms-changes" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center font-black text-xs border border-sky-500/20">
+                  09
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">9. Changes to Terms</h3>
+                  <p className="text-xs text-slate-400">Revision notices and effective date updates</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p>
+                  We may revise these Terms from time to time. Updated Terms will feature a revised "Last Updated" date. Continued use of the platform following updates constitutes acceptance of the modified Terms.
+                </p>
+              </div>
+            </div>
+
+            {/* 10. CONTACT INFORMATION */}
+            <div id="terms-contact" className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-black text-xs border border-indigo-500/20">
+                  10
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">10. Contact Information</h3>
+                  <p className="text-xs text-slate-400">Questions about our Terms of Service</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pl-2 sm:pl-11 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p>
+                  If you have any questions regarding these Terms of Service, please reach out to our legal support team:
+                </p>
 
                 {/* Questions About Terms Card */}
-                <div className="mt-4 p-5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 space-y-2.5 shadow-sm">
+                <div className="mt-3 p-5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 space-y-2.5 shadow-sm">
                   <h4 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
                     Questions About Terms of Service?
                   </h4>
                   <div className="space-y-2 text-xs text-slate-800 dark:text-slate-200 font-medium">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-900 dark:text-slate-100">Email:</span>
-                      <a href="mailto:support@aiads.com" className="text-indigo-600 dark:text-indigo-400 font-bold underline hover:text-indigo-700 transition-colors">
-                        support@aiads.com
+                      <a href="mailto:admin@uwo24.com" className="text-indigo-600 dark:text-indigo-400 font-bold underline hover:text-indigo-700 transition-colors">
+                        admin@uwo24.com
                       </a>
                     </div>
                     <div className="flex items-center gap-2">

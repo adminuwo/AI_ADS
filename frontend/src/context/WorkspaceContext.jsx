@@ -2241,9 +2241,11 @@ export const WorkspaceProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
+    setUserAvatarState(null);
     localStorage.removeItem('aisa_user');
     localStorage.removeItem('aisa_user_name');
     localStorage.removeItem('aisa_user_email');
+    localStorage.removeItem('aisa_user_avatar');
     localStorage.removeItem('aisa_token');
     localStorage.removeItem('token');
     localStorage.removeItem('uwo_access_token');
@@ -2517,8 +2519,14 @@ export const WorkspaceProvider = ({ children }) => {
   ]);
   const [userAvatar, setUserAvatarState] = useState(() => {
     try {
-      const savedAvatar = localStorage.getItem('aisa_user_avatar');
-      if (savedAvatar) return savedAvatar;
+      // Clean up legacy generic un-scoped avatar key
+      localStorage.removeItem('aisa_user_avatar');
+      const savedEmail = localStorage.getItem('aisa_user_email');
+      if (savedEmail) {
+        const cleanEmail = savedEmail.toLowerCase().trim();
+        const perUserAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+        if (perUserAvatar) return perUserAvatar;
+      }
       const savedUser = localStorage.getItem('aisa_user');
       if (savedUser) {
         const parsed = JSON.parse(savedUser);
@@ -2528,24 +2536,63 @@ export const WorkspaceProvider = ({ children }) => {
     return null;
   });
 
+  // Automatically sync avatar state whenever active logged-in user changes
+  useEffect(() => {
+    if (!user || !user.email) {
+      setUserAvatarState(null);
+      return;
+    }
+    const cleanEmail = user.email.toLowerCase().trim();
+    const savedScopedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+    if (savedScopedAvatar) {
+      setUserAvatarState(savedScopedAvatar);
+    } else if (user.avatar) {
+      setUserAvatarState(user.avatar);
+    } else {
+      setUserAvatarState(null);
+    }
+  }, [user?.email, user?.avatar]);
+
   const setUserAvatar = (avatarData) => {
     setUserAvatarState(avatarData);
+    const activeEmail = (user?.email || localStorage.getItem('aisa_user_email') || '').toLowerCase().trim();
     try {
+      localStorage.removeItem('aisa_user_avatar');
       if (avatarData) {
-        localStorage.setItem('aisa_user_avatar', avatarData);
+        if (activeEmail) {
+          localStorage.setItem(`aisa_user_avatar_${activeEmail}`, avatarData);
+        }
         setUser(prev => {
           const updated = prev ? { ...prev, avatar: avatarData } : { avatar: avatarData };
           try { localStorage.setItem('aisa_user', JSON.stringify(updated)); } catch (e) { }
           return updated;
         });
+
+        if (activeEmail) {
+          fetch(`${API_BASE}/auth/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: activeEmail, avatar: avatarData })
+          }).catch(err => console.warn("Failed to sync avatar to database:", err));
+        }
       } else {
-        localStorage.removeItem('aisa_user_avatar');
+        if (activeEmail) {
+          localStorage.removeItem(`aisa_user_avatar_${activeEmail}`);
+        }
         setUser(prev => {
           if (!prev) return prev;
           const { avatar, ...rest } = prev;
           try { localStorage.setItem('aisa_user', JSON.stringify(rest)); } catch (e) { }
           return rest;
         });
+
+        if (activeEmail) {
+          fetch(`${API_BASE}/auth/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: activeEmail, avatar: '' })
+          }).catch(err => console.warn("Failed to clear avatar in database:", err));
+        }
       }
     } catch (e) {
       console.error("Error saving user avatar to localStorage:", e);
