@@ -384,66 +384,11 @@ export const ContentStudioModule = () => {
               const brand = activeWorkspace?.brandName || 'Brand';
               const fullPromptTopic = fullStrategyContext ? `${topic}: ${fullStrategyContext}` : topic;
 
-              let imgUrl = '';
-              let imgPrompt = '';
-
-              if (isCustomStrategyWithImage) {
-                // ── IMAGE EDITING AGENT: Custom Strategy with reference image ──────
-                // Use Image Editing Agent — sends reference image to Gemini to craft
-                // a creative scenario, then generates the ad image via gemini-3.1-flash-image
-                try {
-                  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                  console.log('[ContentStudio] 🤖 Invoking Image Editing Agent with reference image...');
-                  const agentRes = await fetch(`${apiBase}/creative/image-editing-agent/generate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      workspaceId,
-                      referenceImageUrl: studioTarget.referenceImage,
-                      visualDirective: studioTarget.visualDirective || topic,
-                      topic: topic,
-                      brandName: brand,
-                      brandColors: activeWorkspace?.brandColors,
-                      industry: activeWorkspace?.industryCategory || activeWorkspace?.niche,
-                      tagline: activeWorkspace?.tagline,
-                      companyDescription: activeWorkspace?.metaDescription || activeWorkspace?.positioningSummary,
-                      platform: matchedPlatform,
-                      style: 'Photorealistic Commercial',
-                      aspect: initialAspect
-                    })
-                  });
-                  const agentData = await agentRes.json();
-                  if (agentData.success && agentData.asset?.imageUrl) {
-                    imgUrl = agentData.asset.imageUrl;
-                    imgPrompt = agentData.asset.imagePrompt || topic;
-                    console.log('[ContentStudio] ✅ Image Editing Agent succeeded.');
-                  } else {
-                    throw new Error(agentData.error || 'Agent did not return image');
-                  }
-                } catch (agentErr) {
-                  console.warn('[ContentStudio] Image Editing Agent fallback:', agentErr.message);
-                  imgPrompt = studioTarget.visualDirective || `${fullPromptTopic} — ${brand} commercial photography, 8k`;
-                  imgUrl = resolveBrandVisualAsset({
-                    prompt: imgPrompt,
-                    brandName: brand,
-                    topic: fullPromptTopic,
-                    style: 'Photorealistic Commercial',
-                    aspect: initialAspect,
-                    variationIndex: 0
-                  });
-                }
-              } else {
-                // ── Standard image generation (non-custom-strategy) ───────────────
-                imgPrompt = res?.data?.imagePrompt || studioTarget.imagePrompt || `${fullPromptTopic} — ${brand} commercial advertising photography, 8k`;
-                imgUrl = res?.data?.imageUrl || studioTarget.imageUrl || resolveBrandVisualAsset({
-                  prompt: imgPrompt,
-                  brandName: brand,
-                  topic: fullPromptTopic,
-                  style: 'Photorealistic Commercial',
-                  aspect: initialAspect,
-                  variationIndex: 0
-                });
-              }
+              // ── Strictly Text Copy in Content Studio ───────────────────────────────
+              // Images are NOT generated or uploaded to GCP in Content Studio.
+              // Image creation is deferred until the user opens Creative Studio.
+              const imgPrompt = studioTarget?.visualDirective || res?.data?.imagePrompt || `${fullPromptTopic} — ${brand} commercial advertising photography, 8k`;
+              const imgUrl = ''; // Left blank intentionally until user generates in Creative Studio
 
               const payload = {
                 ...(res?.data || {}),
@@ -457,6 +402,8 @@ export const ContentStudioModule = () => {
                 imageAspect: initialAspect,
                 strategyPillar: studioTarget.strategyPillar || topic,
                 strategyDescription: studioTarget.strategyDescription || '',
+                referenceImage: studioTarget.referenceImage || null,
+                visualDirective: studioTarget.visualDirective || '',
                 createdAt: new Date().toISOString(),
               };
 
@@ -725,113 +672,31 @@ export const ContentStudioModule = () => {
     }
   };
 
-  // ─── Regenerate AI Visual Creative ──────────────────────────────────────────
+  // ─── Navigate to Creative Studio for Visual Generation ──────────────────
   const handleRegenerateImage = async (customPrompt, customStyle = visualStyle, customAspect = visualAspect) => {
-    setRegeneratingImage(true);
-    try {
-      const nextIndex = visualVariationIndex + 1;
-      setVisualVariationIndex(nextIndex);
-      const brand = activeWorkspace?.brandName || 'Brand';
-      const apiBase = API_BASE;
-
-      // ── If this is a Custom Strategy post with a reference image, use Image Editing Agent ──
-      if (customStrategyRefImage) {
-        console.log('[ContentStudio] 🤖 Regenerating via Image Editing Agent with reference image...');
-        const agentRes = await fetch(`${apiBase}/creative/image-editing-agent/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            workspaceId,
-            referenceImageUrl: customStrategyRefImage,
-            visualDirective: socialResult?.imagePrompt || customPrompt || socialTopic,
-            topic: socialTopic,
-            brandName: brand,
-            brandColors: activeWorkspace?.brandColors,
-            industry: activeWorkspace?.industryCategory || activeWorkspace?.niche,
-            tagline: activeWorkspace?.tagline,
-            companyDescription: activeWorkspace?.metaDescription || activeWorkspace?.positioningSummary,
-            platform: socialPlatform,
-            style: customStyle,
-            aspect: customAspect
-          })
-        });
-        const agentData = await agentRes.json();
-        if (agentData.success && agentData.asset?.imageUrl) {
-          setSocialResult(prev => {
-            const updated = {
-              ...prev,
-              imageUrl: agentData.asset.imageUrl,
-              imagePrompt: agentData.asset.imagePrompt || socialTopic,
-              imageStyle: customStyle,
-              imageAspect: customAspect,
-              engine: agentData.asset.engine || 'gemini-3.1-flash-image'
-            };
-            if (setGeneratedContent) setGeneratedContent(updated);
-            return updated;
-          });
-          return;
-        }
-        throw new Error(agentData.error || 'Image Editing Agent did not return image');
-      }
-
-      // ── Standard visual generation for non-custom-strategy posts ─────────────
-      const promptToUse = (customPrompt || socialImagePrompt || socialResult?.imagePrompt || socialTopic).trim();
-      const res = await fetch(`${apiBase}/creative/visual/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          workspaceId,
-          brandName: brand,
-          brandColors: activeWorkspace?.brandColors,
-          industry: activeWorkspace?.industryCategory || activeWorkspace?.niche,
-          tagline: activeWorkspace?.tagline,
-          companyDescription: activeWorkspace?.metaDescription || activeWorkspace?.positioningSummary,
-          topic: socialTopic,
-          prompt: promptToUse,
-          platform: socialPlatform,
-          style: customStyle,
-          aspect: customAspect,
-          seed: Math.floor(Math.random() * 1000000) + nextIndex
-        })
-      });
-
-      const data = await res.json();
-      if (data.success && data.asset?.imageUrl) {
-        setSocialResult(prev => {
-          const updated = {
-            ...prev,
-            imageUrl: data.asset.imageUrl,
-            imagePrompt: data.asset.imagePrompt || promptToUse,
-            imageStyle: customStyle,
-            imageAspect: customAspect,
-            engine: data.asset.engine || 'gemini-3.1-flash-image',
-            svgFallback: data.asset.svgFallback
-          };
-          if (setGeneratedContent) setGeneratedContent(updated);
-          return updated;
-        });
-      } else {
-        throw new Error(data.error || 'Failed to generate visual');
-      }
-    } catch (err) {
-      console.warn('[handleRegenerateImage] Client fallback:', err.message);
-      const fallbackUrl = resolveBrandVisualAsset({
-        prompt: customPrompt || socialImagePrompt || socialTopic,
-        brandName: activeWorkspace?.brandName || 'Brand',
+    if (setGeneratedContent) {
+      setGeneratedContent({
+        platform: socialPlatform,
+        type: 'SOCIAL',
         topic: socialTopic,
-        style: customStyle,
-        aspect: customAspect,
-        variationIndex: visualVariationIndex + 1
-      });
-      setSocialResult(prev => ({
-        ...prev,
-        imageUrl: fallbackUrl,
+        hook: socialResult?.hook || socialTopic,
+        caption: socialResult?.shortCaption || socialResult?.longCaption || socialResult?.caption || '',
+        shortCaption: socialResult?.shortCaption || '',
+        longCaption: socialResult?.longCaption || '',
+        storytelling: socialResult?.storytelling || '',
+        cta: socialResult?.cta || socialResult?.callToAction || '',
+        hashtags: socialResult?.hashtags || [],
+        strategyPillar: socialResult?.strategyPillar || activeWorkspace?.positioningSummary || 'Brand Strategy',
+        imageUrl: socialResult?.imageUrl || '',
+        imagePrompt: customPrompt || socialResult?.imagePrompt || `${socialTopic} — ${activeWorkspace?.brandName || 'Brand'} commercial advertising photography, 8k`,
         imageStyle: customStyle,
-        imageAspect: customAspect
-      }));
-    } finally {
-      setRegeneratingImage(false);
+        imageAspect: customAspect,
+        referenceImage: customStrategyRefImage || null,
+        visualDirective: socialResult?.visualDirective || '',
+        data: socialResult,
+      });
     }
+    setActiveModule('creative');
   };
 
   const handleDownloadImage = async (url, filename = 'social-creative.jpg') => {
