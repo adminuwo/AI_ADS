@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, Check, ShieldCheck, UserPlus, LogIn, Zap } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, Check, ShieldCheck, UserPlus, LogIn, Zap, X, Scale, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UWOLoginModal } from './UWOLoginModal';
 import { API_BASE } from '../../config/api';
+import { useWorkspace } from '../../context/WorkspaceContext';
 
 export const Login = ({ onLoginSuccess }) => {
+  const { setIsSettingsModalOpen, setActiveSettingsTab } = useWorkspace();
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,17 +19,35 @@ export const Login = ({ onLoginSuccess }) => {
   const [showUwoModal, setShowUwoModal] = useState(false);
   const [uwoRegisterMode, setUwoRegisterMode] = useState(false);
 
+  // Terms & Privacy Policy First-Time Acceptance State
+  const [acceptedTerms, setAcceptedTerms] = useState(() => {
+    try {
+      return localStorage.getItem('aisa_terms_accepted') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [activeLegalTab, setActiveLegalTab] = useState('privacy'); // 'privacy' | 'terms'
+
   const handleUwoSuccess = (data) => {
     setSuccess(true);
     const uUser = data.user || {};
     const cleanEmail = (uUser.email || email).toLowerCase().trim();
+    let userAvatar = uUser.avatar || '';
+    if (!userAvatar && cleanEmail) {
+      try {
+        const savedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+        if (savedAvatar) userAvatar = savedAvatar;
+      } catch (e) { }
+    }
     const formattedUser = {
       id: uUser.id || uUser._id || `usr_${Date.now()}`,
       _id: uUser.id || uUser._id || `usr_${Date.now()}`,
       email: cleanEmail,
       name: uUser.name || cleanEmail.split('@')[0],
       role: uUser.role || (cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin'),
-      avatar: uUser.avatar || '',
+      avatar: userAvatar,
       accentColor: uUser.accentColor || 'indigo',
       appearance: uUser.appearance || 'light',
       credits: uUser.credits !== undefined ? uUser.credits : 500,
@@ -54,6 +74,13 @@ export const Login = ({ onLoginSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // First-Time Terms & Privacy Policy Acceptance Validation
+    if (!acceptedTerms && localStorage.getItem('aisa_terms_accepted') !== 'true') {
+      setShowLegalModal(true);
+      setError('Please read and accept the Privacy Policy & Terms of Service before proceeding.');
+      return;
+    }
 
     // Input Validation
     if (!email || !email.trim()) {
@@ -317,6 +344,49 @@ export const Login = ({ onLoginSuccess }) => {
               </motion.div>
             )}
 
+            {/* TERMS & PRIVACY POLICY ACCEPTANCE CHECKBOX */}
+            <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-50/90 border border-slate-200/90 my-2 shadow-2xs">
+              <input
+                type="checkbox"
+                id="acceptTermsCheck"
+                checked={acceptedTerms}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setAcceptedTerms(checked);
+                  if (checked) {
+                    try { localStorage.setItem('aisa_terms_accepted', 'true'); } catch (err) {}
+                    setError('');
+                  }
+                }}
+                className="mt-0.5 w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer shrink-0"
+              />
+              <label htmlFor="acceptTermsCheck" className="text-xs text-slate-700 leading-relaxed select-none">
+                I have read and agree to the{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveLegalTab('privacy');
+                    setShowLegalModal(true);
+                  }}
+                  className="font-extrabold text-brand-600 hover:text-brand-700 underline cursor-pointer"
+                >
+                  Privacy Policy
+                </button>
+                {' '}and{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveLegalTab('terms');
+                    setShowLegalModal(true);
+                  }}
+                  className="font-extrabold text-brand-600 hover:text-brand-700 underline cursor-pointer"
+                >
+                  Terms of Service
+                </button>
+                .
+              </label>
+            </div>
+
             {/* SUBMIT CTA BUTTON */}
             <button
               type="submit"
@@ -356,6 +426,11 @@ export const Login = ({ onLoginSuccess }) => {
           <button
             type="button"
             onClick={() => {
+              if (!acceptedTerms && localStorage.getItem('aisa_terms_accepted') !== 'true') {
+                setShowLegalModal(true);
+                setError('Please read and accept our Privacy Policy & Terms of Service to continue.');
+                return;
+              }
               setUwoRegisterMode(mode === 'register');
               setShowUwoModal(true);
             }}
@@ -404,7 +479,31 @@ export const Login = ({ onLoginSuccess }) => {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-slate-400 mt-6 font-medium">© 2026 AI Ads™ (AISA) · All rights reserved</p>
+        <p className="text-center text-xs text-slate-400 mt-6 font-medium flex items-center justify-center gap-2 flex-wrap">
+          <span>© 2026 AI Ads™ (AISA)</span>
+          <span>·</span>
+          <button 
+            type="button"
+            onClick={() => {
+              if (setActiveSettingsTab) setActiveSettingsTab('privacy');
+              if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
+            }} 
+            className="hover:underline hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+          >
+            Privacy Policy
+          </button>
+          <span>·</span>
+          <button 
+            type="button"
+            onClick={() => {
+              if (setActiveSettingsTab) setActiveSettingsTab('terms');
+              if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
+            }} 
+            className="hover:underline hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+          >
+            Terms of Service
+          </button>
+        </p>
       </div>
 
       {/* Centralized UWO Unified Login Modal */}
@@ -416,6 +515,152 @@ export const Login = ({ onLoginSuccess }) => {
         apiKey="key_ai_ads_live_master_2026"
         onSuccess={handleUwoSuccess}
       />
+
+      {/* Interactive First-Time Legal Terms Consent Modal */}
+      <AnimatePresence>
+        {showLegalModal && (
+          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white dark:bg-slate-900 max-w-2xl w-full rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[85vh] overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 border border-brand-500/20">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-brand-600 dark:text-brand-400 bg-brand-500/15 px-2 py-0.5 rounded-full border border-brand-500/20">
+                      First-Time User Consent
+                    </span>
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight mt-0.5">
+                      AI Ads™ Platform Policies & Agreements
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowLegalModal(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Tab Switcher: Privacy Policy vs Terms of Service */}
+              <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setActiveLegalTab('privacy')}
+                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    activeLegalTab === 'privacy'
+                      ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs border border-emerald-500/30 font-extrabold'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-900/50'
+                  }`}
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Privacy Policy</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveLegalTab('terms')}
+                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    activeLegalTab === 'terms'
+                      ? 'bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 shadow-xs border border-brand-500/30 font-extrabold'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-900/50'
+                  }`}
+                >
+                  <Scale className="w-4 h-4" />
+                  <span>Terms of Service</span>
+                </button>
+              </div>
+
+              {/* Scrollable Content Reader Area */}
+              <div className="p-5 overflow-y-auto space-y-4 text-xs text-slate-700 dark:text-slate-300 leading-relaxed max-h-[50vh]">
+                {activeLegalTab === 'privacy' ? (
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 font-medium">
+                      <p className="font-extrabold text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-400 mb-1">
+                        🔒 Customer Privacy & Data Protection Policy
+                      </p>
+                      <p className="text-[11.5px]">
+                        Your Brand DNA parameters, campaign content, and prompts are strictly protected. We do not sell your workspace data or use your proprietary content to train public AI models.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      <h4 className="font-extrabold text-slate-900 dark:text-white text-xs">Summary of Key Privacy Rights:</h4>
+                      <ul className="list-disc pl-5 space-y-1.5 text-[11.5px] text-slate-600 dark:text-slate-300">
+                        <li><strong>1. Information Collection:</strong> We store account credentials, Brand DNA guidelines, uploaded media, and platform telemetry needed to run your workspace.</li>
+                        <li><strong>2. How Data is Used:</strong> Data powers AI ad generation, strategy creation, transactional emails, and system stability.</li>
+                        <li><strong>3. 100% Proprietary Ownership:</strong> You retain complete ownership of your uploaded assets and AI-generated campaign outputs.</li>
+                        <li><strong>4. Third-Party Infrastructure:</strong> Cloud hosting, payment processing (Razorpay), and AI models process data securely under strict confidentiality.</li>
+                        <li><strong>5. Data Security:</strong> Protected using standard industry encryption during network transit and database storage.</li>
+                        <li><strong>6. Permanent Account Deletion:</strong> You can purge your account and workspace data permanently at any time via 6-digit email OTP verification.</li>
+                      </ul>
+
+                      <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500">
+                        Privacy Contact: <a href="mailto:admin@uwo24.com" className="text-brand-600 underline font-bold">admin@uwo24.com</a> · Phone: <a href="tel:+918358990909" className="text-brand-600 underline font-bold">+91 83589 90909</a>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-900 dark:text-brand-200 font-medium">
+                      <p className="font-extrabold text-xs uppercase tracking-wide text-brand-700 dark:text-brand-400 mb-1">
+                        ⚖️ Commercial Ownership & Usage Terms
+                      </p>
+                      <p className="text-[11.5px]">
+                        AI Ads™ provides an enterprise marketing generation platform. All website code, ad graphics, and copy synthesized in your workspace belong exclusively to your organization.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      <h4 className="font-extrabold text-slate-900 dark:text-white text-xs">Summary of Key Terms:</h4>
+                      <ul className="list-disc pl-5 space-y-1.5 text-[11.5px] text-slate-600 dark:text-slate-300">
+                        <li><strong>1. License Agreement:</strong> Platform access is licensed according to your selected plan (Starter, Pro, Agency, Enterprise).</li>
+                        <li><strong>2. Account Security:</strong> You are responsible for maintaining secure password credentials for your workspace.</li>
+                        <li><strong>3. Commercial IP Ownership:</strong> AI Ads™ makes zero claim of ownership over your Brand DNA inputs or generated campaign outputs.</li>
+                        <li><strong>4. Acceptable Use:</strong> Users agree not to synthesize illegal, fraudulent, harmful, or deceptive content.</li>
+                        <li><strong>5. Subscriptions & Credits:</strong> AI generation consumes visual credits based on your active subscription balance.</li>
+                        <li><strong>6. Self-Service Deletion:</strong> You can cancel subscriptions or initiate permanent account deletion at any time.</li>
+                      </ul>
+
+                      <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500">
+                        Legal Support: <a href="mailto:admin@uwo24.com" className="text-brand-600 underline font-bold">admin@uwo24.com</a> · Phone: <a href="tel:+918358990909" className="text-brand-600 underline font-bold">+91 83589 90909</a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer Controls */}
+              <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                  By clicking accept below, you confirm that you have read and agree to both policies.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAcceptedTerms(true);
+                    try { localStorage.setItem('aisa_terms_accepted', 'true'); } catch (e) {}
+                    setShowLegalModal(false);
+                    setError('');
+                  }}
+                  className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-brand-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>I Have Read & Accept Policies</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

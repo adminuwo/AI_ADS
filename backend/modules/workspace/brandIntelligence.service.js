@@ -38,23 +38,24 @@ async function generateBrandDNA(domainUrl, brandNameOverride = '', documentUploa
     console.log(`[AI-MULTIMODAL] Engine: BrandIntelligence | Text evidence: YES | Images attached: ${pageImages.length}`);
 
     const prompt = `You are an advanced Brand Intelligence Engine enforcing STRICT EVIDENCE GROUNDING.
-Your task is to analyze scraped website text AND attached page screenshots for "${brandName}" (${scrapedData.cleanUrl}) and extract factual Brand DNA.
+Your task is to analyze scraped website text, uploaded guideline documents, AND attached page screenshots for "${brandName}" (${scrapedData.cleanUrl || domainUrl}) and extract factual Brand DNA.
 
 STRICT EVIDENCE GROUNDING RULES (MANDATORY):
-1. Use BOTH textual DOM evidence AND attached page screenshots.
-2. If evidence is missing or insufficient in both text and screenshots, return null (or [] for arrays). Do NOT fabricate missing facts.
-3. For missionStatement & vision: Inspect page text AND sustainability/about page screenshots to observe explicit mission/vision statements or core purpose commitments.
+1. Use BOTH textual DOM evidence, uploaded document rules/guidelines, AND attached page screenshots.
+2. If evidence is missing or insufficient in text, documents, and screenshots, return null (or [] for arrays). Do NOT fabricate missing facts.
+3. For missionStatement & vision: Inspect page text, uploaded guideline documents, AND sustainability/about page screenshots to observe explicit mission/vision statements or core purpose commitments.
 4. For headquarters: Inspect contact/footer page text AND screenshots for complete corporate headquarters addresses (e.g. "Sant'Agata Bolognese, Italy").
-5. For parentCompany, industryCategory, businessType: Inspect text & visual branding.
+5. For parentCompany, industryCategory, businessType: Inspect text, uploaded documents, & visual branding.
 
-Context from live website scrape:
-- Domain: ${scrapedData.domainName || ''}
+Context from live website scrape & uploaded documents:
+- Domain: ${scrapedData.domainName || domainUrl || ''}
 - Schema Slogan: ${scrapedData.schemaSlogan || 'None'}
 - Homepage Headings: ${(scrapedData.headings || []).join(' | ')}
 - About Page Headings: ${(scrapedData.aboutPageHeadings || []).join(' | ')}
 - About Page Text Excerpt: ${(scrapedData.aboutPageText || '').slice(0, 1500)}
 - Contact Page Text Excerpt: ${(scrapedData.contactPageText || '').slice(0, 2000)}
 - Deep Multi-Page Context: ${(scrapedData.deepContextText || '').slice(0, 12000)}
+${documentUploadData ? `\n- Uploaded Brand Guideline Document Text & Rules:\n${(documentUploadData.rawText || '').slice(0, 10000)}\n- Approved Claims: ${JSON.stringify(documentUploadData.extractedClaims || [])}\n- Restricted Brand Rules: ${JSON.stringify(documentUploadData.extractedRules || [])}` : ''}
 ${hasVisual ? `\nVISUAL EVIDENCE ATTACHED: Inspect the attached ${pageImages.length} full-rendered page screenshots (including Homepage, About, Contact, Products, Sustainability/Mission) for visual branding, mission/vision banners, and complete headquarters text.` : ''}
 
 Return ONLY a raw valid JSON object with NO markdown formatting:

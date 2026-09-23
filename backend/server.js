@@ -602,21 +602,23 @@ app.get('/api/download-image', async (req, res) => {
 
 // ─── CORS Image Proxy Endpoint (Proxies external brand logos & assets without browser CORS block) ───
 app.get('/api/proxy/image', async (req, res) => {
+  const rawUrl = req.query.url;
+  if (!rawUrl) return res.status(400).send('Missing url parameter');
+
+  let targetUrl = rawUrl;
+  if (targetUrl.startsWith('http://')) {
+    targetUrl = targetUrl.replace('http://', 'https://');
+  }
+
+  const axios = require('axios');
+
+  // Primary URL fetch attempt
   try {
-    const rawUrl = req.query.url;
-    if (!rawUrl) return res.status(400).send('Missing url parameter');
-
-    let targetUrl = rawUrl;
-    if (targetUrl.startsWith('http://')) {
-      targetUrl = targetUrl.replace('http://', 'https://');
-    }
-
-    const axios = require('axios');
     const response = await axios.get(targetUrl, {
       responseType: 'arraybuffer',
-      timeout: 10000,
+      timeout: 7000,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
       }
     });
 
@@ -626,26 +628,43 @@ app.get('/api/proxy/image', async (req, res) => {
     res.setHeader('Cache-Control', 'public, max-age=86400');
     return res.send(Buffer.from(response.data));
   } catch (err) {
-    if (req.query.url && req.query.url.startsWith('http://')) {
-      try {
-        const axios = require('axios');
-        const response = await axios.get(req.query.url, {
-          responseType: 'arraybuffer',
-          timeout: 10000,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    // Primary external image link failed (e.g., 404 Not Found or dead path)
+    // Server-side fallback: Automatically extract domain and serve high-res brand logo (200 OK)
+    let domain = '';
+    try {
+      domain = new URL(targetUrl).hostname.replace(/^www\./i, '');
+    } catch (e) {
+      domain = targetUrl.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+    }
+
+    if (domain) {
+      const fallbackUrls = [
+        `https://logo.clearbit.com/${domain}`,
+        `https://www.google.com/s2/favicons?domain=${domain}&sz=256`
+      ];
+
+      for (const fbUrl of fallbackUrls) {
+        try {
+          const fbRes = await axios.get(fbUrl, {
+            responseType: 'arraybuffer',
+            timeout: 5000,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+            }
+          });
+          if (fbRes.status === 200 && fbRes.data) {
+            const contentType = fbRes.headers['content-type'] || 'image/png';
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+            return res.send(Buffer.from(fbRes.data));
           }
-        });
-        const contentType = response.headers['content-type'] || 'image/png';
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-        return res.send(Buffer.from(response.data));
-      } catch (e2) {
-        // Fallback error below
+        } catch (fbErr) {
+          // Continue to next fallback URL
+        }
       }
     }
-    console.warn('[ProxyImage] Proxy fetch note:', err.message);
+
     return res.status(404).send('Image proxy fetch failed');
   }
 });
@@ -866,6 +885,257 @@ app.post('/api/workspace/create', async (req, res) => {
   }
 
   res.json({ success: true, workspace: savedWorkspace, scrapedDetails: scraped });
+});
+
+// Helper: Extract Official Brand Colors directly from uploaded Logo image buffer
+async function extractLogoColorsFromBuffer(imageBuffer, mimeType = 'image/png') {
+  const hexes = [];
+  try {
+    let Vibrant = null;
+    try {
+      const vModule = require('node-vibrant/node');
+      Vibrant = vModule.Vibrant || vModule.default || vModule;
+    } catch (e1) {
+      try {
+        const vModule = require('node-vibrant');
+        Vibrant = vModule.Vibrant || vModule.default || vModule;
+      } catch (e2) {}
+    }
+
+    if (Vibrant && typeof Vibrant.from === 'function') {
+      const palette = await Vibrant.from(imageBuffer).getPalette();
+      const swatches = [
+        palette.Vibrant,
+        palette.DarkVibrant,
+        palette.LightVibrant,
+        palette.Muted,
+        palette.DarkMuted,
+        palette.LightMuted
+      ];
+
+      swatches.forEach(swatch => {
+        if (swatch) {
+          const hex = (swatch.hex || (typeof swatch.getHex === 'function' ? swatch.getHex() : '')).toUpperCase();
+          if (hex && !hexes.includes(hex)) {
+            hexes.push(hex);
+          }
+        }
+      });
+    }
+  } catch (err) {
+    console.warn('⚠️ [LOGO-COLOR-EXTRACT] Buffer Vibrant note:', err.message);
+  }
+
+  // Fallback / AI multimodal Vision extraction if palette has less than 2 colors
+  if (hexes.length < 2) {
+    try {
+      const { globalAiClient, aiClient } = require('./config/vertex');
+      const client = globalAiClient || aiClient;
+      if (client && typeof client.models?.generateContent === 'function') {
+        const b64 = imageBuffer.toString('base64');
+        const prompt = `Inspect this uploaded official brand logo image. Extract the EXACT 3 to 5 primary, secondary, and accent brand hex color codes. Return ONLY a raw valid JSON array of hex color strings like ["#1E40AF", "#3B82F6", "#F59E0B"]. Do not add markdown text or explanation.`;
+
+        const candidateModels = ['gemini-3.5-flash'];
+        let aiRes = null;
+        for (const modelName of candidateModels) {
+          try {
+            aiRes = await client.models.generateContent({
+              model: modelName,
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    { text: prompt },
+                    { inlineData: { mimeType: mimeType || 'image/png', data: b64 } }
+                  ]
+                }
+              ]
+            });
+            if (aiRes?.text) break;
+          } catch (mErr) {}
+        }
+
+        const text = aiRes?.text || '';
+        const cleaned = text.replace(/```json\n?|```\n?/g, '').trim();
+        const parsed = JSON.parse(cleaned);
+        if (Array.isArray(parsed) && parsed.length >= 2) {
+          parsed.forEach(h => {
+            if (typeof h === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(h.trim())) {
+              const uppercaseHex = h.trim().toUpperCase();
+              if (!hexes.includes(uppercaseHex)) hexes.push(uppercaseHex);
+            }
+          });
+        }
+      }
+    } catch (aiErr) {
+      console.warn('⚠️ [LOGO-COLOR-EXTRACT] Gemini Vision note:', aiErr.message);
+    }
+  }
+
+  return hexes;
+}
+
+// ─── UNIFIED BRAND DNA PREVIEW ENDPOINT (URL + MULTI-DOCS + MULTI-IMAGES + LOGO) ────
+app.post('/api/workspace/unified-dna-preview', upload.any(), async (req, res) => {
+  try {
+    const { domainUrl = '', brandName = '', userEmail = '', engineMode = 'both' } = req.body;
+    const files = req.files || [];
+
+    console.log(`✨ [UNIFIED-DNA-PREVIEW] Processing single-form request: URL="${domainUrl}", Brand="${brandName}", Total Files=${files.length}`);
+
+    // Categorize uploaded files
+    const documentFiles = files.filter(f => 
+      f.fieldname === 'documents' || 
+      /\.(pdf|doc|docx|txt)$/i.test(f.originalname) ||
+      f.mimetype.includes('pdf') || f.mimetype.includes('word') || f.mimetype.includes('text')
+    );
+    
+    const imageFiles = files.filter(f => 
+      f.fieldname === 'images' || 
+      (/\.(png|jpg|jpeg|webp|gif|svg)$/i.test(f.originalname) && f.fieldname !== 'logo')
+    );
+
+    const logoFile = files.find(f => f.fieldname === 'logo') || 
+      files.find(f => /logo/i.test(f.originalname));
+
+    // 1. Parse all uploaded document files
+    let aggregatedDocText = '';
+    const parsedDocs = [];
+    for (const docFile of documentFiles) {
+      try {
+        const parsed = await parseBrandDocument(docFile.buffer, docFile.mimetype, docFile.originalname);
+        parsedDocs.push(parsed);
+        if (parsed.rawText) {
+          aggregatedDocText += `\n--- Document: ${docFile.originalname} ---\n` + parsed.rawText;
+        }
+      } catch (docErr) {
+        console.log(`Failed to parse doc ${docFile.originalname}:`, docErr.message);
+      }
+    }
+
+    let combinedParsedDoc = null;
+    if (aggregatedDocText.trim().length > 0) {
+      combinedParsedDoc = {
+        rawText: aggregatedDocText.slice(0, 10000),
+        extractedClaims: parsedDocs.flatMap(d => d.extractedClaims || []),
+        extractedRules: parsedDocs.flatMap(d => d.extractedRules || []),
+        sourceType: 'UPLOADED_BRAND_DOCUMENTS',
+        fileName: documentFiles.map(d => d.originalname).join(', ')
+      };
+    }
+
+    // 2. Convert uploaded logo to Base64 Data URL & extract brand colors directly from logo image
+    let uploadedLogoUrl = '';
+    let logoExtractedColors = [];
+    if (logoFile) {
+      const b64 = logoFile.buffer.toString('base64');
+      const mime = logoFile.mimetype || 'image/png';
+      uploadedLogoUrl = `data:${mime};base64,${b64}`;
+      try {
+        logoExtractedColors = await extractLogoColorsFromBuffer(logoFile.buffer, mime);
+        console.log(`🎨 [UNIFIED-DNA] Colors extracted directly from uploaded logo image:`, logoExtractedColors);
+      } catch (colErr) {
+        console.warn('Logo color extraction note:', colErr.message);
+      }
+    } else if (imageFiles.length > 0) {
+      // Fallback: extract colors from first uploaded brand image if logo not explicitly passed
+      try {
+        logoExtractedColors = await extractLogoColorsFromBuffer(imageFiles[0].buffer, imageFiles[0].mimetype);
+      } catch (e) {}
+    }
+
+    // 3. Convert uploaded images to Base64 Data URLs
+    const uploadedImages = imageFiles.map(img => {
+      const b64 = img.buffer.toString('base64');
+      const mime = img.mimetype || 'image/png';
+      return `data:${mime};base64,${b64}`;
+    });
+
+    // 4. Generate or extract Brand DNA with merged website & document data
+    let brandDna = null;
+    const cleanUrl = domainUrl ? domainUrl.trim() : '';
+
+    if (cleanUrl) {
+      try {
+        brandDna = await generateBrandDNA(cleanUrl, brandName || '', combinedParsedDoc);
+      } catch (scrapeErr) {
+        console.log('Web Scrape Error, falling back to document/direct extraction:', scrapeErr.message);
+        if (combinedParsedDoc) {
+          brandDna = await generateBrandDNA(cleanUrl || 'https://custombrand.com', brandName || 'Custom Brand', combinedParsedDoc);
+        }
+      }
+    }
+
+    if (!brandDna && combinedParsedDoc) {
+      const fallbackDomain = `https://${(brandName || 'custombrand').toLowerCase().replace(/[^a-z0-9]/g, '') || 'custombrand'}.com`;
+      brandDna = await generateBrandDNA(fallbackDomain, brandName || 'Custom Brand', combinedParsedDoc);
+    }
+
+    if (!brandDna) {
+      brandDna = {
+        brandName: brandName || (documentFiles.length > 0 ? documentFiles[0].originalname.split('.')[0] : 'Custom Brand'),
+        companyName: brandName || 'Custom Brand',
+        domainUrl: cleanUrl || 'https://custombrand.com',
+        companyDescription: 'Custom brand profile initialized with uploaded brand guidelines and assets.',
+        industryCategory: 'General Business',
+        brandColors: logoExtractedColors.length > 0 ? logoExtractedColors : ['#4F46E5', '#06B6D4', '#10B981'],
+        confidenceScore: 90
+      };
+    }
+
+    // Determine final brand colors (prioritize logo-extracted colors)
+    const finalBrandColors = (logoExtractedColors && logoExtractedColors.length >= 2)
+      ? logoExtractedColors
+      : (brandDna?.brandColors && brandDna.brandColors.length > 0
+        ? brandDna.brandColors
+        : ['#4F46E5', '#06B6D4', '#10B981']);
+
+    brandDna.brandColors = finalBrandColors;
+
+    // Override logo with uploaded custom logo if provided
+    if (uploadedLogoUrl) {
+      brandDna.logoUrl = uploadedLogoUrl;
+      brandDna.faviconUrl = uploadedLogoUrl;
+    }
+
+    // Attach uploaded images to brand DNA preview
+    if (uploadedImages.length > 0) {
+      brandDna.uploadedBrandImages = uploadedImages;
+      brandDna.mediaAssets = (brandDna.mediaAssets || []).concat(uploadedImages);
+    }
+
+    const previewWorkspace = {
+      tempId: `preview_${Date.now()}`,
+      userEmail: (userEmail || '').toLowerCase().trim(),
+      brandName: brandDna.brandName || brandName || 'New Brand',
+      companyName: brandDna.companyName || brandDna.brandName || brandName,
+      domainUrl: brandDna.domainUrl || cleanUrl || 'https://custombrand.com',
+      logoUrl: uploadedLogoUrl || brandDna.logoUrl || brandDna.faviconUrl || '',
+      brandColors: finalBrandColors,
+      industry: brandDna.industryCategory || 'General Business',
+      industryCategory: brandDna.industryCategory || 'General Business',
+      businessType: brandDna.businessType || 'D2C / B2B',
+      companyDescription: brandDna.companyDescription || 'Brand workspace created from single unified input form.',
+      tagline: brandDna.tagline || '',
+      missionStatement: brandDna.missionStatement || '',
+      vision: brandDna.vision || '',
+      targetAudience: brandDna.targetAudience || [],
+      brandVoiceTone: brandDna.brandVoiceTone || { formalityScore: 3, toneKeywords: ['Professional', 'Modern'] },
+      coreProductsServices: brandDna.coreProductsServices || [],
+      contentPillars: brandDna.contentPillars || [],
+      approvedClaims: brandDna.approvedClaims || [],
+      restrictedClaims: brandDna.restrictedClaims || [],
+      uploadedBrandImages: uploadedImages,
+      rawScrapedData: brandDna.rawScrapedData || null,
+      confidenceScore: brandDna.confidenceScore || 95,
+      isLockSaved: false
+    };
+
+    res.json({ success: true, workspace: previewWorkspace, brandProfile: previewWorkspace });
+  } catch (err) {
+    console.error('Unified DNA Preview Error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 app.post('/api/workspace/upload-doc-preview', upload.single('file'), async (req, res) => {

@@ -2244,9 +2244,16 @@ export const WorkspaceProvider = ({ children }) => {
       if (saved && savedToken) {
         const u = JSON.parse(saved);
         if (savedName) u.name = savedName;
+        if (!u.avatar && savedEmail) {
+          const cleanEmail = savedEmail.toLowerCase().trim();
+          const savedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+          if (savedAvatar) u.avatar = savedAvatar;
+        }
         return u;
       } else if (savedEmail && savedToken) {
-        return { email: savedEmail, name: savedName || savedEmail.split('@')[0], role: 'AgencyAdmin' };
+        const cleanEmail = savedEmail.toLowerCase().trim();
+        const savedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+        return { email: savedEmail, name: savedName || savedEmail.split('@')[0], avatar: savedAvatar || '', role: 'AgencyAdmin' };
       }
       return null;
     } catch (e) {
@@ -2288,9 +2295,11 @@ export const WorkspaceProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
+    setUserAvatarState(null);
     localStorage.removeItem('aisa_user');
     localStorage.removeItem('aisa_user_name');
     localStorage.removeItem('aisa_user_email');
+    localStorage.removeItem('aisa_user_avatar');
     localStorage.removeItem('aisa_token');
     localStorage.removeItem('token');
     localStorage.removeItem('uwo_access_token');
@@ -2576,8 +2585,14 @@ export const WorkspaceProvider = ({ children }) => {
   ]);
   const [userAvatar, setUserAvatarState] = useState(() => {
     try {
-      const savedAvatar = localStorage.getItem('aisa_user_avatar');
-      if (savedAvatar) return savedAvatar;
+      // Clean up legacy generic un-scoped avatar key
+      localStorage.removeItem('aisa_user_avatar');
+      const savedEmail = localStorage.getItem('aisa_user_email');
+      if (savedEmail) {
+        const cleanEmail = savedEmail.toLowerCase().trim();
+        const perUserAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+        if (perUserAvatar) return perUserAvatar;
+      }
       const savedUser = localStorage.getItem('aisa_user');
       if (savedUser) {
         const parsed = JSON.parse(savedUser);
@@ -2587,24 +2602,107 @@ export const WorkspaceProvider = ({ children }) => {
     return null;
   });
 
-  const setUserAvatar = (avatarData) => {
-    setUserAvatarState(avatarData);
+  // Automatically sync avatar state whenever active logged-in user changes
+  useEffect(() => {
+    if (!user || !user.email) {
+      setUserAvatarState(null);
+      return;
+    }
+    const cleanEmail = user.email.toLowerCase().trim();
+    const savedScopedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+    if (savedScopedAvatar) {
+      setUserAvatarState(savedScopedAvatar);
+    } else if (user.avatar) {
+      setUserAvatarState(user.avatar);
+    } else {
+      setUserAvatarState(null);
+    }
+  }, [user?.email, user?.avatar]);
+
+  const setUserAvatar = async (avatarData) => {
+    let finalAvatar = avatarData;
+    // Compress base64 data URL to ~20KB to avoid browser localStorage quota limits
+    if (avatarData && typeof avatarData === 'string' && avatarData.startsWith('data:image')) {
+      try {
+        finalAvatar = await new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const targetSize = 256;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > targetSize) {
+                height = Math.round((height * targetSize) / width);
+                width = targetSize;
+              }
+            } else {
+              if (height > targetSize) {
+                width = Math.round((width * targetSize) / height);
+                height = targetSize;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
+          };
+          img.onerror = () => resolve(avatarData);
+          img.src = avatarData;
+        });
+      } catch (e) {
+        finalAvatar = avatarData;
+      }
+    }
+
+    setUserAvatarState(finalAvatar);
+    const activeEmail = (user?.email || localStorage.getItem('aisa_user_email') || '').toLowerCase().trim();
+
     try {
-      if (avatarData) {
-        localStorage.setItem('aisa_user_avatar', avatarData);
+      localStorage.removeItem('aisa_user_avatar');
+      if (finalAvatar) {
+        if (activeEmail) {
+          try {
+            localStorage.setItem(`aisa_user_avatar_${activeEmail}`, finalAvatar);
+          } catch (err) {
+            console.warn("localStorage quota warning for avatar:", err);
+          }
+        }
         setUser(prev => {
-          const updated = prev ? { ...prev, avatar: avatarData } : { avatar: avatarData };
+          const updated = prev ? { ...prev, avatar: finalAvatar } : { avatar: finalAvatar };
           try { localStorage.setItem('aisa_user', JSON.stringify(updated)); } catch (e) { }
           return updated;
         });
+
+        if (activeEmail) {
+          fetch(`${API_BASE}/auth/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: activeEmail, avatar: finalAvatar })
+          }).catch(err => console.warn("Failed to sync avatar to database:", err));
+        }
       } else {
-        localStorage.removeItem('aisa_user_avatar');
+        if (activeEmail) {
+          try {
+            localStorage.removeItem(`aisa_user_avatar_${activeEmail}`);
+          } catch (e) { }
+        }
         setUser(prev => {
           if (!prev) return prev;
           const { avatar, ...rest } = prev;
           try { localStorage.setItem('aisa_user', JSON.stringify(rest)); } catch (e) { }
           return rest;
         });
+
+        if (activeEmail) {
+          fetch(`${API_BASE}/auth/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: activeEmail, avatar: '' })
+          }).catch(err => console.warn("Failed to clear avatar in database:", err));
+        }
       }
     } catch (e) {
       console.error("Error saving user avatar to localStorage:", e);

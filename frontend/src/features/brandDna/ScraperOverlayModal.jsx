@@ -2,16 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { normalizeBrandDna } from '../../utils/normalizeBrandDna';
-import { X, Dna, Globe, Sparkles, ArrowRight, FileText, Edit3 } from 'lucide-react';
+import { X, Dna, Globe, Sparkles, ArrowRight, FileText, Image, Trash2, Building, Upload, CheckCircle2 } from 'lucide-react';
 
 export const ScraperOverlayModal = () => {
   const { isScraperOpen, setIsScraperOpen, addWorkspace, activeWorkspace, scraperMode, setActiveModule, t } = useWorkspace();
+  
+  // Single Unified Form State
   const [url, setUrl] = useState('');
   const [brandName, setBrandName] = useState('');
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [documentFiles, setDocumentFiles] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [activeTab, setActiveTab] = useState('URL');
-  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     if (isScraperOpen) {
@@ -23,64 +29,138 @@ export const ScraperOverlayModal = () => {
         setUrl('');
         setBrandName('');
       }
+      setLogoFile(null);
+      setLogoPreview(null);
+      setDocumentFiles([]);
+      setImageFiles([]);
+      setImagePreviews([]);
     }
   }, [isScraperOpen, scraperMode, activeWorkspace]);
 
   if (!isScraperOpen) return null;
 
-  const handleFileUpload = async (e) => {
+  // ── LOGO HANDLERS ──
+  const handleLogoSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setSelectedFile(file);
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setLogoPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+  };
+
+  // ── MULTI-DOCUMENT HANDLERS ──
+  const handleDocumentsSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setDocumentFiles((prevDocs) => {
+      const existingKeySet = new Set(prevDocs.map((f) => `${f.name}_${f.size}`));
+      const newDocs = files.filter((f) => !existingKeySet.has(`${f.name}_${f.size}`));
+      return [...prevDocs, ...newDocs];
+    });
+  };
+
+  const handleRemoveDocument = (index) => {
+    setDocumentFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // ── MULTI-IMAGE HANDLERS ──
+  const handleImagesSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreviews((prev) => [
+          ...prev,
+          { id: `${file.name}_${file.size}_${Date.now()}`, file, url: reader.result }
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    setImageFiles((prev) => [...prev, ...files]);
+  };
+
+  const handleRemoveImage = (index) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Helper for human-readable file sizes
+  const formatFileSize = (bytes) => {
+    if (!bytes) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  // ── UNIFIED EXTRACTION SUBMIT HANDLER ──
+  const handleExtractBrandDna = async (e) => {
+    if (e) e.preventDefault();
+    if (!url.trim() && documentFiles.length === 0 && !logoFile && imageFiles.length === 0) {
+      alert('Please provide at least a Website URL or upload a Document / Image / Logo.');
+      return;
+    }
+
     setLoading(true);
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('domainUrl', url || 'https://custombrand.com');
-    formData.append('brandName', brandName || file.name.split('.')[0].toUpperCase());
-
     try {
-      const apiUrl = `${API_BASE}/workspace/upload-doc-preview`;
+      const formData = new FormData();
+      formData.append('domainUrl', url.trim());
+      formData.append('brandName', brandName.trim());
+
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      }
+
+      documentFiles.forEach((doc) => {
+        formData.append('documents', doc);
+      });
+
+      imageFiles.forEach((img) => {
+        formData.append('images', img);
+      });
+
+      const apiUrl = `${API_BASE}/workspace/unified-dna-preview`;
       const res = await fetch(apiUrl, {
         method: 'POST',
         body: formData
       });
-      const data = await res.json();
-      const extractedWorkspace = data.workspace || data.brandProfile;
-      if (data.success && extractedWorkspace) {
-        setResult(normalizeBrandDna(extractedWorkspace));
-      }
-    } catch (err) {
-      console.error('Upload error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleScrape = async (engineMode = 'both') => {
-    if (!url.trim()) return;
-    setLoading(true);
-
-    try {
-      const apiUrl = `${API_BASE}/workspace/scrape-preview`;
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domainUrl: url.trim(), brandName: brandName.trim(), engineMode })
-      });
       const data = await res.json();
       const extractedWorkspace = data.workspace || data.brandProfile;
 
       if (data.success && extractedWorkspace) {
         const normalized = normalizeBrandDna(extractedWorkspace);
-        // Retain raw scraped data object internally for backend persistence
+        
+        // Retain raw scraped data and custom uploaded logo/images
         if (data.rawScrapedData || extractedWorkspace.rawScrapedData) {
           normalized.rawScrapedData = data.rawScrapedData || extractedWorkspace.rawScrapedData;
         }
+        if (logoPreview) {
+          normalized.logoUrl = logoPreview;
+          normalized.faviconUrl = logoPreview;
+        }
+        if (imagePreviews.length > 0) {
+          normalized.uploadedBrandImages = imagePreviews.map((p) => p.url);
+        }
+
         setResult(normalized);
+      } else {
+        alert(data.error || 'Failed to extract Brand DNA. Please verify inputs.');
       }
     } catch (err) {
-      console.error('Scrape error:', err);
+      console.error('Unified extraction error:', err);
+      alert('An error occurred while extracting Brand DNA. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -96,32 +176,40 @@ export const ScraperOverlayModal = () => {
       setResult(null);
       setUrl('');
       setBrandName('');
+      setLogoFile(null);
+      setLogoPreview(null);
+      setDocumentFiles([]);
+      setImageFiles([]);
+      setImagePreviews([]);
+
       if (window.location.pathname !== '/brand-dna') {
         window.location.href = '/brand-dna';
       }
     }
   };
 
-  return (
-    <div 
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in"
-    >
-      <div 
-        className="w-full max-w-[95vw] sm:max-w-2xl md:max-w-4xl bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 text-slate-900 max-h-[90vh] overflow-y-auto"
-      >
+  const isFormValid = url.trim().length > 0 || documentFiles.length > 0 || logoFile !== null || imageFiles.length > 0;
 
-        {/* Header */}
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in">
+      <div className="w-full max-w-[95vw] sm:max-w-2xl md:max-w-4xl bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 text-slate-900 max-h-[92vh] overflow-y-auto">
+
+        {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
               <Dna className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-extrabold text-slate-900 text-base sm:text-lg">{t('domainWebScraperSetup', 'Domain Web Scraper & Brand DNA Setup')}</h2>
-              <p className="text-xs text-brand-500 font-semibold">{t('tenPointBrandDnaEngine', '10-Point Expert Brand DNA Extraction Engine')}</p>
+              <h2 className="font-extrabold text-slate-900 text-base sm:text-lg">
+                {t('domainWebScraperSetup', 'Domain Web Scraper & Brand DNA Setup')}
+              </h2>
+              <p className="text-xs text-brand-500 font-semibold">
+                {t('tenPointBrandDnaEngine', '10-Point Expert Brand DNA Extraction Engine')}
+              </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={() => setIsScraperOpen(false)}
             className="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors"
           >
@@ -130,30 +218,21 @@ export const ScraperOverlayModal = () => {
         </div>
 
         {!result ? (
-          /* Step 1: Input URL or Upload Brand Deck */
-          <div className="space-y-4">
-            {/* Input Mode Selector */}
-            <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
-              <button
-                type="button"
-                onClick={() => setActiveTab('URL')}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'URL' ? 'bg-white text-brand-500 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-              >
-                🌐 {t('autoScrapeWebsite', 'Auto Scrape Website')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('FILE')}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'FILE' ? 'bg-white text-brand-500 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-              >
-                📄 {t('uploadBrandGuidelinePdf', 'Upload Brand Guideline PDF / Deck')}
-              </button>
-            </div>
+          /* STEP 1: SINGLE UNIFIED INPUT FORM */
+          <form onSubmit={handleExtractBrandDna} className="space-y-5">
+            
+            {/* SECTION 1: WEBSITE & BRAND NAME */}
+            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3.5">
+              <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                <Globe className="w-4 h-4 text-brand-500" />
+                <span>1. Website Domain & Brand Name</span>
+              </div>
 
-            {activeTab === 'URL' ? (
-              <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1.5">{t('targetDomainUrl', 'Target Domain URL')}</label>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">
+                    {t('targetDomainUrl', 'Target Domain URL')}
+                  </label>
                   <div className="relative">
                     <Globe className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                     <input
@@ -161,61 +240,185 @@ export const ScraperOverlayModal = () => {
                       placeholder="e.g. https://nike.com"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all font-semibold"
+                      className="w-full pl-10 pr-4 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all font-semibold"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1.5">{t('brandNameOptional', 'Brand / Company Name (Optional)')}</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Nike"
-                    value={brandName}
-                    onChange={(e) => setBrandName(e.target.value)}
-                    className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all font-semibold"
-                  />
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">
+                    {t('brandNameOptional', 'Brand / Company Name (Optional)')}
+                  </label>
+                  <div className="relative">
+                    <Building className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="text"
+                      placeholder="e.g. Nike"
+                      value={brandName}
+                      onChange={(e) => setBrandName(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all font-semibold"
+                    />
+                  </div>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleScrape('both')}
-                  disabled={loading || !url.trim()}
-                  className="w-full btn-primary py-3.5 rounded-xl font-bold text-xs shadow-lg shadow-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
-                >
-                  {loading ? (
-                    <>
-                      <Sparkles className="w-4 h-4 animate-spin text-amber-300" />
-                      <span>{t('scrapingWebsiteLive', 'Scraping Website & Extracting Brand DNA...')}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Dna className="w-4 h-4" />
-                      <span>{t('extractBrandDnaMemory', 'Extract Brand DNA Memory')}</span>
-                    </>
-                  )}
-                </button>
-              </>
-            ) : (
-              /* FILE TAB */
-              <div className="space-y-4 text-center p-6 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center mx-auto">
-                  <FileText className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="font-extrabold text-sm text-slate-900">{t('dragDropBrandPdf', 'Upload Brand Identity PDF or Presentation')}</h4>
-                  <p className="text-xs text-slate-500 mt-1">{t('aiExtractsColorsTone', 'AI will extract brand guidelines, colors, voice, tagline, and products')}</p>
-                </div>
-
-                <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold rounded-xl cursor-pointer shadow-md transition-all">
-                  <span>{loading ? t('processingFile', 'Analyzing File...') : t('selectFileBtn', 'Select PDF / Document')}</span>
-                  <input type="file" accept=".pdf,.doc,.docx,.txt" onChange={handleFileUpload} className="hidden" />
-                </label>
               </div>
-            )}
-          </div>
+            </div>
+
+            {/* SECTION 2: CUSTOM BRAND LOGO UPLOAD */}
+            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span>2. Brand Logo</span>
+                </div>
+                {logoFile && (
+                  <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Logo Selected
+                  </span>
+                )}
+              </div>
+
+              {!logoPreview ? (
+                <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-white hover:bg-slate-100/50 cursor-pointer transition-all text-center">
+                  <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center mb-1.5">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">Upload High-Res Brand Logo</span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-0.5">Supports PNG, SVG, JPG, WEBP</span>
+                  <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={handleLogoSelect} className="hidden" />
+                </label>
+              ) : (
+                <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <img src={logoPreview} alt="Brand Logo Preview" className="w-12 h-12 rounded-xl object-contain bg-slate-50 p-1 border border-slate-200 shadow-sm" />
+                    <div>
+                      <h5 className="text-xs font-extrabold text-slate-900">{logoFile?.name || 'Uploaded Brand Logo'}</h5>
+                      <p className="text-[10px] text-slate-500 font-semibold">{formatFileSize(logoFile?.size)}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 3: MULTIPLE BRAND GUIDELINES / DOCUMENTS */}
+            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  <FileText className="w-4 h-4 text-blue-500" />
+                  <span>3. Brand Guideline Documents (Multiple)</span>
+                </div>
+                {documentFiles.length > 0 && (
+                  <span className="text-[11px] text-brand-600 font-extrabold bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
+                    {documentFiles.length} {documentFiles.length === 1 ? 'Document' : 'Documents'}
+                  </span>
+                )}
+              </div>
+
+              {/* Upload Dropzone */}
+              <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-white hover:bg-slate-100/50 cursor-pointer transition-all text-center">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-1.5">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-bold text-slate-800">Upload PDF, Word Decks, or Text Guidelines</span>
+                <span className="text-[10px] text-slate-400 font-medium mt-0.5">Select multiple files (.pdf, .doc, .docx, .txt)</span>
+                <input type="file" multiple accept=".pdf,.doc,.docx,.txt" onChange={handleDocumentsSelect} className="hidden" />
+              </label>
+
+              {/* Document Files Chips List */}
+              {documentFiles.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  {documentFiles.map((doc, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl">
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 font-extrabold text-[10px] rounded-md border border-blue-200 uppercase">
+                          {doc.name.split('.').pop()}
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 truncate max-w-[240px] sm:max-w-sm">{doc.name}</span>
+                        <span className="text-[10px] text-slate-400 font-semibold">({formatFileSize(doc.size)})</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDocument(idx)}
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 4: MULTIPLE BRAND IMAGES & MEDIA ASSETS */}
+            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  <Image className="w-4 h-4 text-purple-500" />
+                  <span>4. Brand Images & Banners (Multiple)</span>
+                </div>
+                {imageFiles.length > 0 && (
+                  <span className="text-[11px] text-purple-600 font-extrabold bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+                    {imageFiles.length} {imageFiles.length === 1 ? 'Image' : 'Images'}
+                  </span>
+                )}
+              </div>
+
+              {/* Upload Dropzone */}
+              <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-white hover:bg-slate-100/50 cursor-pointer transition-all text-center">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-1.5">
+                  <Image className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-bold text-slate-800">Upload Product Photos, Creatives & Banners</span>
+                <span className="text-[10px] text-slate-400 font-medium mt-0.5">Select multiple images (.png, .jpg, .jpeg, .webp)</span>
+                <input type="file" multiple accept="image/*" onChange={handleImagesSelect} className="hidden" />
+              </label>
+
+              {/* Image Previews Grid */}
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5 pt-1">
+                  {imagePreviews.map((img, idx) => (
+                    <div key={img.id || idx} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-square bg-slate-100 shadow-sm">
+                      <img src={img.url} alt={`Brand Media ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(idx)}
+                        className="absolute top-1 right-1 p-1 bg-slate-900/80 text-white hover:bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* UNIFIED SUBMIT ACTION BUTTON */}
+            <button
+              type="submit"
+              disabled={loading || !isFormValid}
+              className="w-full btn-primary py-4 rounded-2xl font-extrabold text-xs shadow-xl shadow-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:scale-[1.005]"
+            >
+              {loading ? (
+                <>
+                  <Sparkles className="w-4 h-4 animate-spin text-amber-300" />
+                  <span>Scraping Website & Extracting Unified Brand DNA...</span>
+                </>
+              ) : (
+                <>
+                  <Dna className="w-4.5 h-4.5" />
+                  <span>Extract & Generate Complete Brand DNA Memory</span>
+                </>
+              )}
+            </button>
+          </form>
         ) : (
-          /* Step 2: Preview Extracted DNA */
+          /* STEP 2: PREVIEW & SAVE EXTRACTED BRAND DNA MEMORY */
           <div className="space-y-4 animate-in fade-in">
             {/* Top Brand Banner */}
             <div className="p-4 rounded-2xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-between">
@@ -234,17 +437,32 @@ export const ScraperOverlayModal = () => {
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
                     {result.brandName}
-                    <span className="text-[10px] bg-brand-500 text-white px-2 py-0.5 rounded-full font-extrabold">{result.industryCategory || result.industry || 'Not Specified'}</span>
+                    <span className="text-[10px] bg-brand-500 text-white px-2 py-0.5 rounded-full font-extrabold">
+                      {result.industryCategory || result.industry || 'Not Specified'}
+                    </span>
                   </h3>
                   <p className="text-xs font-bold text-brand-500">{result.domainUrl}</p>
                 </div>
               </div>
+
               <div className="flex gap-1">
                 {result.brandColors?.map((c, i) => (
                   <span key={i} className="w-4 h-4 rounded-full border border-slate-300" style={{ backgroundColor: typeof c === 'string' ? c : c.hex }} />
                 ))}
               </div>
             </div>
+
+            {/* Display Uploaded Brand Images if available */}
+            {Array.isArray(result.uploadedBrandImages) && result.uploadedBrandImages.length > 0 && (
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Attached Brand Images & Assets ({result.uploadedBrandImages.length})</span>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {result.uploadedBrandImages.map((imgUrl, i) => (
+                    <img key={i} src={imgUrl} alt={`Asset ${i}`} className="w-14 h-14 rounded-xl object-cover border border-slate-200 shadow-sm flex-shrink-0" />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* EDITABLE BRAND DNA FORM PREVIEW */}
             <div className="space-y-4 text-xs">
@@ -259,10 +477,7 @@ export const ScraperOverlayModal = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {/* BRAND NAME */}
                   <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">BRAND NAME</span>
-                      <Edit3 className="w-3 h-3 text-slate-400" />
-                    </div>
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">BRAND NAME</span>
                     <input
                       type="text"
                       value={result.brandName || ''}
@@ -274,10 +489,7 @@ export const ScraperOverlayModal = () => {
 
                   {/* TAGLINE */}
                   <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">TAGLINE</span>
-                      <Edit3 className="w-3 h-3 text-slate-400" />
-                    </div>
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">TAGLINE</span>
                     <input
                       type="text"
                       value={result.tagline || ''}
@@ -289,10 +501,7 @@ export const ScraperOverlayModal = () => {
 
                   {/* WEBSITE */}
                   <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">WEBSITE</span>
-                      <Edit3 className="w-3 h-3 text-slate-400" />
-                    </div>
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">WEBSITE</span>
                     <input
                       type="text"
                       value={result.domainUrl || ''}
@@ -304,10 +513,7 @@ export const ScraperOverlayModal = () => {
 
                   {/* INDUSTRY */}
                   <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">INDUSTRY</span>
-                      <Edit3 className="w-3 h-3 text-slate-400" />
-                    </div>
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">INDUSTRY</span>
                     <input
                       type="text"
                       value={result.industryCategory || result.industry || ''}
@@ -317,61 +523,9 @@ export const ScraperOverlayModal = () => {
                     />
                   </div>
 
-                  {/* BUSINESS TYPE */}
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">BUSINESS TYPE</span>
-                      <Edit3 className="w-3 h-3 text-slate-400" />
-                    </div>
-                    <input
-                      type="text"
-                      value={Array.isArray(result.businessType) ? result.businessType.join(' & ') : (result.businessType || '')}
-                      onChange={(e) => setResult(prev => ({ ...prev, businessType: e.target.value }))}
-                      placeholder="Enter business type..."
-                      className="w-full font-bold text-slate-900 text-xs bg-transparent border-none outline-none p-0"
-                    />
-                  </div>
-
-                  {/* HEADQUARTERS / ADDRESS */}
-                  <div className="sm:col-span-2 p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">HEADQUARTERS / ADDRESS</span>
-                      <Edit3 className="w-3 h-3 text-slate-400" />
-                    </div>
-                    <input
-                      type="text"
-                      value={result.headquarters || ''}
-                      onChange={(e) => setResult(prev => ({ ...prev, headquarters: e.target.value }))}
-                      placeholder="Enter headquarters location / address..."
-                      className="w-full font-bold text-slate-900 text-xs bg-transparent border-none outline-none p-0"
-                    />
-                  </div>
-
-                  {/* CONTACT INFO */}
-                  <div className="sm:col-span-2 p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">CONTACT INFO</span>
-                      <Edit3 className="w-3 h-3 text-slate-400" />
-                    </div>
-                    <input
-                      type="text"
-                      value={
-                        typeof result.contactInfo === 'string'
-                          ? result.contactInfo
-                          : (`${result.contactInfo?.email || ''}${result.contactInfo?.phone ? ' | Phone: ' + result.contactInfo.phone : ''}`)
-                      }
-                      onChange={(e) => setResult(prev => ({ ...prev, contactInfo: e.target.value }))}
-                      placeholder="Enter contact email / phone..."
-                      className="w-full font-bold text-slate-900 text-xs bg-transparent border-none outline-none p-0"
-                    />
-                  </div>
-
                   {/* COMPANY DESCRIPTION */}
                   <div className="sm:col-span-2 p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">COMPANY DESCRIPTION</span>
-                      <Edit3 className="w-3 h-3 text-slate-400" />
-                    </div>
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">COMPANY DESCRIPTION</span>
                     <textarea
                       rows={3}
                       value={result.companyDescription || result.positioningSummary || result.metaDescription || ''}
@@ -383,7 +537,7 @@ export const ScraperOverlayModal = () => {
                 </div>
               </div>
 
-              {/* SECTION 2: BRAND IDENTITY */}
+              {/* SECTION 2: BRAND IDENTITY & STRATEGY */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <span className="font-extrabold text-brand-500 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
@@ -393,10 +547,7 @@ export const ScraperOverlayModal = () => {
 
                 {/* MISSION */}
                 <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">MISSION</span>
-                    <Edit3 className="w-3 h-3 text-slate-400" />
-                  </div>
+                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">MISSION</span>
                   <textarea
                     rows={2}
                     value={result.missionStatement || result.mission || ''}
@@ -408,10 +559,7 @@ export const ScraperOverlayModal = () => {
 
                 {/* VISION */}
                 <div className="p-2.5 rounded-xl bg-white border border-slate-200 focus-within:border-brand-500 transition-all">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">VISION</span>
-                    <Edit3 className="w-3 h-3 text-slate-400" />
-                  </div>
+                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">VISION</span>
                   <textarea
                     rows={2}
                     value={result.vision || ''}
@@ -420,40 +568,12 @@ export const ScraperOverlayModal = () => {
                     className="w-full font-medium text-slate-700 text-xs bg-transparent border-none outline-none p-0 leading-relaxed resize-y"
                   />
                 </div>
-
-                {/* CORE PRODUCTS & SERVICES */}
-                {Array.isArray(result.coreProductsServices) && result.coreProductsServices.length > 0 && (
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">CORE PRODUCTS / SERVICES</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {result.coreProductsServices.map((prod, i) => (
-                        <span key={i} className="px-2.5 py-1 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-semibold border border-slate-200">
-                          {typeof prod === 'string' ? prod : (prod.name || JSON.stringify(prod))}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* TARGET AUDIENCE */}
-                {Array.isArray(result.targetAudience) && result.targetAudience.length > 0 && (
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
-                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">TARGET AUDIENCE</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {result.targetAudience.map((aud, i) => (
-                        <span key={i} className="px-2.5 py-1 bg-brand-50 text-brand-700 rounded-lg text-[11px] font-semibold border border-brand-200">
-                          {typeof aud === 'string' ? aud : (aud.personaName || JSON.stringify(aud))}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
             <button
               onClick={confirmSaveWorkspace}
-              className="w-full btn-primary py-3 rounded-xl font-bold text-xs shadow-lg shadow-brand-500/30 flex items-center justify-center gap-2"
+              className="w-full btn-primary py-3.5 rounded-xl font-bold text-xs shadow-lg shadow-brand-500/30 flex items-center justify-center gap-2"
             >
               <ArrowRight className="w-4 h-4" />
               Save & Lock Brand DNA Memory

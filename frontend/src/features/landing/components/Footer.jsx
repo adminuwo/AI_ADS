@@ -3,7 +3,7 @@ import { Sparkles, ShieldCheck, FileText } from 'lucide-react';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 
 export const Footer = () => {
-  const { setActiveModule } = useWorkspace();
+  const { setActiveModule, setIsSettingsModalOpen, setActiveSettingsTab } = useWorkspace();
 
   const handleNavClick = (targetId) => {
     const element = document.getElementById(targetId);
@@ -99,19 +99,37 @@ export const Footer = () => {
             <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Company</h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <span className="hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer" title="Legal Privacy Policy Placeholder">
+                <button 
+                  onClick={() => {
+                    if (setActiveSettingsTab) setActiveSettingsTab('privacy');
+                    if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
+                  }}
+                  className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left"
+                >
                   Privacy Policy
-                </span>
+                </button>
               </li>
               <li>
-                <span className="hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer" title="Terms of Service Placeholder">
+                <button 
+                  onClick={() => {
+                    if (setActiveSettingsTab) setActiveSettingsTab('terms');
+                    if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
+                  }}
+                  className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left"
+                >
                   Terms of Service
-                </span>
+                </button>
               </li>
               <li>
-                <span className="hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer" title="Support Contact Placeholder">
+                <button 
+                  onClick={() => {
+                    if (setActiveSettingsTab) setActiveSettingsTab('help');
+                    if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
+                  }}
+                  className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left"
+                >
                   Contact Support
-                </span>
+                </button>
               </li>
             </ul>
           </div>
