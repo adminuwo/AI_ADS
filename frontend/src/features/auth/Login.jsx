@@ -34,13 +34,20 @@ export const Login = ({ onLoginSuccess }) => {
     setSuccess(true);
     const uUser = data.user || {};
     const cleanEmail = (uUser.email || email).toLowerCase().trim();
+    let userAvatar = uUser.avatar || '';
+    if (!userAvatar && cleanEmail) {
+      try {
+        const savedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+        if (savedAvatar) userAvatar = savedAvatar;
+      } catch (e) { }
+    }
     const formattedUser = {
       id: uUser.id || uUser._id || `usr_${Date.now()}`,
       _id: uUser.id || uUser._id || `usr_${Date.now()}`,
       email: cleanEmail,
       name: uUser.name || cleanEmail.split('@')[0],
       role: uUser.role || (cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin'),
-      avatar: uUser.avatar || '',
+      avatar: userAvatar,
       accentColor: uUser.accentColor || 'indigo',
       appearance: uUser.appearance || 'light',
       credits: uUser.credits !== undefined ? uUser.credits : 500,

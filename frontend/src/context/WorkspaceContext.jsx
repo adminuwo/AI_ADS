@@ -2197,9 +2197,16 @@ export const WorkspaceProvider = ({ children }) => {
       if (saved && savedToken) {
         const u = JSON.parse(saved);
         if (savedName) u.name = savedName;
+        if (!u.avatar && savedEmail) {
+          const cleanEmail = savedEmail.toLowerCase().trim();
+          const savedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+          if (savedAvatar) u.avatar = savedAvatar;
+        }
         return u;
       } else if (savedEmail && savedToken) {
-        return { email: savedEmail, name: savedName || savedEmail.split('@')[0], role: 'AgencyAdmin' };
+        const cleanEmail = savedEmail.toLowerCase().trim();
+        const savedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
+        return { email: savedEmail, name: savedName || savedEmail.split('@')[0], avatar: savedAvatar || '', role: 'AgencyAdmin' };
       }
       return null;
     } catch (e) {
@@ -2553,17 +2560,59 @@ export const WorkspaceProvider = ({ children }) => {
     }
   }, [user?.email, user?.avatar]);
 
-  const setUserAvatar = (avatarData) => {
-    setUserAvatarState(avatarData);
+  const setUserAvatar = async (avatarData) => {
+    let finalAvatar = avatarData;
+    // Compress base64 data URL to ~20KB to avoid browser localStorage quota limits
+    if (avatarData && typeof avatarData === 'string' && avatarData.startsWith('data:image')) {
+      try {
+        finalAvatar = await new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const targetSize = 256;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > targetSize) {
+                height = Math.round((height * targetSize) / width);
+                width = targetSize;
+              }
+            } else {
+              if (height > targetSize) {
+                width = Math.round((width * targetSize) / height);
+                height = targetSize;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
+          };
+          img.onerror = () => resolve(avatarData);
+          img.src = avatarData;
+        });
+      } catch (e) {
+        finalAvatar = avatarData;
+      }
+    }
+
+    setUserAvatarState(finalAvatar);
     const activeEmail = (user?.email || localStorage.getItem('aisa_user_email') || '').toLowerCase().trim();
+
     try {
       localStorage.removeItem('aisa_user_avatar');
-      if (avatarData) {
+      if (finalAvatar) {
         if (activeEmail) {
-          localStorage.setItem(`aisa_user_avatar_${activeEmail}`, avatarData);
+          try {
+            localStorage.setItem(`aisa_user_avatar_${activeEmail}`, finalAvatar);
+          } catch (err) {
+            console.warn("localStorage quota warning for avatar:", err);
+          }
         }
         setUser(prev => {
-          const updated = prev ? { ...prev, avatar: avatarData } : { avatar: avatarData };
+          const updated = prev ? { ...prev, avatar: finalAvatar } : { avatar: finalAvatar };
           try { localStorage.setItem('aisa_user', JSON.stringify(updated)); } catch (e) { }
           return updated;
         });
@@ -2572,12 +2621,14 @@ export const WorkspaceProvider = ({ children }) => {
           fetch(`${API_BASE}/auth/profile`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: activeEmail, avatar: avatarData })
+            body: JSON.stringify({ email: activeEmail, avatar: finalAvatar })
           }).catch(err => console.warn("Failed to sync avatar to database:", err));
         }
       } else {
         if (activeEmail) {
-          localStorage.removeItem(`aisa_user_avatar_${activeEmail}`);
+          try {
+            localStorage.removeItem(`aisa_user_avatar_${activeEmail}`);
+          } catch (e) { }
         }
         setUser(prev => {
           if (!prev) return prev;

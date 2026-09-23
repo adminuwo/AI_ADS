@@ -492,6 +492,81 @@ const ACCENT_COLORS = [
 ];
 
 // ──────────────────────────────────────────────
+// Region to Available Languages mapping
+// ──────────────────────────────────────────────
+const REGION_LANGUAGES = {
+  'India': [
+    { value: 'English', label: 'English (IN)', icon: '🇮🇳' },
+    { value: 'Hindi', label: 'Hindi (हिन्दी)', icon: '🇮🇳' },
+    { value: 'Bengali', label: 'Bengali (বাংলা)', icon: '🇮🇳' },
+    { value: 'Marathi', label: 'Marathi (मराठी)', icon: '🇮🇳' },
+    { value: 'Telugu', label: 'Telugu (తెలుగు)', icon: '🇮🇳' },
+    { value: 'Tamil', label: 'Tamil (தமிழ்)', icon: '🇮🇳' },
+    { value: 'Gujarati', label: 'Gujarati (ગુજરાતી)', icon: '🇮🇳' },
+    { value: 'Kannada', label: 'Kannada (ಕನ್ನಡ)', icon: '🇮🇳' },
+    { value: 'Malayalam', label: 'Malayalam (മലയാളം)', icon: '🇮🇳' },
+    { value: 'Punjabi', label: 'Punjabi (ਪੰਜਾਬੀ)', icon: '🇮🇳' }
+  ],
+  'United States': [
+    { value: 'English', label: 'English (US)', icon: '🇺🇸' },
+    { value: 'Spanish', label: 'Spanish (Español)', icon: '🇺🇸' }
+  ],
+  'United Kingdom': [
+    { value: 'English', label: 'English (UK)', icon: '🇬🇧' },
+    { value: 'Welsh', label: 'Welsh (Cymraeg)', icon: '🇬🇧' },
+    { value: 'Gaelic', label: 'Scottish Gaelic (Gàidhlig)', icon: '🇬🇧' }
+  ],
+  'Europe': [
+    { value: 'English', label: 'English (UK)', icon: '🇬🇧' },
+    { value: 'French', label: 'French (Français)', icon: '🇫🇷' },
+    { value: 'German', label: 'German (Deutsch)', icon: '🇩🇪' },
+    { value: 'Spanish', label: 'Spanish (Español)', icon: '🇪🇸' },
+    { value: 'Italian', label: 'Italian (Italiano)', icon: '🇮🇹' },
+    { value: 'Dutch', label: 'Dutch (Nederlands)', icon: '🇳🇱' },
+    { value: 'Portuguese', label: 'Portuguese (Português)', icon: '🇵🇹' },
+    { value: 'Polish', label: 'Polish (Polski)', icon: '🇵🇱' },
+    { value: 'Swedish', label: 'Swedish (Svenska)', icon: '🇸🇪' },
+    { value: 'Russian', label: 'Russian (Русский)', icon: '🇷🇺' }
+  ],
+  'Asia-Pacific': [
+    { value: 'English', label: 'English (Global)', icon: '🌐' },
+    { value: 'Japanese', label: 'Japanese (日本語)', icon: '🇯🇵' },
+    { value: 'Chinese', label: 'Chinese (中文)', icon: '🇨🇳' },
+    { value: 'Korean', label: 'Korean (한국어)', icon: '🇰🇷' },
+    { value: 'Indonesian', label: 'Indonesian (Bahasa Indonesia)', icon: '🇮🇩' },
+    { value: 'Vietnamese', label: 'Vietnamese (Tiếng Việt)', icon: '🇻🇳' },
+    { value: 'Thai', label: 'Thai (ไทย)', icon: '🇹🇭' },
+    { value: 'Filipino', label: 'Filipino (Tagalog)', icon: '🇵🇭' }
+  ],
+  'Latin America': [
+    { value: 'Spanish', label: 'Spanish (Español LATAM)', icon: '🇲🇽' },
+    { value: 'Portuguese', label: 'Portuguese (Português Brasil)', icon: '🇧🇷' },
+    { value: 'English', label: 'English', icon: '🇺🇸' }
+  ],
+  'Middle East & Africa': [
+    { value: 'Arabic', label: 'Arabic (العربية)', icon: '🇦🇪' },
+    { value: 'Hebrew', label: 'Hebrew (עברית)', icon: '🇮🇱' },
+    { value: 'Persian', label: 'Persian (فارسی)', icon: '🇮🇷' },
+    { value: 'Turkish', label: 'Turkish (Türkçe)', icon: '🇹🇷' },
+    { value: 'French', label: 'French (Français)', icon: '🇫🇷' },
+    { value: 'Swahili', label: 'Swahili (Kiswahili)', icon: '🇰🇪' },
+    { value: 'English', label: 'English', icon: '🌍' }
+  ],
+  'Global': [
+    { value: 'English', label: 'English (US)', icon: '🇺🇸' },
+    { value: 'Hindi', label: 'Hindi (हिन्दी)', icon: '🇮🇳' },
+    { value: 'Spanish', label: 'Spanish (Español)', icon: '🇪🇸' },
+    { value: 'French', label: 'French (Français)', icon: '🇫🇷' },
+    { value: 'German', label: 'German (Deutsch)', icon: '🇩🇪' },
+    { value: 'Arabic', label: 'Arabic (العربية)', icon: '🇦🇪' },
+    { value: 'Chinese', label: 'Chinese (中文)', icon: '🇨🇳' },
+    { value: 'Japanese', label: 'Japanese (日本語)', icon: '🇯🇵' },
+    { value: 'Portuguese', label: 'Portuguese (Português)', icon: '🇧🇷' },
+    { value: 'Russian', label: 'Russian (Русский)', icon: '🇷🇺' }
+  ]
+};
+
+// ──────────────────────────────────────────────
 // Main Component
 // ──────────────────────────────────────────────
 export const SettingsModal = () => {
@@ -532,12 +607,24 @@ export const SettingsModal = () => {
 
   const fileInputRef = useRef(null);
 
-  // Mobile view state
+  // Mobile view state & search filter state
   const [view, setView] = useState('sidebar');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlanDetail, setSelectedPlanDetail] = useState(null);
   const [planToast, setPlanToast] = useState(null);
   const [billingSubTab, setBillingSubTab] = useState('current');
+
+  // Dynamic Language filtering per Region
+  const availableLanguages = REGION_LANGUAGES[region] || REGION_LANGUAGES['India'] || REGION_LANGUAGES['Global'];
+
+  const handleRegionSelect = (newRegion) => {
+    setRegion(newRegion);
+    const validLanguages = REGION_LANGUAGES[newRegion] || REGION_LANGUAGES['India'] || REGION_LANGUAGES['Global'];
+    const exists = validLanguages.some(l => l.value === language);
+    if (!exists && validLanguages.length > 0) {
+      setLanguage(validLanguages[0].value);
+    }
+  };
 
   // Country Currency State & Auto-Detection Sync
   const [activeCurrency, setActiveCurrencyState] = useState(() => {
@@ -1104,13 +1191,16 @@ export const SettingsModal = () => {
               t('targetRegionDesc', 'Adjust target market standards and audience metrics.'),
               <CustomDropdown
                 value={region}
-                onChange={val => setRegion(val)}
+                onChange={handleRegionSelect}
                 icon={Globe}
                 options={[
                   { value: 'India', label: 'India', icon: '🇮🇳' },
                   { value: 'United States', label: 'United States', icon: '🇺🇸' },
                   { value: 'United Kingdom', label: 'United Kingdom', icon: '🇬🇧' },
                   { value: 'Europe', label: 'Europe', icon: '🇪🇺' },
+                  { value: 'Asia-Pacific', label: 'Asia-Pacific', icon: '🌏' },
+                  { value: 'Latin America', label: 'Latin America', icon: '🌎' },
+                  { value: 'Middle East & Africa', label: 'Middle East & Africa', icon: '🌍' },
                   { value: 'Global', label: 'Global', icon: '🌐' }
                 ]}
               />
@@ -1124,20 +1214,7 @@ export const SettingsModal = () => {
                 onChange={val => setLanguage(val)}
                 icon={Languages}
                 direction="up"
-                options={[
-                  { value: 'English', label: 'English (US)', icon: '🇺🇸' },
-                  { value: 'Hindi', label: 'Hindi (हिन्दी)', icon: '🇮🇳' },
-                  { value: 'Bengali', label: 'Bengali (বাংলা)', icon: '🇮🇳' },
-                  { value: 'Marathi', label: 'Marathi (मराठी)', icon: '🇮🇳' },
-                  { value: 'Telugu', label: 'Telugu (తెలుగు)', icon: '🇮🇳' },
-                  { value: 'Tamil', label: 'Tamil (தமிழ்)', icon: '🇮🇳' },
-                  { value: 'Kannada', label: 'Kannada (ಕನ್ನಡ)', icon: '🇮🇳' },
-                  { value: 'Malayalam', label: 'Malayalam (മലയാളം)', icon: '🇮🇳' },
-                  { value: 'Spanish', label: 'Spanish (Español)', icon: '🇪🇸' },
-                  { value: 'French', label: 'French (Français)', icon: '🇫🇷' },
-                  { value: 'German', label: 'German (Deutsch)', icon: '🇩🇪' },
-                  { value: 'Arabic', label: 'Arabic (العربية)', icon: '🇦🇪' }
-                ]}
+                options={availableLanguages}
               />
             )}
 

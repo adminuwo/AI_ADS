@@ -602,21 +602,23 @@ app.get('/api/download-image', async (req, res) => {
 
 // ─── CORS Image Proxy Endpoint (Proxies external brand logos & assets without browser CORS block) ───
 app.get('/api/proxy/image', async (req, res) => {
+  const rawUrl = req.query.url;
+  if (!rawUrl) return res.status(400).send('Missing url parameter');
+
+  let targetUrl = rawUrl;
+  if (targetUrl.startsWith('http://')) {
+    targetUrl = targetUrl.replace('http://', 'https://');
+  }
+
+  const axios = require('axios');
+
+  // Primary URL fetch attempt
   try {
-    const rawUrl = req.query.url;
-    if (!rawUrl) return res.status(400).send('Missing url parameter');
-
-    let targetUrl = rawUrl;
-    if (targetUrl.startsWith('http://')) {
-      targetUrl = targetUrl.replace('http://', 'https://');
-    }
-
-    const axios = require('axios');
     const response = await axios.get(targetUrl, {
       responseType: 'arraybuffer',
-      timeout: 10000,
+      timeout: 7000,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
       }
     });
 
@@ -626,26 +628,43 @@ app.get('/api/proxy/image', async (req, res) => {
     res.setHeader('Cache-Control', 'public, max-age=86400');
     return res.send(Buffer.from(response.data));
   } catch (err) {
-    if (req.query.url && req.query.url.startsWith('http://')) {
-      try {
-        const axios = require('axios');
-        const response = await axios.get(req.query.url, {
-          responseType: 'arraybuffer',
-          timeout: 10000,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    // Primary external image link failed (e.g., 404 Not Found or dead path)
+    // Server-side fallback: Automatically extract domain and serve high-res brand logo (200 OK)
+    let domain = '';
+    try {
+      domain = new URL(targetUrl).hostname.replace(/^www\./i, '');
+    } catch (e) {
+      domain = targetUrl.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+    }
+
+    if (domain) {
+      const fallbackUrls = [
+        `https://logo.clearbit.com/${domain}`,
+        `https://www.google.com/s2/favicons?domain=${domain}&sz=256`
+      ];
+
+      for (const fbUrl of fallbackUrls) {
+        try {
+          const fbRes = await axios.get(fbUrl, {
+            responseType: 'arraybuffer',
+            timeout: 5000,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+            }
+          });
+          if (fbRes.status === 200 && fbRes.data) {
+            const contentType = fbRes.headers['content-type'] || 'image/png';
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+            return res.send(Buffer.from(fbRes.data));
           }
-        });
-        const contentType = response.headers['content-type'] || 'image/png';
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-        return res.send(Buffer.from(response.data));
-      } catch (e2) {
-        // Fallback error below
+        } catch (fbErr) {
+          // Continue to next fallback URL
+        }
       }
     }
-    console.warn('[ProxyImage] Proxy fetch note:', err.message);
+
     return res.status(404).send('Image proxy fetch failed');
   }
 });

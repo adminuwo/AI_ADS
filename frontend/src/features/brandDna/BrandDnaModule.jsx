@@ -27,6 +27,8 @@ export const BrandDnaModule = () => {
   const [logoUrlInput, setLogoUrlInput] = useState('');
   const [showLogoInput, setShowLogoInput] = useState(false);
   const [showLogoPreviewModal, setShowLogoPreviewModal] = useState(false);
+  const [modalImgSrc, setModalImgSrc] = useState('');
+  const [modalImgIndex, setModalImgIndex] = useState(0);
   const logoFileInputRef = useRef(null);
 
   const handleFieldChangeLocal = (fieldKey, newValue) => {
@@ -288,6 +290,41 @@ export const BrandDnaModule = () => {
     coreProductsServices: (normalizedDna.coreProductsServices && normalizedDna.coreProductsServices.length > 0) ? normalizedDna.coreProductsServices : (Array.isArray(activeWorkspace?.coreProductsServices) ? activeWorkspace.coreProductsServices : []),
     brandColors: (normalizedDna.brandColors && normalizedDna.brandColors.length > 0) ? normalizedDna.brandColors : (Array.isArray(activeWorkspace?.brandColors) && activeWorkspace.brandColors.length > 0 ? activeWorkspace.brandColors : ['#C13D4A', '#49171C', '#DF9AA1', '#0F172A'])
   } : null;
+
+  useEffect(() => {
+    if (showLogoPreviewModal && effectiveProfile) {
+      const rawDom = (effectiveProfile.website || activeWorkspace?.domainUrl || effectiveProfile.companyName || 'google.com');
+      const cleanDom = rawDom.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split('?')[0];
+
+      const candidates = [];
+      if (effectiveProfile.logoUrl && !effectiveProfile.logoUrl.includes('picsum.photos')) {
+        candidates.push(effectiveProfile.logoUrl);
+      }
+      candidates.push(`https://logo.clearbit.com/${cleanDom}`);
+      candidates.push(`https://www.google.com/s2/favicons?domain=${cleanDom}&sz=256`);
+
+      setModalImgSrc(candidates[0]);
+      setModalImgIndex(0);
+    }
+  }, [showLogoPreviewModal, effectiveProfile]);
+
+  const handleModalImgError = () => {
+    if (!effectiveProfile) return;
+    const rawDom = (effectiveProfile.website || activeWorkspace?.domainUrl || effectiveProfile.companyName || 'google.com');
+    const cleanDom = rawDom.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].split('?')[0];
+
+    const fallbackList = [
+      `https://logo.clearbit.com/${cleanDom}`,
+      `https://www.google.com/s2/favicons?domain=${cleanDom}&sz=256`,
+      `https://www.google.com/s2/favicons?domain=${cleanDom}&sz=128`
+    ];
+
+    const nextIndex = modalImgIndex + 1;
+    if (nextIndex < fallbackList.length) {
+      setModalImgIndex(nextIndex);
+      setModalImgSrc(fallbackList[nextIndex]);
+    }
+  };
 
   const handleSaveProfile = async () => {
     if (!workspaceId || !effectiveProfile) return;
@@ -588,7 +625,7 @@ export const BrandDnaModule = () => {
                             : `https://www.google.com/s2/favicons?domain=${(effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0]}&sz=128`
                         }
                         alt={effectiveProfile.companyName}
-                        className="w-9 h-9 rounded-lg bg-white p-0.5 object-contain"
+                        className="w-10 h-10 rounded-lg bg-white p-0.5 object-contain"
                         onError={(e) => {
                           const dom = (effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
                           e.target.src = `https://www.google.com/s2/favicons?domain=${dom}&sz=128`;
@@ -1202,16 +1239,15 @@ export const BrandDnaModule = () => {
             </div>
 
             {/* Logo Image Display Area */}
-            <div className="relative w-full h-64 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 overflow-hidden shadow-inner group">
-              <img
-                src={
-                  (effectiveProfile.logoUrl && !effectiveProfile.logoUrl.includes('picsum.photos'))
-                    ? effectiveProfile.logoUrl
-                    : `https://www.google.com/s2/favicons?domain=${(effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0]}&sz=128`
-                }
-                alt={effectiveProfile.companyName}
-                className="max-w-full max-h-full object-contain drop-shadow-xl transition-transform duration-300 group-hover:scale-105"
-              />
+            <div className="relative w-full h-64 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 overflow-hidden shadow-inner">
+              <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-xl border border-slate-200/90 dark:border-slate-800/90 flex items-center justify-center group transition-transform hover:scale-105">
+                <img
+                  src={modalImgSrc || (effectiveProfile.logoUrl && !effectiveProfile.logoUrl.includes('picsum.photos') ? effectiveProfile.logoUrl : `https://www.google.com/s2/favicons?domain=${(effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0]}&sz=256`)}
+                  alt={effectiveProfile.companyName || 'Brand Logo'}
+                  className="w-full h-full object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-110"
+                  onError={handleModalImgError}
+                />
+              </div>
             </div>
 
             {/* Modal Actions */}
@@ -1220,9 +1256,17 @@ export const BrandDnaModule = () => {
                 Click outside or press Esc to close
               </span>
               <div className="flex items-center gap-2">
-                {effectiveProfile.logoUrl && (
+                <button
+                  type="button"
+                  onClick={() => logoFileInputRef.current?.click()}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Upload high-res custom logo"
+                >
+                  <Upload className="w-3.5 h-3.5" /> Replace Logo
+                </button>
+                {modalImgSrc && (
                   <a
-                    href={effectiveProfile.logoUrl}
+                    href={modalImgSrc}
                     target="_blank"
                     rel="noreferrer"
                     className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5"
@@ -1233,7 +1277,7 @@ export const BrandDnaModule = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    const src = effectiveProfile.logoUrl || `https://www.google.com/s2/favicons?domain=${(effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0]}&sz=128`;
+                    const src = modalImgSrc || effectiveProfile.logoUrl || `https://www.google.com/s2/favicons?domain=${(effectiveProfile.website || activeWorkspace?.domainUrl || 'google.com').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0]}&sz=256`;
                     const a = document.createElement('a');
                     a.href = src;
                     a.download = `${effectiveProfile.companyName || 'brand'}-logo`;
