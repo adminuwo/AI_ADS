@@ -10,7 +10,7 @@ import {
   Megaphone, BookOpen, Clock, ChevronRight, Star, Lightbulb, Rocket,
   Hash, Video, FileText, MessageSquare, Filter, Play, Award, BarChart2,
   ArrowUpRight, Flame, X, RefreshCw, UploadCloud, Image as ImageIcon, Trash2, Plus,
-  MapPin, Search, Compass, Bot, Lock
+  MapPin, Search, Compass, Bot, Lock, Download
 } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -482,6 +482,351 @@ export const StrategyModule = () => {
     }
   }, [activeWorkspace.id || activeWorkspace._id, selectedStrategyType, activeWorkspace.currentStrategy]);
 
+  // ─── Download Strategy as PDF ─────────────────────────────────────────────
+  const handleDownloadPDF = () => {
+    const brandName = activeWorkspace?.brandName || 'Brand';
+    const cleanBrandFilename = brandName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const pri = iframe.contentWindow;
+    pri.document.open();
+    pri.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${brandName} — Marketing Strategy & Growth Blueprint</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+            
+            @page {
+              size: A4;
+              margin: 12mm 15mm;
+            }
+
+            * {
+              box-sizing: border-box;
+            }
+            
+            body {
+              font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+              color: #0f172a;
+              background: #ffffff;
+              line-height: 1.5;
+              font-size: 11px;
+              margin: 0;
+              padding: 0;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+
+            .header-banner {
+              background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+              color: #ffffff;
+              padding: 24px;
+              border-radius: 14px;
+              margin-bottom: 20px;
+            }
+
+            .header-banner h1 {
+              font-size: 22px;
+              font-weight: 800;
+              margin: 0 0 6px 0;
+              letter-spacing: -0.5px;
+            }
+
+            .header-banner p {
+              margin: 0;
+              font-size: 12px;
+              opacity: 0.95;
+              font-weight: 600;
+            }
+
+            .meta-bar {
+              display: flex;
+              justify-content: space-between;
+              margin-top: 16px;
+              padding-top: 12px;
+              border-top: 1px solid rgba(255, 255, 255, 0.25);
+              font-size: 11px;
+              font-weight: 700;
+            }
+
+            .section {
+              margin-bottom: 22px;
+              page-break-inside: avoid;
+            }
+
+            .section-title {
+              font-size: 13px;
+              font-weight: 800;
+              color: #1e1b4b;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              border-bottom: 2px solid #6366f1;
+              padding-bottom: 6px;
+              margin-bottom: 12px;
+            }
+
+            .grid-3 {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 10px;
+            }
+
+            .card {
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 10px;
+              padding: 12px;
+            }
+
+            .card-label {
+              font-size: 9px;
+              font-weight: 800;
+              text-transform: uppercase;
+              color: #64748b;
+              margin-bottom: 4px;
+              letter-spacing: 0.5px;
+            }
+
+            .card-val {
+              font-size: 11px;
+              font-weight: 700;
+              color: #0f172a;
+              line-height: 1.4;
+            }
+
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 10.5px;
+              margin-top: 8px;
+            }
+
+            th {
+              background: #f1f5f9;
+              color: #334155;
+              font-weight: 800;
+              text-align: left;
+              padding: 8px 10px;
+              border: 1px solid #cbd5e1;
+              font-size: 9.5px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+
+            td {
+              padding: 8px 10px;
+              border: 1px solid #e2e8f0;
+              vertical-align: top;
+            }
+
+            tr:nth-child(even) {
+              background: #f8fafc;
+            }
+
+            .badge {
+              display: inline-block;
+              padding: 3px 8px;
+              border-radius: 6px;
+              font-size: 9px;
+              font-weight: 800;
+              background: #e0e7ff;
+              color: #3730a3;
+              border: 1px solid #c7d2fe;
+            }
+
+            .badge-green {
+              background: #dcfce7;
+              color: #166534;
+              border-color: #bbf7d0;
+            }
+
+            .badge-amber {
+              background: #fef3c7;
+              color: #92400e;
+              border-color: #fde68a;
+            }
+
+            .footer {
+              margin-top: 24px;
+              text-align: center;
+              font-size: 10px;
+              color: #94a3b8;
+              border-top: 1px solid #e2e8f0;
+              padding-top: 12px;
+              font-weight: 600;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header-banner">
+            <h1>${brandName} — Master Marketing Strategy</h1>
+            <p>AI-Generated Autonomous Brand Positioning & 30-Day Execution Blueprint</p>
+            <div class="meta-bar">
+              <span>Brand: <strong>${brandName}</strong></span>
+              <span>Generated: <strong>${new Date().toLocaleDateString()}</strong></span>
+              <span>Type: <strong>${selectedStrategyType === 'campaign' ? 'Campaign Strategy' : selectedStrategyType === 'custom' ? 'Image Brief Strategy' : 'Brand Growth Strategy'}</strong></span>
+            </div>
+          </div>
+
+          <!-- Section 1: Objectives -->
+          <div class="section">
+            <div class="section-title">1. Core Strategic Objectives</div>
+            <div class="grid-3">
+              <div class="card">
+                <div class="card-label">Primary Business Goal</div>
+                <div class="card-val">${businessGoal || deriveGoal(activeWorkspace)}</div>
+              </div>
+              <div class="card">
+                <div class="card-label">Lead Magnet / High-Value Offer</div>
+                <div class="card-val">${leadMagnet || deriveLeadMagnet(activeWorkspace)}</div>
+              </div>
+              <div class="card">
+                <div class="card-label">Primary Call-to-Action</div>
+                <div class="card-val">${primaryCta || deriveCta(activeWorkspace)}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Channel Allocation & Budget -->
+          <div class="section">
+            <div class="section-title">2. Channel Allocation & Budget Strategy</div>
+            <div class="grid-3" style="margin-bottom: 10px;">
+              <div class="card">
+                <div class="card-label">Posting Frequency</div>
+                <div class="card-val">${postingFrequency || 'Daily'}</div>
+              </div>
+              <div class="card" style="grid-column: span 2;">
+                <div class="card-label">Budget & Media Model</div>
+                <div class="card-val">${budgetSuggestions || '60% Organic content marketing & SEO / 40% Paid retargeting.'}</div>
+              </div>
+            </div>
+            ${bestPlatforms && bestPlatforms.length > 0 ? `
+              <div style="margin-top: 8px;">
+                <span class="card-label" style="display:inline-block; margin-right:6px;">Target Platforms:</span>
+                ${bestPlatforms.map(p => `<span class="badge" style="margin-right: 4px;">${p}</span>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Section 3: Funnel Architecture -->
+          <div class="section">
+            <div class="section-title">3. Content Funnel Architecture</div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Funnel Stage</th>
+                  <th style="width: 15%;">Allocation</th>
+                  <th>Objective & Content Focus</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Brand Awareness (TOFU)</strong></td>
+                  <td><span class="badge">50%</span></td>
+                  <td>${funnel.awareness || `Educational content, viral hooks, and SEO optimization for ${brandName}.`}</td>
+                </tr>
+                <tr>
+                  <td><strong>Lead Nurturing (MOFU)</strong></td>
+                  <td><span class="badge badge-amber">30%</span></td>
+                  <td>${funnel.nurturing || `How-to guides, lead magnets, and value breakdown posts to build audience trust.`}</td>
+                </tr>
+                <tr>
+                  <td><strong>Conversion (BOFU)</strong></td>
+                  <td><span class="badge badge-green">20%</span></td>
+                  <td>${funnel.conversion || `Direct sales copy, customer proof, case studies, and primary offer CTAs.`}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Section 4: Content Pillars & Campaign Ideas -->
+          ${(contentPillars && contentPillars.length > 0) || (campaignIdeas && campaignIdeas.length > 0) ? `
+          <div class="section">
+            <div class="section-title">4. Brand Pillars & High-Impact Campaigns</div>
+            ${contentPillars && contentPillars.length > 0 ? `
+              <div style="margin-bottom: 12px;">
+                <div class="card-label" style="margin-bottom: 6px;">Content Pillars:</div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  ${contentPillars.map(p => `<span class="badge" style="padding: 5px 10px; font-size: 10px;">${p}</span>`).join('')}
+                </div>
+              </div>
+            ` : ''}
+            ${campaignIdeas && campaignIdeas.length > 0 ? `
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 30%;">Campaign Title</th>
+                    <th>Concept & Strategic Focus</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${campaignIdeas.map(c => `
+                    <tr>
+                      <td><strong>${c.title || 'Campaign Concept'}</strong></td>
+                      <td>${c.desc || c.description || ''}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : ''}
+          </div>
+          ` : ''}
+
+          <!-- Section 5: 30-Day Execution Calendar -->
+          <div class="section">
+            <div class="section-title">5. 30-Day Execution Plan</div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 7%;">Day</th>
+                  <th style="width: 14%;">Platform</th>
+                  <th style="width: 20%;">Pillar</th>
+                  <th>Topic & Directive</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(thirtyDayPlan && thirtyDayPlan.length > 0 ? thirtyDayPlan : []).map(item => `
+                  <tr>
+                    <td><strong>Day ${item.day}</strong></td>
+                    <td><span class="badge">${item.platform || 'Social'}</span></td>
+                    <td>${item.pillar || 'Brand Focus'}</td>
+                    <td>
+                      <strong>${formatPostTitle(item.title || item.topic, item.action || item.actionItem)}</strong>
+                      ${(item.action || item.actionItem) ? `<div style="color:#64748b; font-size:9.5px; margin-top:2px;">${item.action || item.actionItem}</div>` : ''}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="footer">
+            Generated by AI ADS™ Autonomous Marketing Strategy System • ${new Date().getFullYear()}
+          </div>
+        </body>
+      </html>
+    `);
+    pri.document.close();
+
+    setTimeout(() => {
+      pri.focus();
+      pri.print();
+      setTimeout(() => {
+        try { document.body.removeChild(iframe); } catch(e) {}
+      }, 1000);
+    }, 500);
+  };
+
   // ─── Save ─────────────────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -952,6 +1297,19 @@ export const StrategyModule = () => {
 
           {/* Right: Action Buttons */}
           <div className="flex items-center gap-3 self-stretch md:self-auto justify-end flex-wrap">
+            {generatedDoc && (
+              <button
+                onClick={handleDownloadPDF}
+                className="group relative px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-extrabold text-xs tracking-wider border border-emerald-500/30 shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/35 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                title="Download full 30-day marketing strategy report as PDF to your device"
+              >
+                <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center shadow-sm text-white">
+                  <Download className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span>Download Strategy PDF</span>
+              </button>
+            )}
+
             <button
               onClick={() => setShowImageBriefModal(true)}
               className="group relative px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-100 font-extrabold text-xs tracking-wider border border-slate-200 dark:border-slate-700 hover:border-brand-500/50 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
@@ -1708,21 +2066,32 @@ export const StrategyModule = () => {
                   {selectedWeek === 'ALL' ? '30-Day Marketing Calendar' : `Week ${selectedWeek} Plan`}
                   <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{filteredPlan.length} days</span>
                 </h2>
-                <div className="flex items-center gap-1.5">
-                  <Filter className="w-3.5 h-3.5 text-slate-400" />
-                  {['ALL','1','2','3','4'].map(w => (
-                    <button
-                      key={w}
-                      onClick={() => setSelectedWeek(w)}
-                      className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all duration-150 ${
-                        selectedWeek === w
-                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
-                          : 'bg-purple-500/8 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-500/15'
-                      }`}
-                    >
-                      {w === 'ALL' ? 'All' : `W${w}`}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="px-3 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-sm cursor-pointer transition-all"
+                    title="Download 30-Day Plan as PDF"
+                  >
+                    <Download className="w-3 h-3 text-white" />
+                    <span>Download PDF</span>
+                  </button>
+
+                  <div className="flex items-center gap-1.5">
+                    <Filter className="w-3.5 h-3.5 text-slate-400" />
+                    {['ALL','1','2','3','4'].map(w => (
+                      <button
+                        key={w}
+                        onClick={() => setSelectedWeek(w)}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all duration-150 ${
+                          selectedWeek === w
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
+                            : 'bg-purple-500/8 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-500/15'
+                        }`}
+                      >
+                        {w === 'ALL' ? 'All' : `W${w}`}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </>
