@@ -129,7 +129,7 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
         createdAt: new Date().toISOString()
       };
       setResult(fallbackResult);
-      addGlobalAsset({ name: topic || 'AI Generated Image', type: 'IMAGE', url: fallbackResult.imageUrl, date: new Date().toISOString(), credits: cost });
+      // Removed addGlobalAsset here so we don't save wireframes to the asset library
     } finally { setGenerating(false); }
   };
 

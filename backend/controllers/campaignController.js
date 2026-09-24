@@ -267,7 +267,7 @@ exports.generateCampaignPlan = async (req, res) => {
           campaignStage,
           postObjective,
           prompt: `Create a ${platform} post about: ${topic}. Pillar: ${pillar}. Stage: ${campaignStage}.`,
-          postType: platform === 'email' ? 'Email Copy' : platform === 'instagram' ? 'Image' : platform === 'youtube' ? 'Video' : platform === 'linkedin' ? 'Article' : 'Image',
+          postType: platform === 'email' ? 'Email Copy' : platform === 'blog' ? 'Blog Post' : platform === 'youtube' ? 'Video' : platform === 'linkedin' ? 'Article' : 'Image',
           carouselImages: 0,
           postFor: pillar || 'Brand Awareness',
           imagePrompt: platform === 'email' ? null : `Professional ${platform} visual for: ${topic}`,
@@ -326,7 +326,7 @@ CRITICAL RULES:
 2. Every "captionPrompt" MUST include a call-to-action that moves the audience closer to "${goalText}".
 3. Every "imagePrompt" MUST visualize the outcome or journey of "${goalText}".
 4. DO NOT generate generic posts like "Brand awareness" or "Industry trends". Every post must be laser-focused on "${goalText}".
-5. NO video/reel content — only static images, carousels, text posts, blogs, and emails.
+5. NO video/reel content — only static images, carousels, text posts, blogs, and emails. Set "postType" strictly based on platform ("Email Copy", "Blog Post", "Article", "Image").
 
 Generate a JSON array. Each entry:
 {
@@ -395,7 +395,7 @@ Create ${dates.length * platforms.length} total entries (one per date per platfo
             contentType,
             campaignStage: stage,
             postObjective: objective,
-            postType: platform === 'instagram' ? 'Image' : platform === 'youtube' ? 'Video' : platform === 'linkedin' ? 'Article' : 'Image',
+            postType: platform === 'email' ? 'Email Copy' : platform === 'blog' ? 'Blog Post' : platform === 'youtube' ? 'Video' : platform === 'linkedin' ? 'Article' : 'Image',
             carouselImages: 0,
             postFor: pillar,
             prompt: `Goal-focused ${platform} content for "${campaign.campaignName}". Goal: ${goalText}. Pillar: ${pillar}. Stage: ${stage}. This post must directly contribute to achieving the campaign goal.`,
@@ -420,17 +420,24 @@ Create ${dates.length * platforms.length} total entries (one per date per platfo
       const postDate = dates[dateIndex] || dates[0] || new Date();
       const dayName = DAYS[postDate.getDay()];
 
+      const platform = (entry.platform || platforms[0] || 'instagram').toLowerCase();
+      let determinedPostType = entry.postType || 'Image';
+      if (platform === 'email') determinedPostType = 'Email Copy';
+      else if (platform === 'blog') determinedPostType = 'Blog Post';
+      else if (platform === 'youtube') determinedPostType = 'Video';
+      else if (platform === 'linkedin') determinedPostType = 'Article';
+
       postsToCreate.push({
         campaignId: campaign._id,
         workspaceId: campaign.workspaceId,
         date: postDate,
         day: dayName,
-        platform: (entry.platform || platforms[0] || 'instagram').toLowerCase(),
+        platform: platform,
         contentType: entry.contentType || CONTENT_TYPES[0],
         campaignStage: entry.campaignStage || CAMPAIGN_STAGES[0],
         postObjective: entry.postObjective || campaign.campaignGoal,
         prompt: entry.prompt || `Content plan for ${campaign.campaignName}`,
-        postType: entry.postType || 'Image',
+        postType: determinedPostType,
         carouselImages: entry.carouselImages || 0,
         postFor: entry.postFor || 'Brand Awareness',
         imagePrompt: entry.imagePrompt || `Visual for ${campaign.campaignName}`,

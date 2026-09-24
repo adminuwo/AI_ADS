@@ -1315,32 +1315,7 @@ export const ContentStudioModule = () => {
                         >
                           <Copy className="w-3.5 h-3.5" /> Copy Text
                         </button>
-                        <button
-                          onClick={() => {
-                            if (setGeneratedContent) {
-                              setGeneratedContent({
-                                platform: socialPlatform,
-                                type: 'SOCIAL',
-                                topic: socialTopic,
-                                hook: socialResult?.hook || socialTopic,
-                                caption: socialResult?.shortCaption || socialResult?.longCaption || socialResult?.caption || '',
-                                shortCaption: socialResult?.shortCaption || '',
-                                longCaption: socialResult?.longCaption || '',
-                                storytelling: socialResult?.storytelling || '',
-                                cta: socialResult?.cta || socialResult?.callToAction || '',
-                                hashtags: socialResult?.hashtags || [],
-                                strategyPillar: socialResult?.strategyPillar || activeWorkspace?.positioningSummary || 'Brand Strategy',
-                                imageUrl: socialResult?.imageUrl,
-                                imagePrompt: socialResult?.imagePrompt || `${socialTopic} — ${activeWorkspace?.brandName || 'Brand'} commercial advertising photography, 8k`,
-                                data: socialResult,
-                              });
-                            }
-                            setActiveModule('creative');
-                          }}
-                          className="py-1 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" /> Creative Studio →
-                        </button>
+
                         <button 
                           onClick={() => setSocialResult(null)} 
                           className="p-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-400 dark:text-slate-500 transition-colors"
@@ -1422,34 +1397,6 @@ export const ContentStudioModule = () => {
                         <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white leading-snug">
                           {socialResult.hook || 'Upgrade Your Brand Strategy with High-Converting Content! 🚀'}
                         </h3>
-                      </div>
-
-                      {/* ── CARD 2: STORYTELLING ANGLE ── */}
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm hover:border-purple-500/40 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <span className="px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
-                            📖 STORYTELLING ANGLE
-                          </span>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleRegenerateSection('storytelling')}
-                              disabled={regeneratingSection === 'storytelling'}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-50 hover:text-purple-600 text-[9px] font-bold uppercase tracking-wide transition-all disabled:opacity-50"
-                            >
-                              {regeneratingSection === 'storytelling' ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-2.5 h-2.5" />}
-                              {regeneratingSection === 'storytelling' ? 'Regenerating...' : 'Regenerate'}
-                            </button>
-                            <button
-                              onClick={() => navigator.clipboard.writeText(socialResult.storytelling || 'Every brand has a story, but only the ones with consistent voice build lasting loyalty.')}
-                              className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-brand-500 transition-colors"
-                            >
-                              <Copy className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                        <p className="text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-relaxed italic">
-                          "{socialResult.storytelling || 'Every brand has a story, but only the ones with consistent voice build lasting loyalty. When you anchor your content to your Brand DNA, every post resonates deeper and converts faster.'}"
-                        </p>
                       </div>
 
                       {/* ── CARD 3: CAPTION & BODY COPY ── */}

@@ -134,14 +134,10 @@ export const StrategyModule = () => {
   const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
 
   const [selectedStrategyType, setSelectedStrategyType] = useState(() => {
-    const planNorm = (user?.plan || 'starter').toLowerCase();
-    const isLocked = planNorm === 'starter' || planNorm === 'base' || planNorm === 'free';
-    if (isLocked) return 'aiBrand';
-
     const strat = activeWorkspace?.currentStrategy;
-    if (strat?.activeStrategyType && strat.activeStrategyType !== 'campaign') return strat.activeStrategyType;
+    if (strat?.activeStrategyType && strat.activeStrategyType !== 'aiBrand') return strat.activeStrategyType;
     if (strat?.customStrategy) return 'custom';
-    return 'aiBrand';
+    return 'campaign';
   });
 
 
@@ -1174,23 +1170,9 @@ export const StrategyModule = () => {
         </div>
       )}
 
-      {/* ══════════ 3-STRATEGY SELECTOR BAR ══════════ */}
+      {/* ══════════ STRATEGY SELECTOR BAR ══════════ */}
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-md mb-4 w-full flex-wrap sm:flex-nowrap backdrop-blur-md">
-        {/* Strategy 1: AI Brand Strategy */}
-        <button
-          onClick={() => setSelectedStrategyType('aiBrand')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all duration-200 cursor-pointer ${
-            selectedStrategyType === 'aiBrand'
-              ? 'bg-gradient-to-r from-brand-600 via-purple-600 to-indigo-600 text-white shadow-md shadow-brand-500/20'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <Bot className="w-4 h-4 text-amber-300 fill-amber-300" />
-          <span>AI Brand Strategy</span>
-          <span className="px-1.5 py-0.5 rounded-md bg-white/20 text-[9px] font-black uppercase">Brand DNA</span>
-        </button>
-
-        {/* Strategy 2: Campaign Strategy */}
+        {/* Strategy 1: Campaign Strategy */}
         <button
           onClick={() => setSelectedStrategyType('campaign')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all duration-200 cursor-pointer ${
@@ -2912,14 +2894,25 @@ export const StrategyModule = () => {
       {/* ══════════ STICKY FLOATING GENERATE CALENDAR BUTTON ══════════ */}
       {generatedDoc && activeTab === 'plan' && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300 shrink-0">
-          <button 
-            onClick={handleGenerateCalendar}
-            className="flex items-center gap-2.5 px-6 py-3.5 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-2xl shadow-brand-600/40 border border-brand-400/30 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md whitespace-nowrap"
-            title="Generate content calendar events from strategy"
-          >
-            <Calendar className="w-5 h-5 text-white shrink-0" />
-            <span className="tracking-wide">Generate Calendar</span>
-          </button>
+          {calendarEvents && calendarEvents.length > 0 ? (
+            <button 
+              onClick={() => setActiveModule('calendar')}
+              className="flex items-center gap-2.5 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-2xl shadow-indigo-600/40 border border-indigo-400/30 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md whitespace-nowrap"
+              title="View Calendar Events"
+            >
+              <Calendar className="w-5 h-5 text-white shrink-0" />
+              <span className="tracking-wide">View Calendar</span>
+            </button>
+          ) : (
+            <button 
+              onClick={handleGenerateCalendar}
+              className="flex items-center gap-2.5 px-6 py-3.5 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-extrabold text-xs sm:text-sm transition-all duration-200 shadow-2xl shadow-brand-600/40 border border-brand-400/30 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md whitespace-nowrap"
+              title="Generate content calendar events from strategy"
+            >
+              <Calendar className="w-5 h-5 text-white shrink-0" />
+              <span className="tracking-wide">Generate Calendar</span>
+            </button>
+          )}
         </div>
       )}
 

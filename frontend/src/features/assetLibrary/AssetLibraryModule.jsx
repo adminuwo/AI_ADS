@@ -314,18 +314,20 @@ export const AssetLibraryModule = () => {
     // If active workspace is still initializing / loading on page reload, keep all global assets visible
     if (!currentWsId && !currentBrand) return true;
 
-    const matchWs = Boolean(
-      (a.workspaceId && currentWsId && (a.workspaceId === currentWsId || a.workspaceId === 'ws_001' || a.workspaceId === 'ws_default'))
-    );
+    const isCurrentDefault = !currentWsId || currentWsId.startsWith('ws_empty') || currentWsId === 'ws_001' || currentWsId === 'ws_default';
+    const isAssetDefault = !a.workspaceId || a.workspaceId.startsWith('ws_empty') || a.workspaceId === 'ws_001' || a.workspaceId === 'ws_default';
 
-    const matchBrand = Boolean(
-      (a.metadata?.brand && currentBrand && a.metadata.brand.trim().toLowerCase() === currentBrand.trim().toLowerCase())
-    );
+    let matchWs = false;
+    if (isCurrentDefault) {
+      matchWs = isAssetDefault;
+    } else {
+      matchWs = Boolean(a.workspaceId && a.workspaceId === currentWsId);
+    }
 
-    // Keep unbound assets visible
-    const isUnbound = !a.workspaceId && !a.metadata?.brand;
+    const matchBrand = Boolean(a.metadata?.brand && currentBrand && a.metadata.brand.trim().toLowerCase() === currentBrand.trim().toLowerCase());
 
-    return matchWs || matchBrand || isUnbound;
+    // Only show assets explicitly matching the active brand/workspace
+    return matchWs || matchBrand;
   });
 
   const assets = dedupeAssets(rawAssets);

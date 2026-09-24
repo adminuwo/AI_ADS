@@ -201,44 +201,9 @@ Return a JSON object with this exact structure:
       });
     }
 
-    // Generate Brand-DNA-aligned AI ad image via Brand DNA Visual Agent
-    const cleanBrand = brandName || 'Brand';
-    const platLower = (platform || 'instagram').toLowerCase();
-    const aspect = platLower === 'instagram' ? '1:1' : (platLower.includes('reel') || platLower.includes('tiktok') || platLower.includes('story')) ? '9:16' : '16:9';
-
-    try {
-      const { generateBrandAdImage } = require('../services/brandImageAgent.service');
-      const visualRes = await generateBrandAdImage({
-        workspaceId,
-        brandName: cleanBrand,
-        topic,
-        postType,
-        platform,
-        style: 'Photorealistic Commercial',
-        aspect
-      });
-      postData.imageUrl = visualRes.imageUrl;
-      postData.logoUrl = visualRes.logoUrl;
-      postData.gcsPath = visualRes.gcsPath;
-      postData.imagePrompt = visualRes.imagePrompt;
-      postData.imageStyle = visualRes.imageStyle || 'Photorealistic Commercial';
-      postData.imageAspect = visualRes.imageAspect || aspect;
-      postData.svgFallback = visualRes.svgFallback;
-      postData.engine = visualRes.engine;
-    } catch (e) {
-      console.warn('[ContentController] BrandImageAgent fallback note:', e.message);
-      const { resolveBrandVisualAsset } = require('../services/brandVisualResolver');
-      postData.imageUrl = resolveBrandVisualAsset({
-        prompt: `${topic} — ${cleanBrand} commercial advertising photography, 8k`,
-        brandName: cleanBrand,
-        topic,
-        style: 'Photorealistic Commercial',
-        aspect
-      });
-      postData.imagePrompt = `${topic} — ${cleanBrand} commercial advertising photography, 8k`;
-      postData.imageStyle = 'Photorealistic Commercial';
-      postData.imageAspect = aspect;
-    }
+    // Image generation is deferred to Creative Studio based on user preference.
+    postData.imageUrl = '';
+    postData.imagePrompt = userProvidedImagePrompt || `${topic} — ${brandName || 'Brand'} commercial advertising photography, 8k`;
 
     // Save to Content collection
     try {

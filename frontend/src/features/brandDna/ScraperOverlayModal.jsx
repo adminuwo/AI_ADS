@@ -35,7 +35,8 @@ export const ScraperOverlayModal = () => {
       setImageFiles([]);
       setImagePreviews([]);
     }
-  }, [isScraperOpen, scraperMode, activeWorkspace]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScraperOpen]);
 
   if (!isScraperOpen) return null;
 
