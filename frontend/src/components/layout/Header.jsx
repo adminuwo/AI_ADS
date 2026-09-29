@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { getBrandLogoUrl } from '../../utils/brandLogoHelper';
 import { 
@@ -127,7 +127,7 @@ export const Header = () => {
               />
             </div>
             <div className="min-w-0">
-              <span className="font-extrabold text-xs sm:text-sm text-slate-800 dark:text-slate-100 block truncate max-w-[75px] min-[380px]:max-w-[100px] min-[440px]:max-w-[140px] sm:max-w-[180px] md:max-w-[220px]">
+              <span className="font-extrabold text-xs sm:text-sm text-slate-800 dark:text-slate-100 block truncate max-w-[70px] min-[360px]:max-w-[95px] min-[440px]:max-w-[140px] sm:max-w-[180px] md:max-w-[220px]">
                 {activeWorkspace?.brandName}
               </span>
             </div>
@@ -224,11 +224,11 @@ export const Header = () => {
           <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-white shadow-xs shrink-0 group-hover:scale-105 transition-transform">
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </div>
-          <div className="flex flex-col text-left">
+          <div className="flex flex-col text-left min-w-0">
             <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-extrabold text-brand-600 dark:text-brand-400 leading-none hidden min-[480px]:block">
               {t('currentPlan', 'Current Plan')}
             </span>
-            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors leading-tight">
+            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors leading-tight truncate max-w-[85px] min-[420px]:max-w-none">
               {t(getPlanDisplayName())}
             </span>
           </div>

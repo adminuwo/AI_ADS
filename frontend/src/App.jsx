@@ -46,7 +46,8 @@ const MainContent = () => {
     closeCustomAlert = () => {},
     toast = null,
     closeToast = () => {},
-    activeWorkspace = null
+    activeWorkspace = null,
+    isMobileMenuOpen = false
   } = workspace;
 
   React.useEffect(() => {
@@ -175,7 +176,7 @@ const MainContent = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Header />
-        <main className="p-3 sm:p-4 lg:p-6 flex-1 overflow-y-auto w-full max-w-[1600px] mx-auto">
+        <main className="p-2.5 sm:p-4 lg:p-6 flex-1 overflow-y-auto overflow-x-hidden w-full max-w-[1600px] mx-auto">
           <div key={activeModule} className="animate-in fade-in duration-200">
             {renderModule()}
           </div>
@@ -190,11 +191,11 @@ const MainContent = () => {
       <CustomPopupModal alertState={customAlert} onClose={closeCustomAlert} />
       <CustomToastContainer toastState={toast} onClose={closeToast} />
 
-      {/* Floating AISA Assistant Toggle Button (Hidden when drawer is open) */}
-      {!isAISAAssistantOpen && (
+      {/* Floating AISA Assistant Toggle Button (Hidden when drawer or mobile menu is open) */}
+      {!isAISAAssistantOpen && !isMobileMenuOpen && (
         <button
           onClick={() => setIsAISAAssistantOpen(true)}
-          className="fixed bottom-6 right-8 sm:bottom-8 sm:right-12 z-40 w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 cursor-pointer group"
+          className="fixed bottom-4 right-4 sm:bottom-8 sm:right-10 z-30 w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 cursor-pointer group"
           title="Open AI Ads™ Chatbot Assistant"
         >
           <img

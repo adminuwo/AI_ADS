@@ -207,10 +207,10 @@ export const DashboardModule = () => {
         </div>
 
         {/* Right Action Buttons (Pill styling matching screenshot) */}
-        <div className="relative z-10 flex items-center gap-3 w-full md:w-auto shrink-0 justify-start sm:justify-end">
+        <div className="relative z-10 flex items-center gap-2.5 w-full xl:w-auto shrink-0 justify-start sm:justify-end flex-wrap">
           <button
             onClick={() => openScraperModal ? openScraperModal() : setIsScraperOpen(true)}
-            className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2 py-2.5 px-5 rounded-full shadow-md border border-slate-100 dark:border-slate-800 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98]"
+            className="flex-1 sm:flex-initial bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2 py-2.5 px-4 sm:px-5 rounded-full shadow-md border border-slate-100 dark:border-slate-800 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98]"
           >
             <Sparkles className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
             <span className="truncate">{t('brandDna', 'Enter Your Brand')}</span>
@@ -218,7 +218,7 @@ export const DashboardModule = () => {
 
           <button
             onClick={() => setIsQuickPostOpen(true)}
-            className="bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2 py-2.5 px-5 rounded-full shadow-lg shadow-blue-500/25 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98]"
+            className="flex-1 sm:flex-initial bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2 py-2.5 px-4 sm:px-5 rounded-full shadow-lg shadow-blue-500/25 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98]"
           >
             <Zap className="w-4.5 h-4.5 text-amber-300 fill-amber-300 shrink-0" />
             <span className="truncate">{t('quickPost', 'Quick Post')}</span>
@@ -227,7 +227,7 @@ export const DashboardModule = () => {
       </motion.div>
 
       {/* ── 2. KPI STATS GRID (3 CARDS) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Card 1: Total Brands */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}

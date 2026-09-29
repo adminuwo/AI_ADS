@@ -57,8 +57,8 @@ export const BuilderSidebar = ({
 
   return (
     <aside
-      className={`h-screen sticky top-0 bg-[#FBFBFC] dark:bg-[#0B0F19] border-r border-slate-200/90 dark:border-slate-800/90 flex flex-col justify-between transition-all duration-300 z-40 select-none ${
-        collapsed ? 'w-16' : 'w-64'
+      className={`h-screen sticky top-0 bg-[#FBFBFC] dark:bg-[#0B0F19] border-r border-slate-200/90 dark:border-slate-800/90 flex flex-col justify-between transition-all duration-300 z-40 select-none shrink-0 ${
+        collapsed ? 'w-14 sm:w-16' : 'w-64 max-w-[80vw]'
       }`}
     >
       <div className="flex flex-col h-full justify-between overflow-hidden">

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { websiteBuilderAPI } from '../../services/api';
 import {
@@ -50,7 +50,7 @@ export const AIWebsiteBuilderModule = () => {
 
   // Navigation: 'home' | 'dashboard' | 'projects' | 'templates' | 'assets' | 'brand_dna' | 'connectors' | 'deployments' | 'settings' | 'help'
   const [activeNav, setActiveNav] = useState('home');
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 1024 : false));
   const [projectFilter, setProjectFilterState] = useState('all'); // 'all' | 'starred' | 'starred' | 'owned' | 'shared'
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState('');

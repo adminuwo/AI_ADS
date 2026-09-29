@@ -502,24 +502,61 @@ export const WorkspaceProvider = ({ children }) => {
   const [isSeoAuditingMap, setIsSeoAuditingMap] = useState({});
 
   const saveSeoDataForWorkspace = (wsId, dataObj) => {
-    if (!wsId) return;
+    if (!wsId || !dataObj) return;
     setSeoSearchDataMap(prev => {
-      const updated = { ...prev, [wsId]: dataObj };
+      let existingStorage = {};
+      try {
+        const raw = localStorage.getItem(`aisa_seo_${wsId}`);
+        if (raw) existingStorage = JSON.parse(raw) || {};
+      } catch (e) {}
+
+      const existing = prev[wsId] || existingStorage || {};
+      const merged = {
+        ...existing,
+        ...dataObj,
+        // Crucial: Preserve previous verified arrays if dataObj does not contain them or is empty
+        onSiteKeywords: (Array.isArray(dataObj.onSiteKeywords) && dataObj.onSiteKeywords.length > 0) ? dataObj.onSiteKeywords : (existing.onSiteKeywords || []),
+        rankingKeywords: (Array.isArray(dataObj.rankingKeywords) && dataObj.rankingKeywords.length > 0) ? dataObj.rankingKeywords : (existing.rankingKeywords || []),
+        competitors: (Array.isArray(dataObj.competitors) && dataObj.competitors.length > 0) ? dataObj.competitors : (existing.competitors || []),
+        competitorGaps: (Array.isArray(dataObj.competitorGaps) && dataObj.competitorGaps.length > 0) ? dataObj.competitorGaps : (existing.competitorGaps || []),
+        opportunityKeywords: (Array.isArray(dataObj.opportunityKeywords) && dataObj.opportunityKeywords.length > 0) ? dataObj.opportunityKeywords : (existing.opportunityKeywords || []),
+        quickWins: (Array.isArray(dataObj.quickWins) && dataObj.quickWins.length > 0) ? dataObj.quickWins : (existing.quickWins || []),
+        keywordClusters: (Array.isArray(dataObj.keywordClusters) && dataObj.keywordClusters.length > 0) ? dataObj.keywordClusters : (existing.keywordClusters || []),
+        dataIntegritySummary: dataObj.dataIntegritySummary || existing.dataIntegritySummary || null,
+        agentsExecutionSummary: dataObj.agentsExecutionSummary || existing.agentsExecutionSummary || null,
+        brief: dataObj.brief || existing.brief || null,
+        selectedKeyword: dataObj.selectedKeyword || existing.selectedKeyword || '',
+        seedKeyword: dataObj.seedKeyword || existing.seedKeyword || '',
+        websiteUrl: dataObj.websiteUrl || existing.websiteUrl || '',
+        generatedAt: dataObj.generatedAt || existing.generatedAt || new Date().toISOString()
+      };
+
+      const updated = { ...prev, [wsId]: merged };
       try {
         localStorage.setItem('aisa_seo_data_map', JSON.stringify(updated));
-        localStorage.setItem(`aisa_seo_${wsId}`, JSON.stringify(dataObj));
+        localStorage.setItem(`aisa_seo_${wsId}`, JSON.stringify(merged));
       } catch (e) {}
       return updated;
     });
-    setSeoSearchData(dataObj);
+    setSeoSearchData(prev => ({ ...(prev || {}), ...dataObj }));
   };
 
   const getSeoDataForWorkspace = (wsId) => {
     if (!wsId) return null;
-    if (seoSearchDataMap[wsId]) return seoSearchDataMap[wsId];
+    if (seoSearchDataMap && seoSearchDataMap[wsId]) return seoSearchDataMap[wsId];
     try {
       const raw = localStorage.getItem(`aisa_seo_${wsId}`);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed) return parsed;
+      }
+    } catch (e) {}
+    try {
+      const mapRaw = localStorage.getItem('aisa_seo_data_map');
+      if (mapRaw) {
+        const parsedMap = JSON.parse(mapRaw);
+        if (parsedMap && parsedMap[wsId]) return parsedMap[wsId];
+      }
     } catch (e) {}
     return null;
   };

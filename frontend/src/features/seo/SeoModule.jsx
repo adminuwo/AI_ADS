@@ -220,11 +220,11 @@ export const SeoModule = () => {
         setBrief(res.brief);
         showToast(`Technical SEO Blueprint synthesized for "${kw}"`, 'success');
 
-        const currentData = getSeoDataForWorkspace(wsId) || {};
+        // Safely update workspace storage without dropping existing keywords
         saveSeoDataForWorkspace(wsId, {
-          ...currentData,
           brief: res.brief,
-          selectedKeyword: kw
+          selectedKeyword: kw,
+          seedKeyword: kw || seedKeyword
         });
       } else {
         throw new Error(res.error || 'Blueprint generation failed');
@@ -286,7 +286,10 @@ export const SeoModule = () => {
     }
   };
 
-  // Load from workspace / cache on mount or when global data updates
+  // Ref to track last active workspace to prevent wiping in-memory state during background updates
+  const lastLoadedWsIdRef = useRef(null);
+
+  // Load from workspace / cache on mount or when workspace switches
   useEffect(() => {
     const ws = activeWorkspace || {};
     const initialUrl = ws.domainUrl || ws.website || '';
@@ -294,8 +297,18 @@ export const SeoModule = () => {
 
     const currentWsId = ws._id || ws.id || ws.brandName || 'ws_default';
     const cached = getSeoDataForWorkspace(currentWsId);
+    const isDifferentWorkspace = lastLoadedWsIdRef.current !== currentWsId;
 
-    if (cached && (cached.generatedAt || cached.keywordClusters?.length > 0 || cached.onSiteKeywords?.length > 0 || cached.rankingKeywords?.length > 0 || cached.competitorGaps?.length > 0 || cached.brief)) {
+    const hasCachedKeywords = cached && (
+      (Array.isArray(cached.onSiteKeywords) && cached.onSiteKeywords.length > 0) ||
+      (Array.isArray(cached.rankingKeywords) && cached.rankingKeywords.length > 0) ||
+      (Array.isArray(cached.competitorGaps) && cached.competitorGaps.length > 0) ||
+      (Array.isArray(cached.opportunityKeywords) && cached.opportunityKeywords.length > 0) ||
+      (Array.isArray(cached.keywordClusters) && cached.keywordClusters.length > 0)
+    );
+
+    if (hasCachedKeywords || (isDifferentWorkspace && cached?.generatedAt)) {
+      lastLoadedWsIdRef.current = currentWsId;
       const sanitizedOnSite = (cached.onSiteKeywords || []).map(k => ({
         ...k,
         source: formatCleanSource(k.source)
@@ -312,10 +325,23 @@ export const SeoModule = () => {
       if (cached.agentsExecutionSummary) setAgentSummary(cached.agentsExecutionSummary);
       if (cached.brief) setBrief(cached.brief);
       setInitialized(true);
-    } else {
+    } else if (isDifferentWorkspace) {
+      // User switched to a new workspace that has no audit data yet
+      lastLoadedWsIdRef.current = currentWsId;
       const defaultSeed = getDefaultSeed();
       setSeedKeyword(defaultSeed);
+      setOnSiteKeywords([]);
+      setRankingKeywords([]);
+      setCompetitors([]);
+      setCompetitorGaps([]);
+      setOpportunityKeywords([]);
+      setQuickWins([]);
+      setKeywordClusters([]);
+      setBrief(null);
       setInitialized(false);
+    } else if (cached?.brief) {
+      // Same workspace, simply sync blueprint without touching keywords
+      setBrief(cached.brief);
     }
   }, [activeWorkspace?._id || activeWorkspace?.id || activeWorkspace?.brandName || 'ws_default', seoSearchDataMap]);
 
