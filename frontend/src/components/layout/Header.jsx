@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { getBrandLogoUrl } from '../../utils/brandLogoHelper';
 import { 
@@ -135,7 +135,7 @@ export const Header = () => {
 
           {/* Workspace Dropdown */}
           {showWorkspaceMenu && (
-            <div className="absolute top-full left-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] glass-card bg-white/95 dark:bg-slate-900/95 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+            <div className="absolute top-full left-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] accent-card glass-card bg-white/95 dark:bg-slate-900/95 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
               <div className="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">{t('workspaces', 'Workspaces')}</div>
               {workspaces.map(ws => {
                 const wsId = ws.id || ws._id;
@@ -219,7 +219,7 @@ export const Header = () => {
               {t('currentPlan', 'Current Plan')}
             </span>
             <span className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors leading-tight">
-              {getPlanDisplayName()}
+              {t(getPlanDisplayName())}
             </span>
           </div>
           <span className="ml-1 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 group-hover:bg-brand-500 group-hover:text-white transition-colors hidden sm:inline-block">

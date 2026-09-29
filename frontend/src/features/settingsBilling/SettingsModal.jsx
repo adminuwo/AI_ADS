@@ -404,6 +404,7 @@ For privacy concerns, email us at privacy@aiads-platform.com
 // State-of-the-Art Custom Dropdown Component
 // ──────────────────────────────────────────────
 const CustomDropdown = ({ value, onChange, options, icon: Icon = Globe, direction = 'down' }) => {
+  const { t } = useWorkspace();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -418,7 +419,8 @@ const CustomDropdown = ({ value, onChange, options, icon: Icon = Globe, directio
   }, []);
 
   const selectedOpt = options.find(o => (typeof o === 'object' ? o.value : o) === value);
-  const selectedLabel = typeof selectedOpt === 'object' ? selectedOpt.label : (selectedOpt || value);
+  const rawLabel = typeof selectedOpt === 'object' ? selectedOpt.label : (selectedOpt || value);
+  const selectedLabel = t(rawLabel, rawLabel);
   const selectedIcon = typeof selectedOpt === 'object' ? selectedOpt.icon : null;
 
   return (
@@ -447,7 +449,8 @@ const CustomDropdown = ({ value, onChange, options, icon: Icon = Globe, directio
         <div className={`absolute right-0 ${direction === 'up' ? 'bottom-full mb-1.5 animate-in fade-in slide-in-from-bottom-2' : 'top-full mt-1.5 animate-in fade-in zoom-in-95'} w-full min-w-[210px] bg-white dark:bg-[#0c101d] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-1.5 z-50 duration-150 space-y-0.5 max-h-60 overflow-y-auto`}>
           {options.map((opt) => {
             const val = typeof opt === 'object' ? opt.value : opt;
-            const lbl = typeof opt === 'object' ? opt.label : opt;
+            const rawLbl = typeof opt === 'object' ? opt.label : opt;
+            const lbl = t(rawLbl, rawLbl);
             const icn = typeof opt === 'object' ? opt.icon : null;
             const isSelected = val === value;
 
@@ -505,7 +508,8 @@ const REGION_LANGUAGES = {
     { value: 'Gujarati', label: 'Gujarati (ગુજરાતી)', icon: '🇮🇳' },
     { value: 'Kannada', label: 'Kannada (ಕನ್ನಡ)', icon: '🇮🇳' },
     { value: 'Malayalam', label: 'Malayalam (മലയാളം)', icon: '🇮🇳' },
-    { value: 'Punjabi', label: 'Punjabi (ਪੰਜਾਬੀ)', icon: '🇮🇳' }
+    { value: 'Punjabi', label: 'Punjabi (ਪੰਜਾਬੀ)', icon: '🇮🇳' },
+    { value: 'Urdu', label: 'Urdu (اردو)', icon: '🇮🇳' }
   ],
   'United States': [
     { value: 'English', label: 'English (US)', icon: '🇺🇸' },
@@ -570,40 +574,7 @@ const REGION_LANGUAGES = {
 // Main Component
 // ──────────────────────────────────────────────
 export const SettingsModal = () => {
-  const {
-    isSettingsModalOpen,
-    setIsSettingsModalOpen,
-    activeSettingsTab,
-    setActiveSettingsTab,
-    appearance,
-    setAppearance,
-    accentColor,
-    setAccentColor,
-    region,
-    setRegion,
-    language,
-    setLanguage,
-    multiScheduleReminder,
-    setMultiScheduleReminder,
-    notificationPreferences,
-    setNotificationPreferences,
-    dataControlPreferences,
-    setDataControlPreferences,
-    userAvatar,
-    setUserAvatar,
-    user,
-    setUser,
-    logout,
-    showCustomAlert,
-    credits,
-    setIsCreditModalOpen,
-    notifications,
-    setNotifications,
-    activeWorkspace,
-    activeRole,
-    setActiveModule,
-    t
-  } = useWorkspace();
+  const { isSettingsModalOpen, setIsSettingsModalOpen, activeSettingsTab, setActiveSettingsTab, appearance, setAppearance, accentColor, setAccentColor, region, setRegion, language, setLanguage, multiScheduleReminder, setMultiScheduleReminder, notificationPreferences, setNotificationPreferences, dataControlPreferences, setDataControlPreferences, userAvatar, setUserAvatar, user, setUser, logout, showCustomAlert, credits, setIsCreditModalOpen, notifications, setNotifications, activeWorkspace, activeRole, setActiveModule, t } = useWorkspace();
 
   const fileInputRef = useRef(null);
 
@@ -849,7 +820,7 @@ export const SettingsModal = () => {
     {
       title: t('platformPreferences', 'PLATFORM PREFERENCES'),
       items: [
-        { id: 'personalization', label: t('appearanceStyle', 'Appearance & Style'), icon: Sparkles, color: 'from-violet-500 to-purple-600', badge: 'Popular' },
+        { id: 'personalization', label: t('appearanceStyle', 'Appearance & Style'), icon: Sparkles, color: 'from-violet-500 to-purple-600', badge: t('popular', 'Popular') },
         { id: 'notifications', label: t('alertsDigest', 'Alerts & Digest'), icon: Bell, color: 'from-blue-500 to-cyan-600' },
         { id: 'data', label: t('dataControlsBackup', 'Data Controls & Backup'), icon: Database, color: 'from-emerald-500 to-teal-600' },
       ]
@@ -1177,7 +1148,7 @@ export const SettingsModal = () => {
                   >
                     <div className="flex items-center gap-3">
                       <span className="w-4 h-4 rounded-full shadow-sm border border-white/20" style={{ backgroundColor: c.hex }} />
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{c.label}</span>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{t(c.label)}</span>
                     </div>
                     {accentColor === c.id && <Check className="w-4 h-4 text-brand-500" />}
                   </button>
@@ -1241,14 +1212,14 @@ export const SettingsModal = () => {
         return (
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">System & Event Alerts</h3>
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">{t('systemEventAlerts', 'System & Event Alerts')}</h3>
             </div>
             <div className="space-y-3">
               {[
-                { key: 'emailDigest', label: 'Weekly Performance Digest', desc: 'Receive detailed weekly updates on brand analytics, lead scores, and SEO progress.', icon: Mail },
-                { key: 'desktopPush', label: 'Real-Time Desktop Push', desc: 'Get immediate browser notifications when AI generation completes or a post is approved.', icon: Bell },
-                { key: 'soundEffects', label: 'Audio Chime Alerts', desc: 'Play subtle audio confirmation when AI tasks or image generations finish.', icon: Volume2 },
-                { key: 'productUpdates', label: 'Feature Release Announcements', desc: 'Be the first to hear about new AI models, templates, and integration updates.', icon: Sparkles },
+                { key: 'emailDigest', label: t('weeklyPerformanceDigest', 'Weekly Performance Digest'), desc: t('weeklyDigestDesc', 'Receive detailed weekly updates on brand analytics, lead scores, and SEO progress.'), icon: Mail },
+                { key: 'desktopPush', label: t('realTimeDesktopPush', 'Real-Time Desktop Push'), desc: t('desktopPushDesc', 'Get immediate browser notifications when AI generation completes or a post is approved.'), icon: Bell },
+                { key: 'soundEffects', label: t('audioChimeAlerts', 'Audio Chime Alerts'), desc: t('soundEffectsDesc', 'Play subtle audio confirmation when AI tasks or image generations finish.'), icon: Volume2 },
+                { key: 'productUpdates', label: t('featureReleaseAnnouncements', 'Feature Release Announcements'), desc: t('productUpdatesDesc', 'Be the first to hear about new AI models, templates, and integration updates.'), icon: Sparkles },
               ].map(({ key, label, desc, icon: Icon }) => (
                 <div key={key} className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex items-start justify-between gap-4 hover:border-brand-500/30 transition-all">
                   <div className="flex items-start gap-3">
@@ -1269,8 +1240,8 @@ export const SettingsModal = () => {
             {notifications && notifications.length > 0 && (
               <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Recent Activity Log ({notifications.length})</h4>
-                  <button onClick={() => setNotifications && setNotifications([])} className="text-xs font-bold text-brand-500 hover:underline">Clear</button>
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('recentActivityLog', 'Recent Activity Log')} ({notifications.length})</h4>
+                  <button onClick={() => setNotifications && setNotifications([])} className="text-xs font-bold text-brand-500 hover:underline">{t('clear', 'Clear')}</button>
                 </div>
                 <div className="space-y-2">
                   {notifications.map(n => (
@@ -1291,22 +1262,22 @@ export const SettingsModal = () => {
           <div className="space-y-6">
             <div className="space-y-3">
               {renderSettingRow(
-                'Save AI Chat Context',
-                'Persist session memory for multi-channel campaign generation.',
+                t('saveAiChatContext', 'Save AI Chat Context'),
+                t('persistSessionMemoryDesc', 'Persist session memory for multi-channel campaign generation.'),
                 renderToggle(dataControlPreferences.saveChatHistory, val =>
                   setDataControlPreferences({ ...dataControlPreferences, saveChatHistory: val })
                 )
               )}
               {renderSettingRow(
-                'Share Workspace Links',
-                'Allow team members with the link to preview draft assets.',
+                t('shareWorkspaceLinks', 'Share Workspace Links'),
+                t('allowTeamPreviewDesc', 'Allow team members with the link to preview draft assets.'),
                 renderToggle(dataControlPreferences.shareWorkspaceLinks, val =>
                   setDataControlPreferences({ ...dataControlPreferences, shareWorkspaceLinks: val })
                 )
               )}
               {renderSettingRow(
-                'Anonymized Usage Telemetry',
-                'Help improve AI generation quality by sharing diagnostic logs.',
+                t('anonymizedTelemetry', 'Anonymized Usage Telemetry'),
+                t('telemetryDesc', 'Help improve AI generation quality by sharing diagnostic logs.'),
                 renderToggle(dataControlPreferences.allowAnalytics, val =>
                   setDataControlPreferences({ ...dataControlPreferences, allowAnalytics: val })
                 )
@@ -1316,24 +1287,24 @@ export const SettingsModal = () => {
             {/* Export Card */}
             <div className="p-5 rounded-2xl bg-gradient-to-r from-brand-500/10 via-brand-500/5 to-transparent border border-brand-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Export Workspace Backup</h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Download settings, active brands, and logs as JSON format.</p>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">{t('exportWorkspaceBackup', 'Export Workspace Backup')}</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t('exportBackupDesc', 'Download settings, active brands, and logs as JSON format.')}</p>
               </div>
               <button
                 onClick={triggerExportData}
                 className="btn-secondary text-xs px-4 py-2.5 flex items-center gap-2"
               >
                 <Download className="w-4 h-4 text-brand-500" />
-                Export Data
+                {t('exportData', 'Export Data')}
               </button>
             </div>
 
             {/* Saved Chat Sessions */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Saved Chat History</h4>
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">{t('savedChatHistory', 'Saved Chat History')}</h4>
                 {chatSessions.length > 0 && (
-                  <button onClick={() => setChatSessions([])} className="text-xs font-bold text-red-500 hover:underline">Delete All</button>
+                  <button onClick={() => setChatSessions([])} className="text-xs font-bold text-red-500 hover:underline">{t('deleteAll', 'Delete All')}</button>
                 )}
               </div>
               <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -1468,20 +1439,20 @@ export const SettingsModal = () => {
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">{user?.email}</p>
-                  <p className="text-[11px] text-slate-400">Active Workspace: <strong className="text-slate-700 dark:text-slate-200">{activeWorkspace?.brandName || 'Default Agency Workspace'}</strong></p>
+                  <p className="text-[11px] text-slate-400">{t('activeWorkspace', 'Active Workspace:')} <strong className="text-slate-700 dark:text-slate-200">{activeWorkspace?.brandName || 'Default Agency Workspace'}</strong></p>
                 </div>
               </div>
             </div>
 
             {/* Display Name Edit */}
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Full Name</label>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{t('fullName', 'FULL NAME')}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={nicknameInput}
                   onChange={e => setNicknameInput(e.target.value)}
-                  placeholder="Enter full display name"
+                  placeholder={t('enterFullDisplayName', 'Enter full display name')}
                   className="glass-input text-xs flex-1"
                 />
                 <button
@@ -1494,24 +1465,24 @@ export const SettingsModal = () => {
                   }`}
                 >
                   {isNameSaved ? <Check className="w-4 h-4" /> : null}
-                  {isNameSaved ? 'Saved!' : 'Save'}
+                  {isNameSaved ? t('saved', 'Saved!') : t('save', 'Save')}
                 </button>
               </div>
             </div>
 
             {/* Active Sessions */}
             <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Active Login Sessions</h4>
+              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">{t('activeLoginSessions', 'ACTIVE LOGIN SESSIONS')}</h4>
               {sessions.map(s => (
                 <div key={s._id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-3">
                     <Monitor className="w-5 h-5 text-brand-500" />
                     <div>
                       <span className="font-bold text-slate-900 dark:text-white block">{s.os} • {s.browser}</span>
-                      <span className="text-[10px] text-slate-400">IP: {s.ip} • Active Now</span>
+                      <span className="text-[10px] text-slate-400">IP: {s.ip} • {t('activeNow', 'Active Now')}</span>
                     </div>
                   </div>
-                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Current Device</span>
+                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">{t('currentDevice', 'Current Device')}</span>
                 </div>
               ))}
             </div>
@@ -1519,21 +1490,21 @@ export const SettingsModal = () => {
             {/* Security Actions */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
               <div>
-                <p className="font-bold text-sm text-slate-900 dark:text-white">Account Password</p>
-                <p className="text-xs text-slate-400">Update your login security credentials.</p>
+                <p className="font-bold text-sm text-slate-900 dark:text-white">{t('accountPassword', 'Account Password')}</p>
+                <p className="text-xs text-slate-400">{t('updateLoginSecurityCredentials', 'Update your login security credentials.')}</p>
               </div>
               <button onClick={() => setShowResetModal(true)} className="btn-secondary text-xs px-4 py-2">
-                Change Password
+                {t('changePassword', 'Change Password')}
               </button>
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
               <div>
-                <p className="font-bold text-sm text-red-500">Danger Zone</p>
-                <p className="text-xs text-slate-400">Permanently delete your account and brand data.</p>
+                <p className="font-bold text-sm text-red-500">{t('dangerZone', 'Danger Zone')}</p>
+                <p className="text-xs text-slate-400">{t('permanentlyDeleteAccountData', 'Permanently delete your account and brand data.')}</p>
               </div>
               <button onClick={() => setShowDeleteModal(true)} className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 text-xs font-bold hover:bg-red-500 hover:text-white transition-all">
-                Delete Account
+                {t('deleteAccount', 'Delete Account')}
               </button>
             </div>
           </div>
@@ -1884,13 +1855,13 @@ export const SettingsModal = () => {
                 onClick={() => setFaqSubTab('faq')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${faqSubTab === 'faq' ? 'bg-brand-500 text-white' : 'text-slate-400 hover:text-slate-200'}`}
               >
-                Browse FAQ
+                {t('browseFaq', 'Browse FAQ')}
               </button>
               <button
                 onClick={() => setFaqSubTab('ticket')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${faqSubTab === 'ticket' ? 'bg-brand-500 text-white' : 'text-slate-400 hover:text-slate-200'}`}
               >
-                Submit Ticket
+                {t('submitTicket', 'Submit Ticket')}
               </button>
             </div>
 
@@ -1900,7 +1871,7 @@ export const SettingsModal = () => {
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search questions..."
+                    placeholder={t('searchQuestions', 'Search questions...')}
                     value={faqSearchQuery}
                     onChange={e => setFaqSearchQuery(e.target.value)}
                     className="glass-input text-xs pl-10 w-full"
@@ -1918,7 +1889,7 @@ export const SettingsModal = () => {
                           : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-400'
                       }`}
                     >
-                      {cat.category}
+                      {t(cat.category, cat.category)}
                     </button>
                   ))}
                 </div>
@@ -1932,12 +1903,12 @@ export const SettingsModal = () => {
                           onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
                           className="w-full flex justify-between items-center p-4 text-left font-bold text-xs text-slate-800 dark:text-slate-200"
                         >
-                          <span>{faq.question}</span>
+                          <span>{t(faq.question, faq.question)}</span>
                           <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openFaqIndex === index ? 'rotate-180 text-brand-500' : ''}`} />
                         </button>
                         {openFaqIndex === index && (
                           <div className="px-4 pb-4 text-xs text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-200/40 dark:border-slate-800/40 pt-3">
-                            {faq.answer}
+                            {t(faq.answer, faq.answer)}
                           </div>
                         )}
                       </div>
@@ -1947,41 +1918,41 @@ export const SettingsModal = () => {
             ) : (
               <div className="space-y-4 max-w-md">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-400 uppercase">Category</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase">{t('category', 'Category')}</label>
                   <CustomDropdown
                     value={issueType}
                     onChange={val => setIssueType(val)}
                     icon={MessageSquare}
                     options={[
-                      { value: 'General Inquiry', label: 'General Inquiry', icon: '💬' },
-                      { value: 'Technical Support', label: 'Technical Support', icon: '⚡' },
-                      { value: 'Billing', label: 'Billing & Subscriptions', icon: '💳' },
-                      { value: 'Feature Request', label: 'Feature Request', icon: '💡' },
-                      { value: 'Bug Report', label: 'Bug Report', icon: '🐞' }
+                      { value: 'General Inquiry', label: t('generalInquiry', 'General Inquiry'), icon: '💬' },
+                      { value: 'Technical Support', label: t('technicalSupport', 'Technical Support'), icon: '⚡' },
+                      { value: 'Billing', label: t('billingSubscriptions', 'Billing & Subscriptions'), icon: '💳' },
+                      { value: 'Feature Request', label: t('featureRequest', 'Feature Request'), icon: '💡' },
+                      { value: 'Bug Report', label: t('bugReport', 'Bug Report'), icon: '🐞' }
                     ]}
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-400 uppercase">Message</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase">{t('message', 'Message')}</label>
                   <textarea
                     rows={4}
                     value={issueText}
                     onChange={e => setIssueText(e.target.value)}
-                    placeholder="Describe your query..."
+                    placeholder={t('describeQuery', 'Describe your query...')}
                     className="glass-input text-xs w-full resize-none p-4"
                   />
                 </div>
                 <button onClick={handleSupportSubmit} disabled={isSending || !issueText.trim()} className="btn-primary text-xs w-full py-3">
-                  {isSending ? 'Submitting Support Request...' : 'Submit Support Request'}
+                  {isSending ? t('submittingSupportRequest', 'Submitting Support Request...') : t('submitSupportRequest', 'Submit Support Request')}
                 </button>
                 {sendStatus === 'success' && (
                   <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold text-center animate-in fade-in">
-                    ✓ Support request submitted successfully! Our team will assist you shortly.
+                    {t('supportSubmittedSuccess', '✓ Support request submitted successfully! Our team will assist you shortly.')}
                   </div>
                 )}
                 {sendStatus === 'error' && (
                   <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold text-center animate-in fade-in">
-                    ❌ Delivery error. Please try again later.
+                    {t('supportDeliveryError', '❌ Delivery error. Please try again later.')}
                   </div>
                 )}
               </div>
@@ -1995,27 +1966,27 @@ export const SettingsModal = () => {
           <div className="space-y-4 max-w-lg">
             <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-black text-slate-900 dark:text-white">Share Your Product Ideas</h3>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">{t('shareProductIdeas', 'Share Your Product Ideas')}</h3>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">Tell us how we can make AI Ads Platform even better for your team. Your feedback is sent directly to our executive team.</p>
+              <p className="text-xs text-slate-400 leading-relaxed">{t('shareProductIdeasDesc', 'Tell us how we can make AI Ads Platform even better for your team. Your feedback is sent directly to our executive team.')}</p>
               <textarea
                 rows={5}
                 value={issueText}
                 onChange={e => setIssueText(e.target.value)}
-                placeholder="What features or improvements would you love to see?"
+                placeholder={t('feedbackPlaceholder', 'What features or improvements would you love to see?')}
                 className="glass-input text-xs w-full resize-none p-4"
               />
               <button onClick={handleSupportSubmit} disabled={isSending || !issueText.trim()} className="btn-primary text-xs w-full py-3">
-                {isSending ? 'Submitting Feedback...' : 'Submit Feedback'}
+                {isSending ? t('submittingFeedback', 'Submitting Feedback...') : t('submitFeedback', 'Submit Feedback')}
               </button>
               {sendStatus === 'success' && (
                 <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold text-center animate-in fade-in">
-                  ✓ Thank you! Your product feedback has been submitted successfully.
+                  {t('feedbackSubmittedSuccess', '✓ Thank you! Your product feedback has been submitted successfully.')}
                 </div>
               )}
               {sendStatus === 'error' && (
                 <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold text-center animate-in fade-in">
-                  ❌ Unable to send feedback. Please try again.
+                  {t('feedbackDeliveryError', '❌ Unable to send feedback. Please try again.')}
                 </div>
               )}
             </div>
@@ -2911,8 +2882,8 @@ export const SettingsModal = () => {
                 <div className="flex items-center gap-3">
                   <img src="/logo_icon_only.png?v=10" alt="AI Ads™ Logo" className="w-12 h-12 object-contain shrink-0" />
                   <div>
-                    <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">AI Ads Preferences</h2>
-                    <span className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block">Platform Settings</span>
+                    <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">{t('aiAdsPreferences', 'AI Ads Preferences')}</h2>
+                    <span className="text-[10px] font-bold text-brand-400 uppercase tracking-widest block">{t('platformSettings', 'PLATFORM SETTINGS')}</span>
                   </div>
                 </div>
                 <button

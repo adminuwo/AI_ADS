@@ -124,7 +124,7 @@ const WebsitePreviewContent = ({ website, blueprint, phaseState, progressStep, e
         </div>
         <button
           onClick={onGenerateWebsite}
-          className="px-6 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-lg flex items-center gap-2 mx-auto"
+          className="btn-primary px-6 py-3 rounded-xl font-extrabold text-xs shadow-lg flex items-center gap-2 mx-auto cursor-pointer"
         >
           <RefreshCw className="w-4 h-4" /> Retry Website Generation
         </button>

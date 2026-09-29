@@ -146,43 +146,9 @@ async function fetchWebsiteHtmlWithResilience(cleanUrl, brandName, domainName) {
     } catch (tavErr) {}
   }
 
-  // TIER 4: DuckDuckGo Public HTML Search Scraper (Zero API Key Required)
+  // TIER 4: AI Live Web Search Grounding (Vertex/Gemini API)
   if (!html || html.length < 300) {
-    console.log(`🛡️ [SCRAPER] Tier 4: Querying DuckDuckGo HTML Search engine for ${domainName}...`);
-    try {
-      const ddgUrl = `https://html.duckduckgo.com/html/?q=site:${encodeURIComponent(domainName)}+OR+${encodeURIComponent(brandName)}`;
-      const ddgRes = await axios.get(ddgUrl, {
-        timeout: 6000,
-        httpsAgent,
-        headers: {
-          'User-Agent': USER_AGENTS[0],
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9'
-        }
-      });
-      if (ddgRes.status === 200 && ddgRes.data) {
-        const ddg$ = cheerio.load(ddgRes.data);
-        const snippets = [];
-        ddg$('.result__snippet, .result__title').each((_, el) => {
-          const t = ddg$(el).text().trim();
-          if (t) snippets.push(t);
-        });
-        if (snippets.length > 0) {
-          const combined = snippets.join(' ');
-          html = `<html><head><title>${brandName} - Official Site</title><meta name="description" content="${combined.slice(0, 300)}"></head><body><h1>${brandName}</h1><p>${combined}</p></body></html>`;
-          $ = cheerio.load(html);
-          crawledSources.push('PUBLIC_SEARCH_ENGINE_SCRAPE');
-          console.log(`📡 [SCRAPER] Tier 4: DuckDuckGo Public Search Snippets Extracted (${snippets.length} snippets)`);
-        }
-      }
-    } catch (ddgErr) {
-      console.warn(`⚠️ [SCRAPER] Tier 4 DuckDuckGo Note: ${ddgErr.message}`);
-    }
-  }
-
-  // TIER 5: AI Live Web Search Grounding (Vertex/Gemini API)
-  if (!html || html.length < 300) {
-    console.log(`🛡️ [SCRAPER] Tier 5: Querying Gemini Search Grounding for ${brandName} (${domainName})...`);
+    console.log(`🛡️ [SCRAPER] Tier 4: Querying Gemini Search Grounding for ${brandName} (${domainName})...`);
     try {
       const { aiClient, globalAiClient } = require('../../config/vertex');
       const client = globalAiClient || aiClient;
@@ -990,7 +956,7 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
 
   console.log(`\n🌐 [SCRAPER] 🚀 Initiating Live Web Scrape & Brand DNA Setup for: ${cleanUrl} (${brandName})`);
 
-  // STEP 1: Resilient Multi-Tier Web Fetch (Direct HTTP -> Puppeteer -> Tavily -> DuckDuckGo -> Gemini Grounding)
+  // STEP 1: Resilient Multi-Tier Web Fetch (Direct HTTP -> Puppeteer -> Tavily -> Gemini Grounding)
   const fetchedResult = await fetchWebsiteHtmlWithResilience(cleanUrl, brandName, domainName);
   let html = fetchedResult.html;
   let $ = fetchedResult.$;

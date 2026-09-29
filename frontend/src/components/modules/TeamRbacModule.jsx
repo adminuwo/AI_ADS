@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Users, UserPlus, ShieldCheck, Check, X, Eye } from 'lucide-react';
 
@@ -25,7 +25,7 @@ export const TeamRbacModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in">
       {/* Header Bar */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-brand-400" />
@@ -56,7 +56,7 @@ export const TeamRbacModule = () => {
       </div>
 
       {/* Members List */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
         <h2 className="text-sm font-bold text-white uppercase tracking-wider">Active Workspace Members</h2>
 
         <div className="overflow-x-auto">
@@ -88,7 +88,7 @@ export const TeamRbacModule = () => {
       </div>
 
       {/* RBAC Matrix Table */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
         <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
           Canonical Role-Based Access Control (RBAC) Matrix

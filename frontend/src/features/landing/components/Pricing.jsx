@@ -116,7 +116,7 @@ export const Pricing = () => {
               </div>
               <button
                 onClick={handleSelectPlan}
-                className="w-full py-3.5 rounded-xl text-xs font-extrabold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full btn-primary py-3.5 rounded-xl text-xs font-extrabold cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>Start Free Trial</span>
                 <ArrowRight className="w-4 h-4" />

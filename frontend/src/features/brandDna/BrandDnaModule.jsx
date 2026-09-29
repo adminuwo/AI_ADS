@@ -14,7 +14,7 @@ const ProvenanceBadge = ({ provenanceObj }) => {
 };
 
 export const BrandDnaModule = () => {
-  const {activeWorkspace, updateWorkspace, setActiveModule, setIsScraperOpen, openScraperModal, setBrandDnaData, t } = useWorkspace();
+  const { activeWorkspace, updateWorkspace, setActiveModule, setIsScraperOpen, openScraperModal, setBrandDnaData, t } = useWorkspace();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
@@ -471,22 +471,22 @@ export const BrandDnaModule = () => {
   return (
     <div className="space-y-5 animate-in fade-in w-full max-w-[1600px] mx-auto px-1 sm:px-4 pt-1 pb-16">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-purple-600/10 dark:from-amber-500/20 dark:via-rose-500/20 dark:to-purple-900/30 border border-amber-300/40 dark:border-purple-800/40 shadow-lg backdrop-blur-xl relative overflow-hidden">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-gradient-to-br from-amber-400/20 to-purple-500/20 rounded-full blur-2xl pointer-events-none" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 shadow-md backdrop-blur-xl relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-purple-500/5 dark:bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
         
         <div className="space-y-1 relative z-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/25">
+            <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-purple-500/20">
               <Dna className="w-6 h-6 animate-pulse" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 bg-clip-text text-transparent tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               {t('brandDnaTitle', 'Brand Intelligence & Brand DNA')}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-semibold sm:pl-13">
-            Immutable brand memory governing voice, positioning, and content rules for{' '}
-            <strong className="bg-gradient-to-r from-amber-500 to-rose-600 bg-clip-text text-transparent font-black px-1.5 py-0.5 bg-amber-500/10 rounded-md">
-              {activeWorkspace?.brandName || 'your brand'}
+            {t('Immutable brand memory governing voice, positioning, and content rules for')}{' '}
+            <strong className="text-purple-600 dark:text-purple-400 font-black px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200/50 dark:border-purple-800/40 rounded-md">
+              {activeWorkspace?.brandName || t('yourBrand', 'your brand')}
             </strong>.
           </p>
         </div>
@@ -495,18 +495,20 @@ export const BrandDnaModule = () => {
           <button
             onClick={handleRunAiAnalysis}
             disabled={analyzing}
-            className="px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 text-white font-black text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer"
+            className="px-6 py-3 rounded-full text-white font-black text-xs transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer"
+            style={{ background: 'linear-gradient(to right, var(--brand-from), var(--brand-to))', boxShadow: '0 4px 20px rgba(var(--brand-500-rgb), 0.35)' }}
           >
             {analyzing ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Sparkles className="w-4 h-4 shrink-0" />}
-            <span>{analyzing ? 'Re-Scraping Intelligence...' : t('runDeepAiAnalysis', 'Run Deep AI Analysis')}</span>
+            <span>{analyzing ? t('reScrapingIntelligence', 'Re-Scraping Intelligence...') : t('runDeepAiAnalysis', 'Run Deep AI Analysis')}</span>
           </button>
           {effectiveProfile && (
             <button
               onClick={handleSaveProfile}
-              className="px-4 py-2.5 rounded-2xl bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-extrabold transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 shadow-sm active:scale-95 cursor-pointer whitespace-nowrap"
+              className="px-6 py-3 rounded-full text-white font-black text-xs transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95 cursor-pointer whitespace-nowrap hover:opacity-90"
+              style={{ background: 'linear-gradient(to right, var(--brand-from), var(--brand-to))', boxShadow: '0 4px 20px rgba(var(--brand-500-rgb), 0.35)' }}
             >
-              <Save className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>Save Profile</span>
+              <Save className="w-4 h-4 shrink-0" />
+              <span>{t('Save Profile')}</span>
             </button>
           )}
         </div>
@@ -521,11 +523,11 @@ export const BrandDnaModule = () => {
 
       {/* Input bar for URL / Description ONLY if no brand/workspace exists */}
       {!isBrandExist && !effectiveProfile && !loading && (
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-cyan-500/10 dark:from-slate-900/90 dark:to-slate-900/90 border border-purple-200 dark:border-slate-800 space-y-4 shadow-md">
-          <h2 className="text-sm font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider">Initialize Brand AI Analysis</h2>
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4 shadow-md">
+          <h2 className="text-sm font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider">{t("Initialize Brand AI Analysis", "Initialize Brand AI Analysis")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Website URL</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t("Website URL", "Website URL")}</label>
               <input
                 type="url"
                 value={websiteUrl}
@@ -535,12 +537,12 @@ export const BrandDnaModule = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Brand Overview / Description (optional)</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t("Brand Overview / Description (optional)", "Brand Overview / Description (optional)")}</label>
               <input
                 type="text"
                 value={manualDesc}
                 onChange={(e) => setManualDesc(e.target.value)}
-                placeholder="Describe what your brand does, key products, target audience..."
+                placeholder={t("Describe what your brand does, key products, target audience...", "Describe what your brand does, key products, target audience...")}
                 className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 font-semibold"
               />
             </div>
@@ -548,7 +550,8 @@ export const BrandDnaModule = () => {
           <button
             onClick={handleRunAiAnalysis}
             disabled={analyzing}
-            className="px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-xs flex items-center gap-2 disabled:opacity-60 shadow-md hover:scale-105 transition-all"
+            className="px-6 py-3 rounded-full text-white font-extrabold text-xs flex items-center gap-2 disabled:opacity-60 shadow-md hover:scale-105 transition-all"
+            style={{ background: 'linear-gradient(to right, var(--brand-from), var(--brand-to))' }}
           >
             {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {analyzing ? 'Scraping & Analyzing...' : 'Analyze Brand with AI'}
@@ -570,10 +573,10 @@ export const BrandDnaModule = () => {
             <div className="space-y-4 w-full">
               {/* Brand Identity Card */}
               <div className="w-full">
-            <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-rose-500/5 to-purple-500/10 dark:from-slate-900/90 dark:to-slate-900/90 border border-amber-200/80 dark:border-slate-800/80 flex flex-col justify-start space-y-2 shadow-xs hover:shadow-sm transition-all">
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-400 flex flex-col justify-start space-y-2 shadow-xs hover:shadow-md transition-all">
               <div className="flex items-center justify-between">
-                <h2 className="text-[11px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <div className="w-5 h-5 rounded-md bg-amber-500/20 text-amber-600 flex items-center justify-center">
+                <h2 className="text-[11px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-md bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 flex items-center justify-center">
                     <Globe className="w-3 h-3" />
                   </div>
                   {t('brandIdentity', 'Brand Identity')}
@@ -609,7 +612,7 @@ export const BrandDnaModule = () => {
                 }}
               />
 
-              <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/70 border border-amber-100 dark:border-slate-800/80 h-full shadow-2xs">
+              <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-slate-50/50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 h-full shadow-2xs">
                 <div className="flex items-center gap-2.5">
                   {/* Logo */}
                   <div 
@@ -617,7 +620,7 @@ export const BrandDnaModule = () => {
                     onClick={() => setShowLogoPreviewModal(true)}
                     title="Click to view brand logo clearly"
                   >
-                    <div className="p-0.5 rounded-xl bg-gradient-to-tr from-amber-400 via-rose-400 to-purple-500 shadow-xs hover:scale-105 transition-transform duration-200">
+                    <div className="p-0.5 rounded-xl bg-slate-200 dark:bg-slate-700 shadow-xs hover:scale-105 transition-transform duration-200">
                       <img
                         src={
                           (effectiveProfile.logoUrl && !effectiveProfile.logoUrl.includes('picsum.photos'))
@@ -715,7 +718,8 @@ export const BrandDnaModule = () => {
                           setLogoUrlInput('');
                           setShowLogoInput(false);
                         }}
-                        className="px-2.5 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[11px] font-bold rounded-lg hover:opacity-90 transition-opacity"
+                        className="px-2.5 py-1 text-white text-[11px] font-bold rounded-lg hover:opacity-90 transition-opacity"
+                        style={{ background: 'linear-gradient(to right, var(--brand-from), var(--brand-to))' }}
                       >
                         Apply
                       </button>
@@ -727,16 +731,16 @@ export const BrandDnaModule = () => {
           </div>
 
           {/* Theme Color Palette Card */}
-          <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-cyan-500/10 dark:from-slate-900/90 dark:to-slate-900/90 border border-purple-200/80 dark:border-slate-800/80 flex flex-col justify-start space-y-1.5 shadow-2xs hover:shadow-sm transition-all">
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-purple-400 flex flex-col justify-start space-y-1.5 shadow-2xs hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                <div className="w-5 h-5 rounded-md bg-purple-500/20 text-purple-600 flex items-center justify-center">
+              <span className="text-[11px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-md bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 flex items-center justify-center">
                   <Palette className="w-3 h-3" />
                 </div>
                 {t('colorPalette', 'Theme Color Palette')}
               </span>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
+                  <span className="text-[9px] bg-purple-600 text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
                     {brandColorsList.length} Fetched
                   </span>
                   <button
@@ -756,12 +760,12 @@ export const BrandDnaModule = () => {
                   const rawList = isEditingColors && colorDrafts ? colorDrafts : (brandColorsList.length > 0 ? brandColorsList : ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#06B6D4']);
                   
                   const vibrantFallbackGradients = [
-                    'from-rose-500 to-red-600',
-                    'from-amber-500 to-orange-600',
-                    'from-emerald-500 to-teal-600',
-                    'from-blue-500 to-indigo-600',
-                    'from-purple-500 to-violet-600',
-                    'from-cyan-500 to-blue-600'
+                    'from-slate-700 to-slate-900',
+                    'from-slate-700 to-slate-900',
+                    'from-slate-700 to-slate-900',
+                    'from-slate-700 to-slate-900',
+                    'from-slate-700 to-slate-900',
+                    'from-slate-700 to-slate-900'
                   ];
 
                   return rawList.map((hex, idx) => {
@@ -827,11 +831,11 @@ export const BrandDnaModule = () => {
           <div className="w-full h-full flex flex-col">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs w-full h-full min-h-full flex-1">
               {/* Industry */}
-              <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-white dark:from-purple-950/30 dark:to-slate-900/80 border border-purple-200/80 dark:border-purple-900/40 flex flex-col justify-between h-full shadow-2xs hover:shadow-sm transition-all">
+              <div className="p-3 sm:p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-cyan-400 flex flex-col justify-between h-full shadow-2xs hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
-                  <span className="font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <BarChart2 className="w-3.5 h-3.5 text-purple-500" />
-                    {t('industry', 'Industry')}
+                  <span className="font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <BarChart2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                    {t('Industry', 'Industry')}
                   </span>
                   <button
                     type="button"
@@ -861,17 +865,16 @@ export const BrandDnaModule = () => {
               </div>
 
               {/* Headquarters / Address */}
-              <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white dark:from-amber-950/30 dark:to-slate-900/80 border border-amber-200/80 dark:border-amber-900/40 flex flex-col justify-between h-full shadow-2xs hover:shadow-sm transition-all">
+              <div className="p-3 sm:p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-rose-400 flex flex-col justify-between h-full shadow-2xs hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
-                  <span className="font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <Compass className="w-3.5 h-3.5 text-amber-500" />
-                    Headquarters / Address
+                  <span className="font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <Compass className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> {t("Headquarters / Address", "Headquarters / Address")}
                   </span>
                   <button
                     type="button"
                     onClick={() => toggleEdit('headquarters')}
-                    className="p-1 rounded text-slate-400 hover:text-amber-600 transition-colors"
-                    title="Edit Headquarters"
+                    className="p-1 rounded text-slate-400 hover:text-purple-600 transition-colors"
+                    title={t("Edit Headquarters", "Edit Headquarters")}
                   >
                     {editState['headquarters'] ? <Check className="w-3.5 h-3.5 text-emerald-500 font-bold" /> : <Edit3 className="w-3.5 h-3.5" />}
                   </button>
@@ -883,29 +886,28 @@ export const BrandDnaModule = () => {
                       value={effectiveProfile?.headquarters || ''}
                       onChange={(e) => handleFieldChangeLocal('headquarters', e.target.value)}
                       placeholder="Enter headquarters address..."
-                      className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-amber-500/50 rounded-lg p-1 outline-none"
+                      className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-purple-500/50 rounded-lg p-1 outline-none"
                       autoFocus
                     />
                   ) : (
                     <span className="font-bold text-slate-900 dark:text-white text-xs break-words leading-tight block">
-                      {effectiveProfile?.headquarters || <span className="text-slate-400 font-normal italic">Address not found</span>}
+                      {effectiveProfile?.headquarters || <span className="text-slate-400 font-normal italic">{t("Address not found", "Address not found")}</span>}
                     </span>
                   )}
                 </div>
               </div>
 
               {/* Tagline */}
-              <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-white dark:from-emerald-950/30 dark:to-slate-900/80 border border-emerald-200/80 dark:border-emerald-900/40 flex flex-col justify-between h-full shadow-2xs hover:shadow-sm transition-all">
+              <div className="p-3 sm:p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-400 flex flex-col justify-between h-full shadow-2xs hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
-                  <span className="font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
-                    Tagline / Slogan
+                  <span className="font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> {t("Tagline / Slogan", "Tagline / Slogan")}
                   </span>
                   <button
                     type="button"
                     onClick={() => toggleEdit('tagline')}
-                    className="p-1 rounded text-slate-400 hover:text-emerald-600 transition-colors"
-                    title="Edit Tagline"
+                    className="p-1 rounded text-slate-400 hover:text-purple-600 transition-colors"
+                    title={t("Edit Tagline", "Edit Tagline")}
                   >
                     {editState['tagline'] ? <Check className="w-3.5 h-3.5 text-emerald-500 font-bold" /> : <Edit3 className="w-3.5 h-3.5" />}
                   </button>
@@ -917,29 +919,28 @@ export const BrandDnaModule = () => {
                       value={effectiveProfile?.tagline || ''}
                       onChange={(e) => handleFieldChangeLocal('tagline', e.target.value)}
                       placeholder="Enter tagline / slogan..."
-                      className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-emerald-500/50 rounded-lg p-1 outline-none"
+                      className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-purple-500/50 rounded-lg p-1 outline-none"
                       autoFocus
                     />
                   ) : (
                     <span className="font-bold text-slate-900 dark:text-white text-xs break-words leading-tight block">
-                      {effectiveProfile?.tagline ? `"${effectiveProfile.tagline}"` : <span className="text-slate-400 font-normal italic">Not Specified</span>}
+                      {effectiveProfile?.tagline ? `"${effectiveProfile.tagline}"` : <span className="text-slate-400 font-normal italic">{t("Not Specified", "Not Specified")}</span>}
                     </span>
                   )}
                 </div>
               </div>
 
               {/* Contact Info */}
-              <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-cyan-500/10 via-blue-500/5 to-white dark:from-cyan-950/30 dark:to-slate-900/80 border border-cyan-200/80 dark:border-cyan-900/40 flex flex-col justify-between h-full shadow-2xs hover:shadow-sm transition-all">
+              <div className="p-3 sm:p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-orange-400 flex flex-col justify-between h-full shadow-2xs hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
-                  <span className="font-black text-cyan-600 dark:text-cyan-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-cyan-500" />
-                    Contact Info
+                  <span className="font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> {t("Contact Info", "Contact Info")}
                   </span>
                   <button
                     type="button"
                     onClick={() => toggleEdit('contactInfo')}
-                    className="p-1 rounded text-slate-400 hover:text-cyan-600 transition-colors"
-                    title="Edit Contact Info"
+                    className="p-1 rounded text-slate-400 hover:text-purple-600 transition-colors"
+                    title={t("Edit Contact Info", "Edit Contact Info")}
                   >
                     {editState['contactInfo'] ? <Check className="w-3.5 h-3.5 text-emerald-500 font-bold" /> : <Edit3 className="w-3.5 h-3.5" />}
                   </button>
@@ -955,17 +956,17 @@ export const BrandDnaModule = () => {
                       }
                       onChange={(e) => handleFieldChangeLocal('contactInfo', e.target.value)}
                       placeholder="Enter contact email / phone..."
-                      className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-cyan-500/50 rounded-lg p-1 outline-none"
+                      className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-purple-500/50 rounded-lg p-1 outline-none"
                       autoFocus
                     />
                   ) : (
                     <span className="font-bold text-slate-900 dark:text-white text-xs break-words leading-tight block">
                       {typeof effectiveProfile?.contactInfo === 'string'
-                        ? (effectiveProfile.contactInfo || <span className="text-slate-400 font-normal italic">Not Specified</span>)
+                        ? (effectiveProfile.contactInfo || <span className="text-slate-400 font-normal italic">{t("Not Specified", "Not Specified")}</span>)
                         : (
                             (effectiveProfile?.contactInfo?.email || effectiveProfile?.contactInfo?.phone)
                               ? `${effectiveProfile?.contactInfo?.email || ''}${effectiveProfile?.contactInfo?.phone ? ' | ' + effectiveProfile.contactInfo.phone : ''}`
-                              : <span className="text-slate-400 font-normal italic">Not Specified</span>
+                              : <span className="text-slate-400 font-normal italic">{t("Not Specified", "Not Specified")}</span>
                           )
                       }
                     </span>
@@ -982,19 +983,17 @@ export const BrandDnaModule = () => {
             {/* LEFT COLUMN: Mission & Target Audience */}
             <div className="space-y-5">
               {/* Mission Statement */}
-              <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-purple-500/10 dark:from-purple-950/40 dark:to-slate-900/90 border border-purple-200/80 dark:border-purple-900/50 space-y-3 shadow-sm hover:shadow-md transition-all">
+              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-violet-400 space-y-3 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                      <Compass className="w-4 h-4" />
-                    </div>
-                    Mission Statement
+                  <h2 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 flex items-center justify-center">
+                      <Compass className="w-4 h-4" /></div> {t("Mission Statement", "Mission Statement")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => toggleEdit('missionStatement')}
                     className="p-1.5 rounded-lg text-slate-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-slate-800 transition-colors"
-                    title="Edit Mission Statement"
+                    title={t("Edit Mission Statement", "Edit Mission Statement")}
                   >
                     {editState['missionStatement'] ? <Check className="w-4 h-4 text-emerald-500 font-bold" /> : <Edit3 className="w-4 h-4 text-slate-400" />}
                   </button>
@@ -1009,26 +1008,24 @@ export const BrandDnaModule = () => {
                     autoFocus
                   />
                 ) : (
-                  <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-extrabold leading-relaxed italic bg-white/70 dark:bg-slate-900/60 p-3.5 rounded-2xl border border-purple-100 dark:border-purple-900/40">
-                    {effectiveProfile?.missionStatement ? `"${effectiveProfile.missionStatement}"` : <span className="text-slate-400 font-normal not-italic">Mission statement not available</span>}
+                  <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-extrabold leading-relaxed italic bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    {effectiveProfile?.missionStatement ? `"${effectiveProfile.missionStatement}"` : <span className="text-slate-400 font-normal not-italic">{t("Mission statement not available", "Mission statement not available")}</span>}
                   </p>
                 )}
               </div>
 
               {/* Target Audience Section */}
-              <div className="p-5 rounded-3xl bg-gradient-to-br from-rose-500/10 via-pink-500/5 to-rose-500/10 dark:from-rose-950/40 dark:to-slate-900/90 border border-rose-200/80 dark:border-rose-900/50 space-y-3 shadow-sm hover:shadow-md transition-all">
+              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-pink-400 space-y-3 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-black text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                      <Target className="w-4 h-4" />
-                    </div>
-                    Target Audience
+                  <h2 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 flex items-center justify-center">
+                      <Target className="w-4 h-4" /></div> {t("Target Audience", "Target Audience")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => toggleEdit('targetAudience')}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition-colors"
-                    title="Edit Target Audience"
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-slate-800 transition-colors"
+                    title={t("Edit Target Audience", "Edit Target Audience")}
                   >
                     {editState['targetAudience'] ? <Check className="w-4 h-4 text-emerald-500 font-bold" /> : <Edit3 className="w-4 h-4 text-slate-400" />}
                   </button>
@@ -1039,35 +1036,24 @@ export const BrandDnaModule = () => {
                     value={Array.isArray(effectiveProfile?.targetAudience) ? effectiveProfile.targetAudience.join('\n') : (effectiveProfile?.targetAudience || '')}
                     onChange={(e) => handleFieldChangeLocal('targetAudience', e.target.value)}
                     placeholder="Enter target audience segments (one per line)..."
-                    className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-rose-500/50 rounded-xl p-3 outline-none leading-relaxed"
+                    className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-purple-500/50 rounded-xl p-3 outline-none leading-relaxed"
                     autoFocus
                   />
                 ) : Array.isArray(effectiveProfile?.targetAudience) && effectiveProfile.targetAudience.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {effectiveProfile.targetAudience.map((aud, i) => {
-                      const badgeGradients = [
-                        'from-emerald-500/15 to-teal-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-300/50',
-                        'from-rose-500/15 to-pink-500/15 text-rose-800 dark:text-rose-300 border-rose-300/50',
-                        'from-purple-500/15 to-indigo-500/15 text-purple-800 dark:text-purple-300 border-purple-300/50',
-                        'from-amber-500/15 to-orange-500/15 text-amber-800 dark:text-amber-300 border-amber-300/50',
-                        'from-cyan-500/15 to-blue-500/15 text-cyan-800 dark:text-cyan-300 border-cyan-300/50'
-                      ];
-                      const grad = badgeGradients[i % badgeGradients.length];
-
-                      return (
-                        <div 
-                          key={i} 
-                          className={`p-2.5 rounded-xl bg-gradient-to-r ${grad} border font-bold text-xs flex items-center gap-2 shadow-2xs hover:scale-[1.01] transition-transform`}
-                        >
-                          <span className="w-2 h-2 rounded-full bg-rose-500/80 shrink-0" />
-                          <span className="break-words leading-tight min-w-0">{aud}</span>
-                        </div>
-                      );
-                    })}
+                    {effectiveProfile.targetAudience.map((aud, i) => (
+                      <div 
+                        key={i} 
+                        className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 font-extrabold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-2 shadow-2xs hover:scale-[1.01] transition-transform"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                        <span className="break-words leading-tight min-w-0">{aud}</span>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <p className="text-xs text-slate-400 font-normal italic">
-                    Target audience not specified. Click edit icon to add.
+                    {t("Target audience not specified. Click edit icon to add.", "Target audience not specified. Click edit icon to add.")}
                   </p>
                 )}
               </div>
@@ -1076,19 +1062,17 @@ export const BrandDnaModule = () => {
             {/* RIGHT COLUMN: Vision & Core Products */}
             <div className="space-y-5">
               {/* Company Vision */}
-              <div className="p-5 rounded-3xl bg-gradient-to-br from-cyan-500/10 via-teal-500/5 to-cyan-500/10 dark:from-cyan-950/40 dark:to-slate-900/90 border border-cyan-200/80 dark:border-cyan-900/50 space-y-3 shadow-sm hover:shadow-md transition-all">
+              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-teal-400 space-y-3 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-black text-cyan-600 dark:text-cyan-400 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-xl bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
-                      <Sparkles className="w-4 h-4" />
-                    </div>
-                    Company Vision
+                  <h2 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4" /></div> {t("Company Vision", "Company Vision")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => toggleEdit('vision')}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-slate-800 transition-colors"
-                    title="Edit Vision Statement"
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-slate-800 transition-colors"
+                    title={t("Edit Vision Statement", "Edit Vision Statement")}
                   >
                     {editState['vision'] ? <Check className="w-4 h-4 text-emerald-500 font-bold" /> : <Edit3 className="w-4 h-4 text-slate-400" />}
                   </button>
@@ -1099,30 +1083,28 @@ export const BrandDnaModule = () => {
                     value={effectiveProfile?.vision || ''}
                     onChange={(e) => handleFieldChangeLocal('vision', e.target.value)}
                     placeholder="Enter vision statement..."
-                    className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-cyan-500/50 rounded-xl p-3 outline-none leading-relaxed"
+                    className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-purple-500/50 rounded-xl p-3 outline-none leading-relaxed"
                     autoFocus
                   />
                 ) : (
-                  <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-extrabold leading-relaxed italic bg-white/70 dark:bg-slate-900/60 p-3.5 rounded-2xl border border-cyan-100 dark:border-cyan-900/40">
-                    {effectiveProfile?.vision ? `"${effectiveProfile.vision}"` : <span className="text-slate-400 font-normal not-italic">Vision statement not available</span>}
+                  <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-extrabold leading-relaxed italic bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    {effectiveProfile?.vision ? `"${effectiveProfile.vision}"` : <span className="text-slate-400 font-normal not-italic">{t("Vision statement not available", "Vision statement not available")}</span>}
                   </p>
                 )}
               </div>
 
               {/* Core Products & Services */}
-              <div className="p-5 rounded-3xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-500/10 dark:from-amber-950/40 dark:to-slate-900/90 border border-amber-200/80 dark:border-amber-900/50 space-y-3 shadow-sm hover:shadow-md transition-all">
+              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-400 space-y-3 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                      <Zap className="w-4 h-4" />
-                    </div>
-                    Core Products & Services
+                  <h2 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 flex items-center justify-center">
+                      <Zap className="w-4 h-4" /></div> {t("Core Products & Services", "Core Products & Services")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => toggleEdit('coreProductsServices')}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-slate-800 transition-colors"
-                    title="Edit Products & Services"
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-slate-800 transition-colors"
+                    title={t("Edit Products & Services", "Edit Products & Services")}
                   >
                     {editState['coreProductsServices'] ? <Check className="w-4 h-4 text-emerald-500 font-bold" /> : <Edit3 className="w-4 h-4 text-slate-400" />}
                   </button>
@@ -1133,54 +1115,43 @@ export const BrandDnaModule = () => {
                     value={Array.isArray(effectiveProfile?.coreProductsServices) ? effectiveProfile.coreProductsServices.join('\n') : (effectiveProfile?.coreProductsServices || '')}
                     onChange={(e) => handleFieldChangeLocal('coreProductsServices', e.target.value)}
                     placeholder="Enter core products & services (one per line)..."
-                    className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-amber-500/50 rounded-xl p-3 outline-none leading-relaxed"
+                    className="w-full text-xs font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-800 border border-purple-500/50 rounded-xl p-3 outline-none leading-relaxed"
                     autoFocus
                   />
                 ) : Array.isArray(effectiveProfile?.coreProductsServices) && effectiveProfile.coreProductsServices.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {effectiveProfile.coreProductsServices.map((prod, i) => {
-                      const chipStyles = [
-                        'bg-amber-500/15 text-amber-900 dark:text-amber-200 border-amber-300/60 dark:border-amber-800/60',
-                        'bg-rose-500/15 text-rose-900 dark:text-rose-200 border-rose-300/60 dark:border-rose-800/60',
-                        'bg-emerald-500/15 text-emerald-900 dark:text-emerald-200 border-emerald-300/60 dark:border-emerald-800/60',
-                        'bg-indigo-500/15 text-indigo-900 dark:text-indigo-200 border-indigo-300/60 dark:border-indigo-800/60',
-                        'bg-cyan-500/15 text-cyan-900 dark:text-cyan-200 border-cyan-300/60 dark:border-cyan-800/60'
-                      ];
-                      const style = chipStyles[i % chipStyles.length];
-
-                      return (
-                        <div 
-                          key={i} 
-                          className={`p-2.5 rounded-xl border ${style} flex items-center gap-2 text-xs font-extrabold shadow-2xs hover:scale-[1.02] transition-transform`}
-                        >
-                          <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-                          <span className="break-words leading-tight">{prod}</span>
-                        </div>
-                      );
-                    })}
+                    {effectiveProfile.coreProductsServices.map((prod, i) => (
+                      <div 
+                        key={i} 
+                        className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-2 text-xs font-extrabold text-slate-800 dark:text-slate-200 shadow-2xs hover:scale-[1.02] transition-transform"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                        <span className="break-words leading-tight">{prod}</span>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400 font-normal italic">No core products specified. Click edit icon to add.</p>
+                  <p className="text-xs text-slate-400 font-normal italic">{t("No core products specified. Click edit icon to add.", "No core products specified. Click edit icon to add.")}</p>
                 )}
               </div>
             </div>
 
           </div>
 
-          {/* Extracted Marketing Claims (Unverified) */}
+          {/* {t("Extracted Marketing Claims (Unverified)", "Extracted Marketing Claims (Unverified)")} */}
           {Array.isArray(effectiveProfile?.extractedClaims) && effectiveProfile.extractedClaims.length > 0 && (
-            <div className="p-5 rounded-3xl bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-cyan-500/10 dark:from-slate-900/90 dark:to-slate-900/90 border border-blue-200/80 dark:border-slate-800/80 space-y-3.5 shadow-sm">
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-400 space-y-3.5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h2 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <h2 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 flex items-center justify-center">
                     <FileText className="w-4 h-4" />
                   </div>
-                  Extracted Marketing Claims (Unverified)
+                  {t("Extracted Marketing Claims (Unverified)", "Extracted Marketing Claims (Unverified)")}
                 </h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {effectiveProfile.extractedClaims.map((claim, i) => (
-                  <div key={i} className="p-3 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-blue-200/60 dark:border-blue-900/40 space-y-0.5 shadow-2xs">
+                  <div key={i} className="p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-0.5 shadow-2xs">
                     <p className="text-xs font-extrabold text-slate-800 dark:text-slate-200">"{claim.claimText || claim}"</p>
                   </div>
                 ))}
@@ -1195,11 +1166,12 @@ export const BrandDnaModule = () => {
                 if (setBrandDnaData) setBrandDnaData(effectiveProfile);
                 if (setActiveModule) setActiveModule('seo');
               }}
-              className="flex items-center gap-3 px-8 py-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 text-white rounded-full font-black text-sm transition-all duration-300 shadow-2xl shadow-purple-500/40 hover:shadow-purple-500/60 hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap border-2 border-white/30 backdrop-blur-xl group"
-              title="Continue to SEO Intelligence"
+              className="flex items-center gap-3 px-8 py-3.5 text-white rounded-full font-black text-sm transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap border-2 border-white/30 backdrop-blur-xl group"
+              style={{ background: 'linear-gradient(to right, var(--brand-from), var(--brand-to))', boxShadow: '0 8px 32px rgba(var(--brand-500-rgb), 0.4)' }}
+              title={t("Continue to SEO Intelligence", "Continue to SEO Intelligence")}
             >
               <Search className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-              <span>Continue to SEO</span>
+              <span>{t("Continue to SEO", "Continue to SEO")}</span>
             </button>
           </div>
 
@@ -1285,7 +1257,8 @@ export const BrandDnaModule = () => {
                     a.click();
                     document.body.removeChild(a);
                   }}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-black text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all flex items-center gap-1.5 shadow-md shadow-purple-500/20 active:scale-95 cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-black text-white transition-all flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+                  style={{ background: 'linear-gradient(to right, var(--brand-from), var(--brand-to))' }}
                 >
                   <Download className="w-3.5 h-3.5" /> Download
                 </button>

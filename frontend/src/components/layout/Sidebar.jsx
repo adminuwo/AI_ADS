@@ -29,22 +29,7 @@ import {
 } from 'lucide-react';
 
 export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: propSetIsMobile }) => {
-  const { 
-    activeModule, 
-    setActiveModule, 
-    setIsSettingsModalOpen, 
-    activeSettingsTab,
-    setActiveSettingsTab,
-    isMobileMenuOpen: contextIsMobile,
-    setIsMobileMenuOpen: contextSetIsMobile,
-    user,
-    userAvatar,
-    activeWorkspace,
-    theme,
-    toggleTheme,
-    logout,
-    t 
-  } = useWorkspace();
+  const { language, activeModule, setActiveModule, setIsSettingsModalOpen, activeSettingsTab, setActiveSettingsTab, isMobileMenuOpen: contextIsMobile, setIsMobileMenuOpen: contextSetIsMobile, user, userAvatar, activeWorkspace, theme, toggleTheme, logout, t } = useWorkspace();
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileCardRef = useRef(null);
@@ -89,7 +74,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
   const modules = [
     { 
       id: 'dashboard', 
-      label: t('dashboard', '1. Dashboard'), 
+      label: t('dashboard', 'Dashboard'), 
       icon: LayoutGrid, 
       color: '#EF4444', 
       gradient: 'from-rose-500 to-red-600 shadow-rose-500/30',
@@ -97,7 +82,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'brands', 
-      label: t('brands', '2. Brand DNA'), 
+      label: t('brands', 'Brand DNA'), 
       icon: Dna, 
       color: '#F59E0B', 
       gradient: 'from-amber-500 to-orange-600 shadow-amber-500/30',
@@ -105,7 +90,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'seo', 
-      label: t('seo', '3. SEO Intelligence'), 
+      label: t('seo', 'SEO Intelligence'), 
       icon: Search, 
       color: '#10B981', 
       gradient: 'from-emerald-500 to-teal-600 shadow-emerald-500/30',
@@ -113,7 +98,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'campaigns', 
-      label: t('campaigns', '4. Campaigns'), 
+      label: t('campaigns', 'Campaigns'), 
       icon: Layers, 
       color: '#3B82F6', 
       gradient: 'from-blue-500 to-indigo-600 shadow-blue-500/30',
@@ -121,7 +106,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'strategy', 
-      label: t('strategy', '5. Strategy'), 
+      label: t('strategy', 'Strategy'), 
       icon: Target, 
       color: '#8B5CF6', 
       gradient: 'from-violet-500 to-purple-600 shadow-violet-500/30',
@@ -129,7 +114,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'calendar', 
-      label: t('calendar', '6. Calendar'), 
+      label: t('calendar', 'Calendar'), 
       icon: Calendar, 
       color: '#22C55E', 
       gradient: 'from-green-500 to-emerald-600 shadow-green-500/30',
@@ -137,7 +122,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'studio', 
-      label: t('studio', '7. Content Studio'), 
+      label: t('studio', 'Content Studio'), 
       icon: PenTool, 
       color: '#F97316', 
       gradient: 'from-orange-500 to-rose-600 shadow-orange-500/30',
@@ -145,7 +130,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'approvals', 
-      label: t('approvals', '8. Approvals Desk'), 
+      label: t('approvals', 'Approvals Desk'), 
       icon: CheckCircle2, 
       color: '#EAB308', 
       gradient: 'from-yellow-500 to-amber-600 shadow-yellow-500/30',
@@ -153,7 +138,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'creative', 
-      label: t('creative', '9. Creative Studio'), 
+      label: t('creative', 'Creative Studio'), 
       icon: Palette, 
       color: '#6366F1', 
       gradient: 'from-indigo-500 to-purple-600 shadow-indigo-500/30',
@@ -161,7 +146,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'assets', 
-      label: t('assets', '10. Asset Library'), 
+      label: t('assets', 'Asset Library'), 
       icon: FolderKanban, 
       color: '#06B6D4', 
       gradient: 'from-cyan-500 to-blue-600 shadow-cyan-500/30',
@@ -169,7 +154,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
     },
     { 
       id: 'websiteBuilder', 
-      label: t('websiteBuilder', '11. AI Website Builder'), 
+      label: t('websiteBuilder', 'AI Website Builder'), 
       icon: Globe, 
       color: 'spectrum', 
       gradient: 'from-pink-500 via-purple-500 to-indigo-500 shadow-purple-500/30',
@@ -236,7 +221,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
             {!isCollapsed && (
               <button 
                 onClick={toggleSidebar}
-                className="hidden lg:flex p-1.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 transition-all cursor-pointer shrink-0 ml-1"
+                className="hidden lg:flex p-1.5 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 hover:bg-brand-500/20 transition-all cursor-pointer shrink-0 ml-1"
                 title="Collapse Sidebar (Close)"
               >
                 <PanelLeftClose className="w-4 h-4" />
@@ -320,7 +305,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 title={t('plan', 'Subscription & Billing Plan')}
               >
                 <Crown className="w-3.5 h-3.5 shrink-0 text-emerald-500 dark:text-emerald-400" />
-                {!isCollapsed && <span>PLAN</span>}
+                {!isCollapsed && <span>{t('PLAN', 'PLAN')}</span>}
               </button>
 
               {/* SETTINGS */}
@@ -335,7 +320,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 title={t('settings', 'Account Settings')}
               >
                 <Sliders className="w-3.5 h-3.5 shrink-0 text-cyan-500 dark:text-cyan-400" />
-                {!isCollapsed && <span>SETTINGS</span>}
+                {!isCollapsed && <span>{t('SETTINGS', 'SETTINGS')}</span>}
               </button>
             </div>
           </nav>
@@ -353,7 +338,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                   <p className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{user?.email || 'admin@agency.ai'}</p>
                   <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                     <span className="inline-block text-[9px] bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-extrabold px-2 py-0.5 rounded-full shadow-xs uppercase tracking-wide">
-                      {user?.plan ? `${user.plan} Tier` : 'Enterprise Suite'}
+                      {t(user?.plan || 'Enterprise Suite', 'Enterprise Suite')}
                     </span>
                     <span className="inline-block text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold px-2 py-0.5 rounded-full border border-emerald-500/25">
                       {t('activeAccount', 'Active')}
@@ -412,7 +397,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                       {user?.name || user?.email?.split('@')[0] || 'Agency Admin'}
                     </p>
                     <p className="text-[9.5px] text-slate-500 dark:text-slate-400 truncate">
-                      {user?.plan || activeWorkspace?.subscriptionTier || 'Agency / Scale'}
+                      {t(user?.plan || activeWorkspace?.subscriptionTier || 'Agency / Scale')}
                     </p>
                   </div>
                 )}

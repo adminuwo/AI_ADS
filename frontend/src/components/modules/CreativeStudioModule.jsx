@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Palette, Sparkles, AlertCircle, Image as ImageIcon, ShieldAlert, CheckCircle2 } from 'lucide-react';
@@ -56,7 +56,7 @@ export const CreativeStudioModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in">
       {/* Header Bar */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Palette className="w-5 h-5 text-purple-400" />
@@ -80,7 +80,7 @@ export const CreativeStudioModule = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Visual Generator Form */}
-        <div className="p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">Imagen 3 Prompt & Visual Brief</h2>
 
           <div>
@@ -123,7 +123,7 @@ export const CreativeStudioModule = () => {
         </div>
 
         {/* Generated Visual Canvas */}
-        <div className="lg:col-span-2 p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+        <div className="lg:col-span-2 p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">Visual Output Canvas & Asset Vault Link</h2>
 
           {generatedVisual ? (

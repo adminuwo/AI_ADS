@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Calendar as CalendarIcon, Plus, Filter, CheckCircle2, Clock, Layers, Send } from 'lucide-react';
 
@@ -27,7 +27,7 @@ export const CalendarModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in">
       {/* Header Bar */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-brand-400" />
@@ -61,7 +61,7 @@ export const CalendarModule = () => {
       </div>
 
       {/* Calendar Grid Representation */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <span className="text-xs font-bold text-white uppercase tracking-wider">July 2026 Scheduled Operations</span>
           <span className="text-xs text-brand-400 font-semibold">{filteredEvents.length} Active Events</span>

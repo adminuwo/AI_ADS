@@ -8,6 +8,7 @@ const CampaignPost = require('../models/CampaignPost');
 const Workspace = require('../models/Workspace');
 const BrandProfile = require('../models/BrandProfile');
 const { generate, generateJSON } = require('../services/aiService');
+const { buildLanguageInstruction } = require('../utils/languageHelper');
 
 // ─── Utility: Calculate Publishing Dates ─────────────────────────────────────
 const calculatePublishingDates = (startDate, endDate, frequency) => {
@@ -348,8 +349,11 @@ Create ${dates.length * platforms.length} total entries (one per date per platfo
     console.log(`[Campaign AI] Generating GOAL-DRIVEN plan for ${dates.length} dates × ${platforms.length} platforms | Goal: "${goalText}"`);
     let entries = null;
 
+    const targetLang = req.body.languageCode || req.body.targetLanguage || req.body.language;
+    const fullPrompt = prompt + '\n' + buildLanguageInstruction(targetLang);
+
     try {
-      const aiResponse = await generateJSON(prompt, { temperature: 0.8 });
+      const aiResponse = await generateJSON(fullPrompt, { temperature: 0.8, targetLanguage: targetLang });
       entries = aiResponse?.data || (Array.isArray(aiResponse) ? aiResponse : null);
     } catch (aiErr) {
       console.warn('[Campaign AI] AI generation error, using goal-driven fallback generator:', aiErr.message);

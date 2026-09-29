@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { approvalsAPI } from '../../services/api';
 import { CheckCircle2, ShieldCheck, ShieldAlert, XCircle, UserCheck, Loader2 } from 'lucide-react';
@@ -65,7 +65,7 @@ const renderParsedContentPreview = (selectedItem) => {
 
         {/* Caption */}
         {captionText && (
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm">
+          <div className="p-4 accent-card rounded-2xl bg-white dark:bg-slate-900 space-y-2 shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">📝 Caption & Copy</span>
             <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium whitespace-pre-wrap">{captionText}</p>
           </div>
@@ -235,7 +235,7 @@ export const ApprovalsDeskModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in w-full max-w-[1600px] mx-auto p-6">
       {/* Header Bar */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -256,7 +256,7 @@ export const ApprovalsDeskModule = () => {
       {/* Review Queue & Detail View Stack (Vertical Top & Bottom) */}
       <div className="space-y-6">
         {/* Top: Pending Review Queue Cards Grid */}
-        <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2">
               <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Pending Review Queue</h2>
@@ -310,7 +310,7 @@ export const ApprovalsDeskModule = () => {
         </div>
 
         {/* Bottom: Selected Item Detail View & Approval Actions */}
-        <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
           {selectedItem ? (
             <div className="space-y-6 text-xs animate-in fade-in">
               {/* 1. Content Details Header */}

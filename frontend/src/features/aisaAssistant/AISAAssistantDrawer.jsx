@@ -417,7 +417,7 @@ Keep your response short, concise, and to the point. DO NOT give long detailed r
               <button
                 type="submit"
                 disabled={!input.trim()}
-                className="px-4 py-2.5 h-[40px] rounded-xl flex-shrink-0 flex items-center justify-center gap-1.5 font-extrabold text-xs tracking-wide text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 shadow-md shadow-purple-500/20 transition-all active:scale-95 disabled:opacity-50"
+                className="btn-primary px-4 py-2.5 h-[40px] rounded-xl flex-shrink-0 flex items-center justify-center gap-1.5 font-extrabold text-xs tracking-wide disabled:opacity-50"
                 title="Send Message (Enter)"
               >
                 <Send className="w-3.5 h-3.5" />

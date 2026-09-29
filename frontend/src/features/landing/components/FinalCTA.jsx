@@ -36,7 +36,7 @@ export const FinalCTA = () => {
         <div className="pt-2">
           <button
             onClick={handleStartTrial}
-            className="px-9 py-4 rounded-xl text-base font-extrabold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-right transition-all duration-300 shadow-xl shadow-indigo-500/25 inline-flex items-center gap-3 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            className="btn-primary px-9 py-4 rounded-xl text-base font-extrabold inline-flex items-center gap-3 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
           >
             <span>Start Free Trial</span>
             <ArrowRight className="w-5 h-5" />

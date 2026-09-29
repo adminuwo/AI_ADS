@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import './config/i18n.js'
 import App from './App.jsx'
 import { ErrorBoundary } from './components/common/ErrorBoundary.jsx'
 import './styles/index.css'

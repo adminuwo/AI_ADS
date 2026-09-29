@@ -49,7 +49,7 @@ export const Hero = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <button
                   onClick={handleStartTrial}
-                  className="w-full sm:w-auto px-8 py-4 rounded-xl text-base font-extrabold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-right transition-all duration-300 shadow-xl shadow-indigo-500/25 flex items-center justify-center gap-3 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full sm:w-auto btn-primary px-8 py-4 rounded-xl text-base font-extrabold flex items-center justify-center gap-3 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>Start Free Trial</span>
                   <ArrowRight className="w-5 h-5" />
@@ -161,7 +161,7 @@ export const Hero = () => {
                     <span className="text-slate-600 dark:text-slate-400 font-medium">Status: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">Ready for Approval</strong></span>
                     <button 
                       onClick={handleStartTrial}
-                      className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] cursor-pointer"
+                      className="btn-primary px-3 py-1 rounded-lg font-bold text-[10px] cursor-pointer"
                     >
                       Approve & Schedule →
                     </button>

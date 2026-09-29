@@ -183,7 +183,7 @@ export const ConversationalBuilder = ({ developerMode = false }) => {
           </p>
         </div>
 
-        <div className="p-4 md:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+        <div className="p-4 md:p-6 accent-card rounded-3xl bg-white dark:bg-slate-900 shadow-2xl space-y-4">
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

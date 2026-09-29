@@ -167,7 +167,7 @@ export const DashboardModule = () => {
 
           <div className="space-y-1">
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <span>{timeGreeting},</span>
+              <span>{t(timeGreeting)},</span>
               <span className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 dark:from-indigo-300 dark:via-purple-300 dark:to-pink-300 bg-clip-text text-transparent">
                 {displayName}
               </span>
@@ -180,27 +180,27 @@ export const DashboardModule = () => {
               </motion.span>
             </h1>
             <p className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
-              Turn ideas into impactful brands with AI.
+              {t('Turn ideas into impactful brands with AI.')}
             </p>
           </div>
 
           <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed max-w-xl">
-            Currently governing <strong className="text-slate-900 dark:text-white font-bold">{activeWorkspace?.brandName || 'BATA'}</strong> ({activeWorkspace?.domainUrl || 'https://www.bata.com/'}). All output is anchored to immutable Brand DNA.
+            {t('Currently governing')} <strong className="text-slate-900 dark:text-white font-bold">{activeWorkspace?.brandName || 'BATA'}</strong> ({activeWorkspace?.domainUrl || 'https://www.bata.com/'}). {t('All output is anchored to immutable Brand DNA.')}
           </p>
 
           {/* 4 Feature Pill Chips */}
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-400/20 border border-amber-500/40 px-3 py-1 rounded-full shadow-2xs">
-              <span>⚡</span> Create Faster
+              <span>⚡</span> {t('Create Faster')}
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-900 dark:text-blue-200 bg-blue-400/20 border border-blue-500/40 px-3 py-1 rounded-full shadow-2xs">
-              <span>📊</span> Better Content
+              <span>📊</span> {t('Better Content')}
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-900 dark:text-rose-200 bg-rose-400/20 border border-rose-500/40 px-3 py-1 rounded-full shadow-2xs">
-              <span>🎯</span> Smarter Campaigns
+              <span>🎯</span> {t('Smarter Campaigns')}
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-400/20 border border-emerald-500/40 px-3 py-1 rounded-full shadow-2xs">
-              <span>🚀</span> Higher ROI
+              <span>🚀</span> {t('Higher ROI')}
             </span>
           </div>
         </div>
@@ -236,12 +236,12 @@ export const DashboardModule = () => {
           className="bg-white dark:bg-slate-900 rounded-2xl p-5 border-t-4 border-t-amber-400 shadow-md border-x border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer"
         >
           <div className="space-y-1 z-10">
-            <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 block tracking-tight">Total Brands</span>
+            <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 block tracking-tight">{t('Total Brands')}</span>
             <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight block">
               {totalBrandsCount}
             </span>
             <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
-              {totalBrandsCount} brand profile{totalBrandsCount === 1 ? '' : 's'} in your account
+              {totalBrandsCount} {totalBrandsCount === 1 ? t('brand profile in your account') : t('brand profiles in your account')}
             </span>
           </div>
 
@@ -270,12 +270,12 @@ export const DashboardModule = () => {
           className="bg-white dark:bg-slate-900 rounded-2xl p-5 border-t-4 border-t-cyan-400 shadow-md border-x border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer"
         >
           <div className="space-y-1 z-10">
-            <span className="text-xs font-extrabold text-cyan-600 dark:text-cyan-400 block tracking-tight">Total Generated Content</span>
+            <span className="text-xs font-extrabold text-cyan-600 dark:text-cyan-400 block tracking-tight">{t('Total Generated Content')}</span>
             <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight block">
               {totalGeneratedAssetsCount}
             </span>
             <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
-              Saved in Asset Library & DB (excl. calendar)
+              {t('Saved in Asset Library & DB (excl. calendar)')}
             </span>
           </div>
 
@@ -304,12 +304,12 @@ export const DashboardModule = () => {
           className="bg-white dark:bg-slate-900 rounded-2xl p-5 border-t-4 border-t-rose-400 shadow-md border-x border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer"
         >
           <div className="space-y-1 z-10">
-            <span className="text-xs font-extrabold text-rose-600 dark:text-rose-400 block tracking-tight">Total Campaigns</span>
+            <span className="text-xs font-extrabold text-rose-600 dark:text-rose-400 block tracking-tight">{t('Total Campaigns')}</span>
             <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight block">
               {totalCampaignsCount}
             </span>
             <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block">
-              {activeCampaignsCount} currently active
+              {activeCampaignsCount} {t('currently active')}
             </span>
           </div>
 
@@ -335,10 +335,10 @@ export const DashboardModule = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
             <Globe className="w-4 h-4 text-emerald-500" />
-            <span>END-TO-END CONTENT PIPELINE</span>
+            <span>{t('END-TO-END CONTENT PIPELINE')}</span>
           </h2>
           <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-serif italic flex items-center gap-1 hover:underline cursor-pointer">
-            From Strategy to Success →
+            {t('From Strategy to Success →')}
           </span>
         </div>
 
@@ -429,8 +429,8 @@ export const DashboardModule = () => {
                 </div>
 
                 <div>
-                  <span className="text-xs font-black text-slate-900 dark:text-white block leading-tight">{step.label}</span>
-                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 block">{step.sub}</span>
+                  <span className="text-xs font-black text-slate-900 dark:text-white block leading-tight">{t(step.label)}</span>
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 block">{t(step.sub)}</span>
                 </div>
               </button>
             );

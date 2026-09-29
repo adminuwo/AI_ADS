@@ -58,6 +58,7 @@
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.04);
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.25);
+  border-left-width: 4px;
 }
 
 .light .glass-card {
@@ -66,7 +67,18 @@
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: 0 10px 30px -5px rgba(123, 97, 255, 0.08), 0 2px 8px -2px rgba(0, 0, 0, 0.03);
+  border-left-width: 4px;
 }
+
+/* Auto-cycling left border colors for glass-card via nth-child */
+.glass-card:nth-child(8n+1)  { border-left-color: #f59e0b; }
+.glass-card:nth-child(8n+2)  { border-left-color: #06b6d4; }
+.glass-card:nth-child(8n+3)  { border-left-color: #f43f5e; }
+.glass-card:nth-child(8n+4)  { border-left-color: #a855f7; }
+.glass-card:nth-child(8n+5)  { border-left-color: #10b981; }
+.glass-card:nth-child(8n+6)  { border-left-color: #fb923c; }
+.glass-card:nth-child(8n+7)  { border-left-color: #6366f1; }
+.glass-card:nth-child(8n+8)  { border-left-color: #14b8a6; }
 
 .glass-input {
   background: rgba(15, 23, 42, 0.6);
@@ -99,47 +111,53 @@
   box-shadow: 0 16px 36px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)) !important;
 }
 
-.btn-primary {
-  background-image: linear-gradient(135deg, #EF4444 0%, #F59E0B 30%, #10B981 60%, #3B82F6 85%, #8B5CF6 100%) !important;
+.btn-primary,
+.btn-brand {
+  background: linear-gradient(135deg, var(--brand-from, #7B61FF) 0%, var(--brand-to, #907CFF) 100%) !important;
+  background-image: linear-gradient(135deg, var(--brand-from, #7B61FF) 0%, var(--brand-to, #907CFF) 100%) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 24px -4px rgba(239, 68, 68, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 24px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)), inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
   @apply font-bold px-5 py-2.5 rounded-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 text-sm tracking-wide cursor-pointer;
 }
 
-.btn-primary:hover {
-  background-image: linear-gradient(135deg, #F59E0B 0%, #10B981 30%, #3B82F6 60%, #8B5CF6 85%, #EF4444 100%) !important;
-  box-shadow: 0 12px 28px -4px rgba(59, 130, 246, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+.btn-primary:hover,
+.btn-brand:hover {
+  background: linear-gradient(135deg, var(--brand-600, #6B5AED) 0%, var(--brand-400, #A882FF) 100%) !important;
+  background-image: linear-gradient(135deg, var(--brand-600, #6B5AED) 0%, var(--brand-400, #A882FF) 100%) !important;
+  box-shadow: 0 12px 28px -4px var(--brand-glow, rgba(123, 97, 255, 0.6)), inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
 }
 
 .btn-save {
-  background-image: linear-gradient(135deg, #EF4444, #F59E0B, #10B981, #3B82F6) !important;
+  background: linear-gradient(135deg, var(--brand-from, #7B61FF) 0%, var(--brand-to, #907CFF) 100%) !important;
+  background-image: linear-gradient(135deg, var(--brand-from, #7B61FF) 0%, var(--brand-to, #907CFF) 100%) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 22px -4px rgba(16, 185, 129, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 22px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
   @apply font-bold px-4 py-2 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-1.5 text-xs cursor-pointer;
 }
 
 .btn-save:hover {
-  background-image: linear-gradient(135deg, #3B82F6, #8B5CF6, #EF4444, #F59E0B) !important;
-  box-shadow: 0 10px 26px -4px rgba(139, 92, 246, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, var(--brand-600, #6B5AED) 0%, var(--brand-400, #A882FF) 100%) !important;
+  background-image: linear-gradient(135deg, var(--brand-600, #6B5AED) 0%, var(--brand-400, #A882FF) 100%) !important;
+  box-shadow: 0 10px 26px -4px var(--brand-glow, rgba(123, 97, 255, 0.6)), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
 }
 
 .btn-secondary {
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);
   color: #f8fafc;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(var(--brand-500-rgb, 123, 97, 255), 0.3);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-  @apply font-semibold px-4 py-2 rounded-xl transition-all duration-200 hover:bg-slate-800 hover:text-white hover:border-amber-400 active:scale-95 flex items-center justify-center gap-2 text-sm cursor-pointer;
+  @apply font-semibold px-4 py-2 rounded-xl transition-all duration-200 hover:bg-slate-800 hover:text-white hover:border-brand-500 active:scale-95 flex items-center justify-center gap-2 text-sm cursor-pointer;
 }
 
 .light .btn-secondary {
   background: #ffffff;
   color: #1e293b;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(var(--brand-500-rgb, 123, 97, 255), 0.25);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
-  @apply hover:bg-slate-50 hover:text-slate-900 hover:border-blue-500 hover:shadow transition-all;
+  @apply hover:bg-slate-50 hover:text-slate-900 hover:border-brand-500 hover:shadow transition-all;
 }
 
 /* Custom Scrollbar */
@@ -224,6 +242,59 @@
 .animate-brain-float {
   animation: brainFloatPulse 3.5s ease-in-out infinite !important;
 }
+/* ============================================================
+   🎨 Global Card Left-Border Accent System
+   Applies a colored left border (4px) to all cards sitewide.
+   Two ways to use:
+   1. Add class "accent-card" manually to any card div
+   2. glass-card already has it auto-applied above
+   Auto-cycles through 8 colors via nth-child.
+   ============================================================ */
 
+/* Base accent-card style */
+.accent-card {
+  border-left: 4px solid transparent;
+  border-top: 1px solid rgb(226 232 240);
+  border-right: 1px solid rgb(226 232 240);
+  border-bottom: 1px solid rgb(226 232 240);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.dark .accent-card {
+  border-top-color: rgb(30 41 59);
+  border-right-color: rgb(30 41 59);
+  border-bottom-color: rgb(30 41 59);
+}
+
+.accent-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.dark .accent-card:hover {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.32);
+}
+
+/* Auto-cycling colors via nth-child */
+.accent-card:nth-child(8n+1)  { border-left-color: #f59e0b; } /* amber    */
+.accent-card:nth-child(8n+2)  { border-left-color: #06b6d4; } /* cyan     */
+.accent-card:nth-child(8n+3)  { border-left-color: #f43f5e; } /* rose     */
+.accent-card:nth-child(8n+4)  { border-left-color: #a855f7; } /* purple   */
+.accent-card:nth-child(8n+5)  { border-left-color: #10b981; } /* emerald  */
+.accent-card:nth-child(8n+6)  { border-left-color: #fb923c; } /* orange   */
+.accent-card:nth-child(8n+7)  { border-left-color: #6366f1; } /* indigo   */
+.accent-card:nth-child(8n+8)  { border-left-color: #14b8a6; } /* teal     */
+
+/* Named color variants */
+.accent-card-amber   { border-left: 4px solid #f59e0b; }
+.accent-card-cyan    { border-left: 4px solid #06b6d4; }
+.accent-card-rose    { border-left: 4px solid #f43f5e; }
+.accent-card-purple  { border-left: 4px solid #a855f7; }
+.accent-card-emerald { border-left: 4px solid #10b981; }
+.accent-card-orange  { border-left: 4px solid #fb923c; }
+.accent-card-indigo  { border-left: 4px solid #6366f1; }
+.accent-card-teal    { border-left: 4px solid #14b8a6; }
+.accent-card-pink    { border-left: 4px solid #ec4899; }
+.accent-card-violet  { border-left: 4px solid #8b5cf6; }
+.accent-card-blue    { border-left: 4px solid #3b82f6; }
 
 

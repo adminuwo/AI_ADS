@@ -562,7 +562,7 @@ export const NewWebsiteView = () => {
 
       {/* ── PHASE 1: REQUIREMENTS INPUT ─────────────────────────────────────── */}
       {activePhase === 1 && (
-        <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-6 animate-fadeIn">
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-6 animate-fadeIn">
           <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white flex items-center justify-center font-bold text-sm shadow-md">
               <Bot className="w-5 h-5" />
@@ -598,7 +598,7 @@ export const NewWebsiteView = () => {
                     setPrompt(chip.text);
                     handleAnalyze(chip.text);
                   }}
-                  className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-500 text-left transition-all text-xs space-y-0.5 shadow-xs"
+                  className="p-3 accent-card rounded-2xl bg-white dark:bg-slate-900 hover:border-brand-500 text-left transition-all text-xs space-y-0.5 shadow-xs"
                 >
                   <span className="block font-extrabold">{chip.label}</span>
                   <span className="text-[10px] text-slate-400 line-clamp-2">{chip.text}</span>
@@ -656,7 +656,7 @@ export const NewWebsiteView = () => {
 
       {/* ── PHASE 2: REQUIREMENT SPECIFICATION APPROVAL & USER OVERRIDES ─────── */}
       {activePhase === 2 && (
-        <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-6 bg-slate-950/95 text-slate-100 animate-fadeIn">
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-6 bg-slate-950/95 text-slate-100 animate-fadeIn">
           {analyzing ? (
             <div className="py-24 text-center space-y-4">
               <Loader2 className="w-10 h-10 animate-spin text-brand-400 mx-auto" />
@@ -1098,7 +1098,7 @@ export const NewWebsiteView = () => {
                   />
                   <button
                     onClick={handleAddUserRequirement}
-                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 shadow"
+                    className="px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center gap-1 shadow-md shadow-brand-500/20 transition-all cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add Requirement
                   </button>
@@ -1642,7 +1642,7 @@ export const NewWebsiteView = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow"
+                  className="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition-all cursor-pointer"
                 >
                   Create Page &rarr;
                 </button>
@@ -1715,7 +1715,7 @@ export const NewWebsiteView = () => {
 
       {/* ── PHASE 3: WEBSITE BLUEPRINT SPECIFICATION ─────────────────────── */}
       {activePhase === 3 && (
-        <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-6 bg-slate-950/95 text-slate-100 animate-fadeIn">
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-6 bg-slate-950/95 text-slate-100 animate-fadeIn">
           {!blueprint ? (
             <div className="py-20 text-center space-y-4">
               <Layers className="w-12 h-12 text-slate-600 mx-auto" />
@@ -1878,7 +1878,7 @@ export const NewWebsiteView = () => {
       {activePhase === 4 && (
         <div className="animate-fadeIn">
           {!blueprint ? (
-            <div className="p-8 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 text-center space-y-3 bg-slate-950 text-white">
+            <div className="p-8 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 text-center space-y-3 bg-slate-950 text-white">
               <Lock className="w-10 h-10 text-slate-500 mx-auto" />
               <h4 className="text-sm font-extrabold">Phase 4 Locked</h4>
               <p className="text-xs text-slate-400">Generate a Phase 3 Blueprint first to access website generation.</p>

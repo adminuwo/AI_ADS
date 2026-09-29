@@ -127,6 +127,7 @@ export const StrategyModule = () => {
     setStudioTarget,
     showCustomAlert,
     setGeneratedContent,
+    language,
     t
   } = useWorkspace();
 
@@ -1104,7 +1105,7 @@ export const StrategyModule = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-xs font-bold text-white flex items-center justify-between">
-                <span>Strategy Saved Successfully</span>
+                <span>{t('strategySavedSuccessfully', 'Strategy Saved Successfully')}</span>
                 <button
                   onClick={() => setShowSaveToast(false)}
                   className="text-slate-400 hover:text-white transition-colors ml-2 p-0.5"
@@ -1113,7 +1114,7 @@ export const StrategyModule = () => {
                 </button>
               </h4>
               <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
-                Your growth roadmap & campaign settings are updated.
+                {t('strategySavedSub', 'Your growth roadmap & campaign settings are updated.')}
               </p>
             </div>
           </div>
@@ -1129,7 +1130,7 @@ export const StrategyModule = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-xs font-bold text-white flex items-center justify-between">
-                <span>Strategy Regenerated!</span>
+                <span>{t('strategyRegenerated', 'Strategy Regenerated!')}</span>
                 <button
                   onClick={() => setShowRegenToast(false)}
                   className="text-slate-400 hover:text-white transition-colors ml-2 p-0.5"
@@ -1138,7 +1139,7 @@ export const StrategyModule = () => {
                 </button>
               </h4>
               <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
-                Deep Brand DNA analysis complete for <strong className="text-brand-300">{activeWorkspace.brandName}</strong>.
+                {t('deepBrandDnaComplete', 'Deep Brand DNA analysis complete for')} <strong className="text-brand-300">{activeWorkspace.brandName}</strong>.
               </p>
             </div>
           </div>
@@ -1154,7 +1155,7 @@ export const StrategyModule = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-xs font-bold text-white flex items-center justify-between">
-                <span>Visual Guidance Saved</span>
+                <span>{t('visualGuidanceSaved', 'Visual Guidance Saved')}</span>
                 <button
                   onClick={() => setShowImageBriefToast(false)}
                   className="text-slate-400 hover:text-white transition-colors ml-2 p-0.5"
@@ -1170,51 +1171,8 @@ export const StrategyModule = () => {
         </div>
       )}
 
-      {/* ══════════ STRATEGY SELECTOR BAR ══════════ */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-md mb-4 w-full flex-wrap sm:flex-nowrap backdrop-blur-md">
-        {/* Strategy 1: Campaign Strategy */}
-        <button
-          onClick={() => setSelectedStrategyType('campaign')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all duration-200 cursor-pointer ${
-            selectedStrategyType === 'campaign'
-              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <Target className="w-4 h-4 text-emerald-300" />
-          <span>Campaign Strategy</span>
-          {isCampaignLocked ? (
-            <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-500 dark:text-amber-300 text-[9px] font-black border border-amber-500/30 flex items-center gap-0.5">
-              <Lock className="w-2.5 h-2.5" /> PRO
-            </span>
-          ) : (activeWorkspace.currentStrategy?.campaignStrategy || activeWorkspace.currentStrategy?.campaignName) ? (
-            <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[9px] font-extrabold">Active</span>
-          ) : (
-            <span className="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[9px] font-medium">Not Created</span>
-          )}
-        </button>
-
-        {/* Strategy 3: Image Brief Strategy */}
-        <button
-          onClick={() => setSelectedStrategyType('custom')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all duration-200 cursor-pointer ${
-            selectedStrategyType === 'custom'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-500/20'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <UploadCloud className="w-4 h-4 text-purple-300" />
-          <span>Image Brief Strategy</span>
-          {customStrategy ? (
-            <span className="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[9px] font-extrabold">Ready</span>
-          ) : (
-            <span className="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[9px] font-medium">Upload Brief</span>
-          )}
-        </button>
-      </div>
-
       {/* ══════════ HEADER ══════════ */}
-      <div className="relative overflow-hidden p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-purple-500/8 via-indigo-500/5 to-pink-500/8 dark:from-purple-950/30 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-800/40 shadow-md backdrop-blur-xl">
+      <div className="relative overflow-hidden p-6 sm:p-7 rounded-3xl accent-card bg-gradient-to-r from-purple-500/8 via-indigo-500/5 to-pink-500/8 dark:from-purple-950/30 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-800/40 shadow-md backdrop-blur-xl">
         {/* Decorative background orbs */}
         <div className="absolute -top-10 -right-10 w-56 h-56 rounded-full bg-gradient-to-br from-brand-500/10 to-purple-500/8 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-gradient-to-br from-emerald-500/10 to-cyan-500/8 blur-3xl pointer-events-none" />
@@ -1228,21 +1186,21 @@ export const StrategyModule = () => {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-brand-600 via-purple-600 to-indigo-600 dark:from-brand-300 dark:via-purple-300 dark:to-indigo-300 bg-clip-text text-transparent leading-none tracking-tight">
-                  {selectedStrategyType === 'campaign' ? 'Campaign Marketing Strategy' : selectedStrategyType === 'custom' ? 'Image Brief Visual Strategy' : t('strategyTitle', 'Marketing Strategy & Roadmap')}
+                  {selectedStrategyType === 'campaign' ? t('campaignMarketingStrategy', 'Campaign Marketing Strategy') : selectedStrategyType === 'custom' ? t('imageBriefVisualStrategy', 'Image Brief Visual Strategy') : t('strategyTitle', 'Marketing Strategy & Roadmap')}
                 </h1>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-semibold">
-                  {selectedStrategyType === 'campaign' ? 'Integrated GTM, SEO & GEO roadmap derived from your active campaign.' : selectedStrategyType === 'custom' ? 'Custom 30-day visual social roadmap generated from reference image brief.' : 'AI-generated 30-day growth blueprint for '}{' '}
+                  {selectedStrategyType === 'campaign' ? t('integratedGtmSeoGeoSub', 'Integrated GTM, SEO & GEO roadmap derived from your active campaign.') : selectedStrategyType === 'custom' ? t('custom30DayVisualSub', 'Custom 30-day visual social roadmap generated from reference image brief.') : t('aiGenerated30DayBlueprint', 'AI-generated 30-day growth blueprint for')}{' '}
                   <span className="font-black text-brand-600 dark:text-brand-300 px-1.5 py-0.5 rounded-md bg-brand-500/10 border border-brand-500/20">{activeWorkspace.brandName}</span>
                 </p>
                 {activeWorkspace.currentStrategy?.campaignName && selectedStrategyType === 'campaign' && (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-200 text-xs font-black mt-1.5 shadow-sm">
                     <Target className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span>Campaign Focus: <strong>{activeWorkspace.currentStrategy.campaignName}</strong></span>
+                    <span>{t('campaignFocus', 'Campaign Focus')}: <strong>{activeWorkspace.currentStrategy.campaignName}</strong></span>
                     <button
                       onClick={() => setActiveModule('campaigns')}
                       className="ml-1 text-[11px] underline hover:text-emerald-950 dark:hover:text-emerald-100 font-extrabold"
                     >
-                      Back to Campaign →
+                      {t('backToCampaign', 'Back to Campaign →')}
                     </button>
                   </div>
                 )}
@@ -1255,7 +1213,7 @@ export const StrategyModule = () => {
                 {[
                   { id: 'overview',   label: t('overviewTab', 'Overview'),   icon: BarChart2 },
                   { id: 'plan',       label: t('masterStrategyTab', '30 Day Strategy'), icon: Calendar  },
-                  ...(customStrategy ? [{ id: 'custom', label: 'Custom Strategy', icon: Sparkles, isCustom: true }] : []),
+                  ...(customStrategy ? [{ id: 'custom', label: t('customStrategyTab', 'Custom Strategy'), icon: Sparkles, isCustom: true }] : []),
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -1282,13 +1240,13 @@ export const StrategyModule = () => {
             {generatedDoc && (
               <button
                 onClick={handleDownloadPDF}
-                className="group relative px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-extrabold text-xs tracking-wider border border-emerald-500/30 shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/35 hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                className="btn-primary px-4 py-2.5 rounded-xl font-extrabold text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer"
                 title="Download full 30-day marketing strategy report as PDF to your device"
               >
                 <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center shadow-sm text-white">
                   <Download className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span>Download Strategy PDF</span>
+                <span>{t('downloadStrategyPdf', 'Download Strategy PDF')}</span>
               </button>
             )}
 
@@ -1300,7 +1258,7 @@ export const StrategyModule = () => {
               <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm text-white">
                 <UploadCloud className="w-3.5 h-3.5 text-white" />
               </div>
-              <span>Upload Image Brief</span>
+              <span>{t('uploadImageBrief', 'Upload Image Brief')}</span>
             </button>
 
             {activeTab !== 'custom' && selectedStrategyType === 'aiBrand' && (
@@ -1313,12 +1271,12 @@ export const StrategyModule = () => {
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Re-Analyzing Brand DNA...</span>
+                    <span>{t('reAnalyzingBrandDna', 'Re-Analyzing Brand DNA...')}</span>
                   </>
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4 text-white transition-transform group-hover:rotate-180 duration-500" />
-                    <span>Regenerate Strategy</span>
+                    <span>{t('regenerateStrategy', 'Regenerate Strategy')}</span>
                   </>
                 )}
               </button>
@@ -1327,81 +1285,124 @@ export const StrategyModule = () => {
         </div>
       </div>
 
+      {/* ══════════ STRATEGY SELECTOR BAR ══════════ */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-md w-full flex-wrap sm:flex-nowrap backdrop-blur-md">
+        {/* Strategy 1: Campaign Strategy */}
+        <button
+          onClick={() => setSelectedStrategyType('campaign')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all duration-200 cursor-pointer ${
+            selectedStrategyType === 'campaign'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+          }`}
+        >
+          <Target className="w-4 h-4 text-emerald-300" />
+          <span>{t('campaignStrategy', 'Campaign Strategy')}</span>
+          {isCampaignLocked ? (
+            <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-500 dark:text-amber-300 text-[9px] font-black border border-amber-500/30 flex items-center gap-0.5">
+              <Lock className="w-2.5 h-2.5" /> {t('proTag', 'PRO')}
+            </span>
+          ) : (activeWorkspace.currentStrategy?.campaignStrategy || activeWorkspace.currentStrategy?.campaignName) ? (
+            <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[9px] font-extrabold">{t('activeTag', 'Active')}</span>
+          ) : (
+            <span className="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[9px] font-medium">{t('notCreatedTag', 'Not Created')}</span>
+          )}
+        </button>
+
+        {/* Strategy 3: Image Brief Strategy */}
+        <button
+          onClick={() => setSelectedStrategyType('custom')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all duration-200 cursor-pointer ${
+            selectedStrategyType === 'custom'
+              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-500/20'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+          }`}
+        >
+          <UploadCloud className="w-4 h-4 text-purple-300" />
+          <span>{t('imageBriefStrategy', 'Image Brief Strategy')}</span>
+          {customStrategy ? (
+            <span className="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[9px] font-extrabold">{t('readyTag', 'Ready')}</span>
+          ) : (
+            <span className="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[9px] font-medium">{t('uploadBriefTag', 'Upload Brief')}</span>
+          )}
+        </button>
+      </div>
+
       {/* ══════════ CONTEXTUAL EMPTY & LOCKED STATES ══════════ */}
       {selectedStrategyType === 'campaign' && isCampaignLocked && (
-        <div className="text-center py-16 p-8 rounded-3xl glass-card border border-brand-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white mt-6 shadow-2xl relative overflow-hidden">
+        <div className="text-center py-16 p-8 rounded-3xl accent-card glass-card border border-brand-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white mt-6 shadow-2xl relative overflow-hidden">
           <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mx-auto mb-4 text-amber-400 shadow-lg">
             <Lock className="w-7 h-7 text-amber-400" />
           </div>
           <span className="text-[10px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full border border-amber-500/40">
-            Pro Feature Locked
+            {t('proFeatureLocked', 'Pro Feature Locked')}
           </span>
-          <h3 className="text-xl font-extrabold text-white mt-3 mb-2">Campaign Strategy is Locked on Starter Plan</h3>
+          <h3 className="text-xl font-extrabold text-white mt-3 mb-2">{t('campaignStrategyLockedTitle', 'Campaign Strategy is Locked on Starter Plan')}</h3>
           <p className="text-xs text-slate-300 max-w-md mx-auto mb-6 leading-relaxed">
-            Campaign-driven strategy roadmaps require the <strong className="text-brand-400">Pro / Growth</strong> subscription plan. Upgrade now to unlock autonomous campaigns and campaign strategies.
+            {t('campaignStrategyLockedSub', 'Campaign-driven strategy roadmaps require the Pro / Growth subscription plan. Upgrade now to unlock autonomous campaigns and campaign strategies.')}
           </p>
           <button
             onClick={() => setActiveModule('settings')}
             className="btn-primary text-xs flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 hover:scale-105 transition-all cursor-pointer font-extrabold"
           >
             <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>Upgrade Plan to Unlock</span>
+            <span>{t('upgradePlanToUnlock', 'Upgrade Plan to Unlock')}</span>
           </button>
         </div>
       )}
 
       {selectedStrategyType === 'campaign' && !isCampaignLocked && !activeWorkspace.currentStrategy?.campaignStrategy && !activeWorkspace.currentStrategy?.campaignName && (
-        <div className="text-center py-16 p-8 rounded-3xl glass-card border border-dashed border-slate-300 dark:border-slate-700 mt-6">
+        <div className="text-center py-16 p-8 rounded-3xl accent-card glass-card border border-dashed border-slate-300 dark:border-slate-700 mt-6">
           <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 text-emerald-500 shadow-sm">
             <Target className="w-7 h-7" />
           </div>
-          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2">No Campaign Strategy Created Yet</h3>
+          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2">{t('noCampaignStrategyTitle', 'No Campaign Strategy Created Yet')}</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
-            Build a campaign in the Campaigns module to automatically generate an integrated 30-day Go-To-Market, SEO, and GEO campaign strategy.
+            {t('noCampaignStrategySub', 'Build a campaign in the Campaigns module to automatically generate an integrated 30-day Go-To-Market, SEO, and GEO campaign strategy.')}
           </p>
           <button
             onClick={() => setActiveModule('campaigns')}
-            className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-xs flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all cursor-pointer font-extrabold"
+            className="btn-primary text-xs flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 hover:scale-105 transition-all cursor-pointer font-extrabold"
           >
             <Target className="w-4 h-4 text-white" />
-            <span>Proceed to Campaign Module →</span>
+            <span>{t('proceedToCampaignModule', 'Proceed to Campaign Module →')}</span>
           </button>
         </div>
       )}
 
       {selectedStrategyType === 'custom' && !customStrategy && (
-        <div className="text-center py-16 p-8 rounded-3xl glass-card border border-dashed border-purple-300 dark:border-purple-800/60 mt-6">
+        <div className="text-center py-16 p-8 rounded-3xl accent-card glass-card border border-dashed border-purple-300 dark:border-purple-800/60 mt-6">
           <div className="w-14 h-14 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center mx-auto mb-4 text-purple-400 shadow-sm">
             <UploadCloud className="w-7 h-7" />
           </div>
-          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2">No Image Brief Strategy Generated Yet</h3>
+          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2">{t('noImageBriefTitle', 'No Image Brief Strategy Generated Yet')}</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
-            Upload a reference product image and enter custom visual instructions to generate an image-guided 30-day social media roadmap.
+            {t('noImageBriefSub', 'Upload a reference product image and enter custom visual instructions to generate an image-guided 30-day social media roadmap.')}
           </p>
           <button
             onClick={() => setShowImageBriefModal(true)}
-            className="btn-primary bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl shadow-lg shadow-purple-500/20 hover:scale-105 transition-all cursor-pointer font-extrabold"
+            className="btn-primary text-xs flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 hover:scale-105 transition-all cursor-pointer font-extrabold"
           >
             <UploadCloud className="w-4 h-4 text-white" />
-            <span>Upload Image Brief</span>
+            <span>{t('uploadImageBrief', 'Upload Image Brief')}</span>
           </button>
         </div>
       )}
 
       {/* ══════════ DEFAULT AI BRAND EMPTY STATE (NOT GENERATED) ══════════ */}
       {selectedStrategyType === 'aiBrand' && !generatedDoc && (
-        <div className="text-center py-20 rounded-3xl glass-card border border-dashed border-slate-200 dark:border-slate-700 mt-6">
+        <div className="text-center py-20 rounded-3xl accent-card glass-card border border-dashed border-slate-200 dark:border-slate-700 mt-6">
           <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-brand-500/20 to-purple-500/10 flex items-center justify-center mx-auto mb-4">
             <Rocket className="w-8 h-8 text-brand-500" />
           </div>
-          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2">Generate Your Master Strategy</h3>
+          <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2">{t('generateYourMasterStrategy', 'Generate Your Master Strategy')}</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
-            Click "Generate Master Strategy" to get an AI-powered growth blueprint, channel mix, and 30-day content calendar.
+            {t('generateMasterStrategySub', 'Click "Generate Master Strategy" to get an AI-powered growth blueprint, channel mix, and 30-day content calendar.')}
           </p>
           <button onClick={handleGenerate} disabled={isGenerating} className="btn-primary text-sm flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl disabled:opacity-50 shadow-lg shadow-brand-500/20 hover:scale-105 active:scale-95 transition-all">
             {isGenerating
-              ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating Strategy...</>
-              : <><Zap className="w-4 h-4 text-amber-300 fill-amber-300" /> Generate Master Strategy</>
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('generatingStrategy', 'Generating Strategy...')}</>
+              : <><Zap className="w-4 h-4 text-amber-300 fill-amber-300" /> {t('generateMasterStrategyBtn', 'Generate Master Strategy')}</>
             }
           </button>
         </div>
@@ -1454,7 +1455,7 @@ export const StrategyModule = () => {
                           />
                         ) : (
                           <div onClick={() => setEditingField(card.key)} className="cursor-pointer flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-white/60 dark:hover:bg-slate-800/50 transition-colors -ml-3">
-                            <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white leading-relaxed">{card.value}</p>
+                            <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white leading-relaxed">{t(card.value)}</p>
                             <Edit3 className="w-4 h-4 text-slate-400 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
                         )}
@@ -1474,9 +1475,9 @@ export const StrategyModule = () => {
                     <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-sm">
                       <PieChart className="w-3.5 h-3.5" />
                     </div>
-                    Channel Mix
+                    {t('channelMix', 'Channel Mix')}
                   </h2>
-                  <span className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold px-2.5 py-0.5 rounded-full border border-blue-200/50">{totalPct}% Total</span>
+                  <span className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold px-2.5 py-0.5 rounded-full border border-blue-200/50">{totalPct}% {t('totalTag', 'Total')}</span>
                 </div>
 
                 {/* Donut */}
@@ -1511,7 +1512,7 @@ export const StrategyModule = () => {
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="text-3xl font-black text-slate-900 dark:text-white leading-none">{channelMix.length}</span>
-                      <span className="text-[9px] text-slate-600 dark:text-slate-300 font-black uppercase tracking-wider">Channels</span>
+                      <span className="text-[9px] text-slate-600 dark:text-slate-300 font-black uppercase tracking-wider">{t('channelsLabel', 'Channels')}</span>
                     </div>
                   </div>
                 </div>
@@ -1531,7 +1532,7 @@ export const StrategyModule = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 truncate">{ch.label}</span>
+                            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 truncate">{t(ch.label)}</span>
                             <span className="text-sm font-black text-slate-900 dark:text-white ml-2">{ch.pct}%</span>
                           </div>
                           <div className="h-2 w-full rounded-full bg-slate-200/60 dark:bg-slate-800 overflow-hidden">
@@ -1555,20 +1556,20 @@ export const StrategyModule = () => {
                 <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm">
                   <Globe className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Best Platforms</h3>
+                <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">{t('bestPlatforms', 'Best Platforms')}</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {bestPlatforms.map((p, i) => {
                   const PIcon = getPlatformIcon(p);
                   return (
                     <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold ring-1 shadow-2xs ${getPlatformColor(p)}`}>
-                      <PIcon className="w-3.5 h-3.5" /> {p}
+                      <PIcon className="w-3.5 h-3.5" /> {t(p)}
                     </span>
                   );
                 })}
               </div>
               {bestPlatforms.length === 0 && (
-                <p className="text-xs text-slate-400 italic">Generate strategy to get AI platform recommendations</p>
+                <p className="text-xs text-slate-400 italic">{t('generateStrategyPlatformRec', 'Generate strategy to get AI platform recommendations')}</p>
               )}
             </div>
 
@@ -1578,19 +1579,19 @@ export const StrategyModule = () => {
                 <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-sm">
                   <Clock className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Posting Frequency</h3>
+                <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">{t('postingFrequency', 'Posting Frequency')}</h3>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-300/40 dark:border-emerald-800/40 flex items-center justify-center shadow-xs">
                   <Flame className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-black text-slate-900 dark:text-white">{postingFrequency}</p>
-                  <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase tracking-wider">AI Recommended</p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-white">{t(postingFrequency)}</p>
+                  <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase tracking-wider">{t('aiRecommended', 'AI RECOMMENDED')}</p>
                 </div>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-                Consistent publishing schedule optimized for {activeWorkspace.brandName}'s growth targets.
+                {t('consistentPublishingSub', "Consistent publishing schedule optimized for growth targets.")}
               </p>
             </div>
 
@@ -1600,13 +1601,13 @@ export const StrategyModule = () => {
                 <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-sm">
                   <DollarSign className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Budget Strategy</h3>
+                <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">{t('budgetStrategy', 'Budget Strategy')}</h3>
               </div>
               <div className="space-y-2">
                 {budgetSuggestions.split('/').map((part, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <div className={`mt-1 w-2.5 h-2.5 rounded-full shrink-0 ${i === 0 ? 'bg-brand-500' : 'bg-amber-500'}`} />
-                    <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold leading-snug">{part.trim()}</p>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold leading-snug">{t(part.trim())}</p>
                   </div>
                 ))}
               </div>
@@ -1619,13 +1620,13 @@ export const StrategyModule = () => {
             {/* Content Pillars */}
             <div className="p-6 rounded-2xl bg-gradient-to-br from-rose-500/6 via-pink-500/4 to-purple-500/6 dark:from-rose-950/30 dark:to-slate-900/90 border border-rose-200/60 dark:border-rose-900/40 backdrop-blur-md shadow-sm space-y-4">
               <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-rose-500 dark:text-rose-400" /> Content Pillars
+                <BookOpen className="w-4 h-4 text-rose-500 dark:text-rose-400" /> {t('contentPillars', 'Content Pillars')}
               </h2>
               <div className="grid grid-cols-1 gap-2.5">
                 {contentPillars.map((pillar, i) => (
                   <div key={i} className="flex items-center gap-3 p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-rose-200/50 dark:border-rose-900/30 text-slate-900 dark:text-white font-bold text-xs shadow-2xs">
                     <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-2xs">{i + 1}</div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">{pillar}</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">{t(pillar)}</span>
                   </div>
                 ))}
               </div>
@@ -1634,13 +1635,13 @@ export const StrategyModule = () => {
             {/* Target Audience */}
             <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/6 via-indigo-500/4 to-pink-500/6 dark:from-purple-950/30 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-900/40 backdrop-blur-md shadow-sm space-y-4">
               <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-                <Users className="w-4 h-4 text-purple-500 dark:text-purple-400" /> Target Audience
+                <Users className="w-4 h-4 text-purple-500 dark:text-purple-400" /> {t('targetAudience', 'Target Audience')}
               </h2>
               <div className="grid grid-cols-1 gap-2.5">
                 {(audience.length > 0 ? audience : (activeWorkspace.targetAudience || []).slice(0, 4)).map((persona, i) => (
                   <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-purple-200/50 dark:border-purple-900/30 text-slate-900 dark:text-white font-bold text-xs shadow-2xs">
                     <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-2xs mt-0.5">{i + 1}</div>
-                    <span className="text-xs font-semibold text-slate-800 dark:text-white leading-snug">{persona}</span>
+                    <span className="text-xs font-semibold text-slate-800 dark:text-white leading-snug">{t(persona)}</span>
                   </div>
                 ))}
               </div>
@@ -1655,10 +1656,10 @@ export const StrategyModule = () => {
                   <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-xs">
                     <ImageIcon className="w-3.5 h-3.5" />
                   </div>
-                  Custom Visual Directives &amp; Uploaded Assets
+                  {t('customVisualDirectivesAssets', 'Custom Visual Directives & Uploaded Assets')}
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                  Reference images and specific visual instructions provided for strategy and visual asset creation
+                  {t('referenceImagesSub', 'Reference images and specific visual instructions provided for strategy and visual asset creation')}
                 </p>
               </div>
               <button
@@ -1666,7 +1667,7 @@ export const StrategyModule = () => {
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
               >
                 <UploadCloud className="w-4 h-4" />
-                <span>Upload Image Brief</span>
+                <span>{t('uploadImageBrief', 'Upload Image Brief')}</span>
               </button>
             </div>
 
@@ -1695,7 +1696,7 @@ export const StrategyModule = () => {
                         </button>
                       </div>
                       <p className="text-xs text-slate-700 dark:text-slate-300 line-clamp-2 italic leading-snug font-medium">
-                        "{brief.directive || 'No specific text instruction provided.'}"
+                        "{brief.directive || t('noSpecificInstruction', 'No specific text instruction provided.')}"
                       </p>
                       <span className="inline-block text-[10px] text-purple-600 dark:text-purple-400 font-bold">{brief.timestamp}</span>
                     </div>
@@ -1705,7 +1706,7 @@ export const StrategyModule = () => {
             ) : (
               <div className="p-6 rounded-2xl border border-dashed border-purple-200 dark:border-purple-800/40 bg-purple-500/5 text-center space-y-2">
                 <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-                  No image reference briefs uploaded yet. Click <strong>Upload Image Brief</strong> to upload product photos or layout reference images and tell AI how to use them.
+                  {t('noImageReferenceBriefsUploaded', 'No image reference briefs uploaded yet. Click Upload Image Brief to upload product photos or layout reference images and tell AI how to use them.')}
                 </p>
               </div>
             )}
@@ -1720,14 +1721,14 @@ export const StrategyModule = () => {
                     <Rocket className="w-4 h-4" />
                   </div>
                   <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                    GTM, SEO &amp; GEO Marketing Engine
+                    {t('gtmSeoGeoEngineTitle', 'GTM, SEO & GEO Marketing Engine')}
                   </h2>
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold border border-emerald-500/30">
-                    Plan Topics Integrated
+                    {t('planTopicsIntegrated', 'Plan Topics Integrated')}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                  Autonomous Go-To-Market launch phases, organic search keyword clusters, and regional geo-targeting derived directly from your campaign plan.
+                  {t('autonomousGtmSub', 'Autonomous Go-To-Market launch phases, organic search keyword clusters, and regional geo-targeting derived directly from your campaign plan.')}
                 </p>
               </div>
 
@@ -1743,7 +1744,7 @@ export const StrategyModule = () => {
                   }`}
                 >
                   <Rocket className="w-3.5 h-3.5" />
-                  <span>Go-To-Market (GTM)</span>
+                  <span>{t('gtmTab', 'Go-To-Market (GTM)')}</span>
                 </button>
                 <button
                   type="button"
@@ -1755,7 +1756,7 @@ export const StrategyModule = () => {
                   }`}
                 >
                   <Search className="w-3.5 h-3.5" />
-                  <span>SEO Strategy</span>
+                  <span>{t('seoTab', 'SEO Strategy')}</span>
                 </button>
                 <button
                   type="button"
@@ -1767,7 +1768,7 @@ export const StrategyModule = () => {
                   }`}
                 >
                   <MapPin className="w-3.5 h-3.5" />
-                  <span>GEO Targeting</span>
+                  <span>{t('geoTab', 'GEO Targeting')}</span>
                 </button>
               </div>
             </div>
@@ -1778,7 +1779,7 @@ export const StrategyModule = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-indigo-200/50 dark:border-indigo-900/30 space-y-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
-                      <Target className="w-3.5 h-3.5" /> Ideal Customer Profile (ICP)
+                      <Target className="w-3.5 h-3.5" /> {t('idealCustomerProfileIcp', 'Ideal Customer Profile (ICP)')}
                     </span>
                     <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
                       {gtmStrategy?.targetIcp || (audience[0] ? `Primary: ${audience[0]} seeking immediate solutions for: ${businessGoal}` : 'Decision-makers and high-intent buyers evaluating modern solutions.')}
@@ -1786,7 +1787,7 @@ export const StrategyModule = () => {
                   </div>
                   <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-purple-200/50 dark:border-purple-900/30 space-y-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                      <Compass className="w-3.5 h-3.5" /> Value Proposition &amp; Positioning
+                      <Compass className="w-3.5 h-3.5" /> {t('valuePropositionPositioning', 'Value Proposition & Positioning')}
                     </span>
                     <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
                       {gtmStrategy?.valuePositioning || `${activeWorkspace.brandName} positions as the definitive accelerator to achieve: ${businessGoal}.`}
@@ -1797,7 +1798,7 @@ export const StrategyModule = () => {
                 {/* 4-Phase Launch Funnel */}
                 <div>
                   <h3 className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-indigo-500" /> 4-Phase GTM Rollout (Aligned with 30-Day Plan Topics)
+                    <Clock className="w-3.5 h-3.5 text-indigo-500" /> {t('fourPhaseGtmRollout', '4-Phase GTM Rollout (Aligned with 30-Day Plan Topics)')}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {(gtmStrategy?.launchPhases || [
@@ -1808,8 +1809,8 @@ export const StrategyModule = () => {
                     ]).map((lp, idx) => (
                       <div key={idx} className="p-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-indigo-100 dark:border-indigo-900/40 space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">Phase {idx + 1}</span>
-                          <span className="text-[9px] font-bold text-slate-400 uppercase">Week {idx + 1}</span>
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">{t('phaseTag', 'Phase')} {idx + 1}</span>
+                          <span className="text-[9px] font-bold text-slate-400 uppercase">{t('weekTag', 'Week')} {idx + 1}</span>
                         </div>
                         <p className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">{lp.phase || lp.name}</p>
                         <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-2">{lp.focus}</p>
@@ -1825,7 +1826,7 @@ export const StrategyModule = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> GTM Activation Milestones
+                      <CheckCircle2 className="w-3.5 h-3.5" /> {t('gtmActivationMilestones', 'GTM Activation Milestones')}
                     </span>
                     <ul className="space-y-1.5">
                       {(gtmStrategy?.activationMilestones || [
@@ -1843,7 +1844,7 @@ export const StrategyModule = () => {
 
                   <div className="p-4 rounded-2xl bg-purple-500/5 border border-purple-500/20 space-y-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
-                      <TrendingUp className="w-3.5 h-3.5" /> Viral Growth Loop
+                      <TrendingUp className="w-3.5 h-3.5" /> {t('viralGrowthLoop', 'Viral Growth Loop')}
                     </span>
                     <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
                       {gtmStrategy?.growthLoops || `Built-in referral incentive & social sharing prompt immediately after user achieves their first milestone with ${activeWorkspace.brandName}.`}
@@ -1860,7 +1861,7 @@ export const StrategyModule = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-teal-200/50 dark:border-teal-900/30 space-y-3">
                     <span className="text-[10px] font-black uppercase tracking-wider text-teal-700 dark:text-teal-300 flex items-center gap-1.5">
-                      <Search className="w-3.5 h-3.5" /> Primary Target Keywords (Extracted from Plan)
+                      <Search className="w-3.5 h-3.5" /> {t('primaryTargetKeywords', 'Primary Target Keywords (Extracted from Plan)')}
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {(seoStrategy?.primaryKeywords || [
@@ -1878,7 +1879,7 @@ export const StrategyModule = () => {
 
                   <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-cyan-200/50 dark:border-cyan-900/30 space-y-3">
                     <span className="text-[10px] font-black uppercase tracking-wider text-cyan-700 dark:text-cyan-300 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" /> High-Intent Long-Tail Search Queries
+                      <Sparkles className="w-3.5 h-3.5" /> {t('highIntentLongTailQueries', 'High-Intent Long-Tail Search Queries')}
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {(seoStrategy?.longTailKeywords || [
@@ -1897,7 +1898,7 @@ export const StrategyModule = () => {
                 {/* Search Intent Mix */}
                 <div className="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 space-y-3">
                   <span className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                    Search Intent Mapping
+                    {t('searchIntentMapping', 'Search Intent Mapping')}
                   </span>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {(seoStrategy?.searchIntentMix || [
@@ -1922,7 +1923,7 @@ export const StrategyModule = () => {
                 {/* On-Page & Schema */}
                 <div className="p-4 rounded-2xl bg-teal-500/5 border border-teal-500/20 space-y-1.5">
                   <span className="text-[10px] font-black uppercase tracking-wider text-teal-700 dark:text-teal-300 flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5" /> On-Page SEO &amp; Schema Directives
+                    <FileText className="w-3.5 h-3.5" /> {t('onPageSeoSchemaDirectives', 'On-Page SEO & Schema Directives')}
                   </span>
                   <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
                     {seoStrategy?.onPageDirectives || 'Target primary keywords in H1 headers and opening 100 words. Implement Product/Software schema on conversion pages and FAQ schema on educational blogs.'}
@@ -1937,7 +1938,7 @@ export const StrategyModule = () => {
                 {/* Priority Hubs */}
                 <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-blue-200/50 dark:border-blue-900/30 space-y-3">
                   <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-blue-600" /> Priority Geographic Markets &amp; Metros
+                    <MapPin className="w-3.5 h-3.5 text-blue-600" /> {t('priorityGeographicMarkets', 'Priority Geographic Markets & Metros')}
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {(geoStrategy?.priorityRegions || [
@@ -1955,7 +1956,7 @@ export const StrategyModule = () => {
                 {/* Regional Messaging Hooks */}
                 <div className="space-y-2">
                   <span className="text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                    Regional Messaging Hooks (Localized Angles for Plan Topics)
+                    {t('regionalMessagingHooks', 'Regional Messaging Hooks (Localized Angles for Plan Topics)')}
                   </span>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {(geoStrategy?.regionalHooks || [
@@ -1974,7 +1975,7 @@ export const StrategyModule = () => {
                 {/* Geo Distribution Tactics */}
                 <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 space-y-1.5">
                   <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5" /> Geo-Distribution &amp; Local Advertising Tactics
+                    <Globe className="w-3.5 h-3.5" /> {t('geoDistributionTactics', 'Geo-Distribution & Local Advertising Tactics')}
                   </span>
                   <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
                     {geoStrategy?.geoDistributionTactics || 'Deploy geo-fenced social advertising around major business districts. Use regional city references in high-converting ad copy variations.'}
@@ -1988,9 +1989,9 @@ export const StrategyModule = () => {
           <div className="p-6 rounded-3xl bg-gradient-to-br from-rose-500/6 via-purple-500/4 to-emerald-500/6 dark:from-slate-900/90 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-900/40 shadow-sm backdrop-blur-md space-y-5">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-                <Layers className="w-4 h-4 text-purple-500 dark:text-purple-400" /> Marketing Funnel Architecture
+                <Layers className="w-4 h-4 text-purple-500 dark:text-purple-400" /> {t('marketingFunnelArchitecture', 'Marketing Funnel Architecture')}
               </h2>
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Auto-mapped from {activeWorkspace.brandName}'s brand pillars</span>
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{t('autoMappedFromBrandPillars', "Auto-mapped from brand pillars")}</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {funnelStages.map((stage, i) => (
@@ -1998,14 +1999,14 @@ export const StrategyModule = () => {
                   <span className="absolute top-3 right-4 text-[40px] font-black leading-none text-purple-900/10 dark:text-white/10 select-none">{i+1}</span>
                   <div className="relative space-y-1.5">
                     <span className={`text-xs font-extrabold ${stage.text} block`}>{stage.label}</span>
-                    <span className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full ${stage.badge}`}>{stage.mix} Content Mix</span>
+                    <span className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full ${stage.badge}`}>{stage.mix} {t('contentMix', 'Content Mix')}</span>
                   </div>
-                  <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed relative">{stage.desc}</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed relative">{t(stage.desc)}</p>
                   <div className="space-y-1">
                     <div className="h-1.5 w-full rounded-full bg-slate-200/60 dark:bg-slate-800 overflow-hidden">
                       <div className={`h-full rounded-full ${stage.bar} ${stage.barW}`} />
                     </div>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">Goal: {stage.goal}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">{t('goalLabel', 'Goal')}: {t(stage.goal)}</span>
                   </div>
                 </div>
               ))}
@@ -2033,10 +2034,10 @@ export const StrategyModule = () => {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-300">Week {ws.week}</span>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedWeek === String(ws.week) ? 'bg-brand-500/15 text-brand-700 dark:text-brand-300' : 'bg-purple-500/10 text-purple-600 dark:text-purple-300'}`}>{ws.count} days</span>
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-300">{t('weekLabel', 'Week')} {ws.week}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedWeek === String(ws.week) ? 'bg-brand-500/15 text-brand-700 dark:text-brand-300' : 'bg-purple-500/10 text-purple-600 dark:text-purple-300'}`}>{ws.count} {t('daysLabel', 'days')}</span>
                     </div>
-                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-snug line-clamp-2">{ws.theme}</p>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-snug line-clamp-2">{t(ws.theme)}</p>
                   </div>
                 ))}
               </div>
@@ -2045,17 +2046,17 @@ export const StrategyModule = () => {
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <h2 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-brand-500" />
-                  {selectedWeek === 'ALL' ? '30-Day Marketing Calendar' : `Week ${selectedWeek} Plan`}
-                  <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{filteredPlan.length} days</span>
+                  {selectedWeek === 'ALL' ? t('thirtyDayMarketingCalendar', '30-Day Marketing Calendar') : `${t('weekLabel', 'Week')} ${selectedWeek} ${t('planLabel', 'Plan')}`}
+                  <span className="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full">{filteredPlan.length} {t('daysLabel', 'days')}</span>
                 </h2>
                 <div className="flex items-center gap-2 flex-wrap">
                   <button
                     onClick={handleDownloadPDF}
-                    className="px-3 py-1 text-[11px] font-extrabold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-sm cursor-pointer transition-all"
+                    className="px-3 py-1 text-[11px] font-extrabold rounded-lg bg-brand-600 hover:bg-brand-500 text-white flex items-center gap-1.5 shadow-sm shadow-brand-500/20 cursor-pointer transition-all"
                     title="Download 30-Day Plan as PDF"
                   >
                     <Download className="w-3 h-3 text-white" />
-                    <span>Download PDF</span>
+                    <span>{t('downloadPdfBtn', 'Download PDF')}</span>
                   </button>
 
                   <div className="flex items-center gap-1.5">
@@ -2070,7 +2071,7 @@ export const StrategyModule = () => {
                             : 'bg-purple-500/8 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-500/15'
                         }`}
                       >
-                        {w === 'ALL' ? 'All' : `W${w}`}
+                        {w === 'ALL' ? t('allLabel', 'All') : `W${w}`}
                       </button>
                     ))}
                   </div>
@@ -2161,20 +2162,20 @@ export const StrategyModule = () => {
                           {item.day}
                         </div>
                         <div>
-                          <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Day {item.day} · Week {week}</p>
+                          <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">{t('dayLabel', 'Day')} {item.day} · {t('weekLabel', 'Week')} {week}</p>
                           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
                             <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${getPlatformColor(item.platform)}`}>
                               <PIcon className="w-2.5 h-2.5" />
-                              {item.platform?.split('/')[0]?.trim() || 'Content'}
+                              {t(item.platform?.split('/')[0]?.trim() || 'Content')}
                             </span>
                             {item.gtmStage && (
                               <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20">
-                                🚀 {item.gtmStage.split(':')[0]}
+                                🚀 {t(item.gtmStage.split(':')[0])}
                               </span>
                             )}
                             {item.geoTarget && (
                               <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20">
-                                📍 {item.geoTarget.split('(')[0].trim()}
+                                📍 {t(item.geoTarget.split('(')[0].trim())}
                               </span>
                             )}
                           </div>
@@ -2197,10 +2198,10 @@ export const StrategyModule = () => {
                           title="Regenerate strategy content for this card"
                         >
                           <Sparkles className="w-2.5 h-2.5" />
-                          <span>Regenerate</span>
+                          <span>{t('regenerateCardBtn', 'Regenerate')}</span>
                         </button>
                         <span className="text-[9px] font-bold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                          Draft Post <ChevronRight className="w-3 h-3" />
+                          {t('draftPostBtn', 'Draft Post')} <ChevronRight className="w-3 h-3" />
                         </span>
                       </div>
                     </div>
@@ -2210,10 +2211,10 @@ export const StrategyModule = () => {
                       {loadingRegenDays[item.day] ? (
                         <div className="flex items-center gap-2 py-1 text-brand-600 dark:text-brand-400">
                           <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                          <span className="text-xs font-semibold animate-pulse">Regenerating strategy content...</span>
+                          <span className="text-xs font-semibold animate-pulse">{t('regeneratingStrategyContent', 'Regenerating strategy content...')}</span>
                         </div>
                       ) : (
-                        <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">{item.topic}</p>
+                        <p className="text-[13px] font-bold text-slate-800 dark:text-white leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">{t(item.topic)}</p>
                       )}
                     </div>
 
@@ -2221,7 +2222,7 @@ export const StrategyModule = () => {
                     {item.seoKeywords && (
                       <div className="flex items-center gap-1 text-[10px] font-semibold text-teal-700 dark:text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-md w-fit border border-teal-500/20">
                         <Search className="w-2.5 h-2.5 text-teal-600" />
-                        <span className="truncate">SEO: {item.seoKeywords}</span>
+                        <span className="truncate">SEO: {t(item.seoKeywords)}</span>
                       </div>
                     )}
 
@@ -2229,7 +2230,7 @@ export const StrategyModule = () => {
                     {item.actionItem && !loadingRegenDays[item.day] && (
                       <div className="flex items-start gap-2 p-2.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/50 dark:border-purple-900/30">
                         <Play className="w-3 h-3 text-brand-500 shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">{item.actionItem}</p>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">{t(item.actionItem)}</p>
                       </div>
                     )}
 
@@ -2242,7 +2243,7 @@ export const StrategyModule = () => {
                         <div className="flex items-center justify-between">
                           <label className="text-[10px] font-extrabold text-brand-600 dark:text-brand-400 uppercase tracking-wider flex items-center gap-1">
                             <Sparkles className="w-3 h-3 text-brand-500" />
-                            Strategy Content Directives
+                            {t('strategyContentDirectives', 'Strategy Content Directives')}
                           </label>
                           <button
                             type="button"
@@ -2272,7 +2273,7 @@ export const StrategyModule = () => {
                                 handleRegenerateCardItem(item, e);
                               }
                             }}
-                            placeholder="Enter strategy content input (e.g. Focus on family recipe, vintage photo story)..."
+                            placeholder={t('enterStrategyContentInput', 'Enter strategy content input (e.g. Focus on family recipe, vintage photo story)...')}
                             className="flex-1 min-w-0 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all"
                             autoFocus
                           />
@@ -2285,12 +2286,12 @@ export const StrategyModule = () => {
                             {loadingRegenDays[item.day] ? (
                               <>
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                <span>Generating...</span>
+                                <span>{t('generatingBtn', 'Generating...')}</span>
                               </>
                             ) : (
                               <>
                                 <Zap className="w-3 h-3 fill-white" />
-                                <span>Regenerate</span>
+                                <span>{t('regenerateBtn', 'Regenerate')}</span>
                               </>
                             )}
                           </button>
@@ -2314,7 +2315,7 @@ export const StrategyModule = () => {
         <div className="space-y-6 animate-in fade-in duration-300">
 
           {/* Top Summary Banner */}
-          <div className="p-6 rounded-3xl glass-card border border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-slate-900/10 to-indigo-500/5 relative overflow-hidden">
+          <div className="p-6 rounded-3xl accent-card glass-card border border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-slate-900/10 to-indigo-500/5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
@@ -2332,18 +2333,18 @@ export const StrategyModule = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-purple-400" /> 30-Day Custom Strategy
+                      <Sparkles className="w-3 h-3 text-purple-400" /> {t('thirtyDayCustomStrategy', '30-Day Custom Strategy')}
                     </span>
                     <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold uppercase">
-                      30 Posts Generated
+                      {t('thirtyPostsGenerated', '30 Posts Generated')}
                     </span>
                     <span className="text-[11px] text-slate-400 font-semibold">{customStrategy.timestamp}</span>
                   </div>
                   <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
-                    30-Day Custom Social Media Post Roadmap
+                    {t('thirtyDayCustomSocialRoadmap', '30-Day Custom Social Media Post Roadmap')}
                   </h2>
                   <p className="text-xs text-slate-600 dark:text-slate-300 italic max-w-xl">
-                    Directive: "{customStrategy.directive}"
+                    {t('directiveLabel', 'Directive')}: "{customStrategy.directive}"
                   </p>
                 </div>
               </div>
@@ -2366,12 +2367,12 @@ export const StrategyModule = () => {
                   {isSubmittingImageBrief ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-white" />
-                      <span>Regenerating Custom Strategy...</span>
+                      <span>{t('regeneratingCustomStrategy', 'Regenerating Custom Strategy...')}</span>
                     </>
                   ) : (
                     <>
                       <RefreshCw className="w-4 h-4 text-white transition-transform hover:rotate-180 duration-500" />
-                      <span>Regenerate Custom Strategy</span>
+                      <span>{t('regenerateCustomStrategy', 'Regenerate Custom Strategy')}</span>
                     </>
                   )}
                 </button>
@@ -2380,19 +2381,19 @@ export const StrategyModule = () => {
           </div>
 
           {/* 30-Day Navigation & Filter Controls */}
-          <div className="space-y-3 p-4 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
+          <div className="space-y-3 p-4 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800">
             {/* Week Filter Buttons */}
             <div className="flex items-center justify-between flex-wrap gap-2">
               <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-widest flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-purple-500" /> Filter By Week:
+                <Calendar className="w-3.5 h-3.5 text-purple-500" /> {t('filterByWeek', 'Filter By Week:')}
               </span>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {[
-                  { id: 'ALL', label: 'All 30 Days (30 Posts)' },
-                  { id: '1', label: 'Week 1: Awareness (Days 1–7)' },
-                  { id: '2', label: 'Week 2: Value (Days 8–14)' },
-                  { id: '3', label: 'Week 3: Engagement (Days 15–21)' },
-                  { id: '4', label: 'Week 4: Conversion (Days 22–30)' },
+                  { id: 'ALL', label: t('all30DaysFilter', 'All 30 Days (30 Posts)') },
+                  { id: '1', label: t('week1AwarenessFilter', 'Week 1: Awareness (Days 1–7)') },
+                  { id: '2', label: t('week2ValueFilter', 'Week 2: Value (Days 8–14)') },
+                  { id: '3', label: t('week3EngagementFilter', 'Week 3: Engagement (Days 15–21)') },
+                  { id: '4', label: t('week4ConversionFilter', 'Week 4: Conversion (Days 22–30)') },
                 ].map(w => (
                   <button
                     key={w.id}
@@ -2412,7 +2413,7 @@ export const StrategyModule = () => {
             {/* Platform Filter Pills */}
             <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
               <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-widest flex items-center gap-1.5">
-                <Filter className="w-3.5 h-3.5 text-brand-500" /> Platform Filter:
+                <Filter className="w-3.5 h-3.5 text-brand-500" /> {t('platformFilter', 'Platform Filter:')}
               </span>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {['ALL', 'Instagram', 'Facebook', 'LinkedIn', 'Twitter / X', 'YouTube Shorts', 'Pinterest'].map(p => (
@@ -2425,7 +2426,7 @@ export const StrategyModule = () => {
                         : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-500 hover:text-brand-600'
                     }`}
                   >
-                    {p === 'ALL' ? 'All Platforms' : p}
+                    {p === 'ALL' ? t('allPlatformsFilter', 'All Platforms') : p}
                   </button>
                 ))}
               </div>
@@ -2437,16 +2438,16 @@ export const StrategyModule = () => {
             <div>
               <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                 <Megaphone className="w-4 h-4 text-purple-500" />
-                30-Day Generated Posts ({
+                {t('thirtyDayGeneratedPosts', '30-Day Generated Posts')} ({
                   (customStrategy.posts || []).filter(post => {
                     const matchesWeek = selectedCustomWeek === 'ALL' || String(post.week) === selectedCustomWeek;
                     const matchesPlatform = selectedCustomPlatform === 'ALL' || post.platform.toLowerCase().includes(selectedCustomPlatform.toLowerCase());
                     return matchesWeek && matchesPlatform;
                   }).length
-                } Posts Displayed)
+                } {t('postsDisplayedTag', 'Posts Displayed')})
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Custom daily posts tailored to your uploaded reference image and instructions across 30 days
+                {t('customDailyPostsTailoredSub', 'Custom daily posts tailored to your uploaded reference image and instructions across 30 days')}
               </p>
             </div>
           </div>
@@ -2464,53 +2465,53 @@ export const StrategyModule = () => {
                 return (
                   <div
                     key={post.day || idx}
-                    className="group relative p-3.5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 hover:border-purple-500/40 hover:shadow-lg transition-all duration-300 space-y-2.5 flex flex-col justify-between"
+                    className="group relative p-3.5 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 hover:border-purple-500/40 hover:shadow-lg transition-all duration-300 space-y-2.5 flex flex-col justify-between"
                   >
                     <div className="space-y-2">
                       {/* Header: Day Badge, Platform & Week Tag */}
                       <div className="flex items-center justify-between flex-wrap gap-1">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <div className="px-2 py-0.5 rounded bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-[10px] shadow-2xs shrink-0">
-                            Day {post.day}
+                            {t('dayLabel', 'Day')} {post.day}
                           </div>
                           <div className={`w-5.5 h-5.5 rounded-md flex items-center justify-center shadow-2xs shrink-0 ${getPlatformColor(post.platform)}`}>
                             <PIcon className="w-3 h-3" />
                           </div>
                           <div className="min-w-0">
                             <h4 className="text-[10.5px] font-black text-slate-900 dark:text-white uppercase tracking-wider">{post.platform}</h4>
-                            <span className="text-[9px] text-slate-400 font-medium block -mt-0.5">{post.format}</span>
+                            <span className="text-[9px] text-slate-400 font-medium block -mt-0.5">{t(post.format)}</span>
                           </div>
                         </div>
                         <span className="px-1.5 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 text-[8.5px] font-extrabold border border-purple-500/20 shrink-0">
-                          {post.weekTag}
+                          {t(post.weekTag)}
                         </span>
                       </div>
 
                       {/* Title */}
                       <h3 className="text-xs font-extrabold text-slate-900 dark:text-white leading-snug break-words">
-                        {formatPostTitle(post.title, customStrategy?.directive)}
+                        {t(formatPostTitle(post.title, customStrategy?.directive))}
                       </h3>
 
                       {/* Visual Directive Box */}
                       <div className="p-2.5 rounded-xl bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/50 space-y-1 shadow-2xs">
                         <span className="text-[9.5px] font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider flex items-center gap-1">
-                          <ImageIcon className="w-3 h-3 text-purple-600 dark:text-purple-400 shrink-0" /> Visual Guidance:
+                          <ImageIcon className="w-3 h-3 text-purple-600 dark:text-purple-400 shrink-0" /> {t('visualGuidanceLabel', 'Visual Guidance:')}
                         </span>
                         <p className="text-[10px] font-semibold text-slate-900 dark:text-slate-100 leading-snug break-words">
-                          {post.visualDirective}
+                          {t(post.visualDirective)}
                         </p>
                       </div>
 
                       {/* Hook & Copy */}
                       <div className="space-y-1.5 p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800">
                         <div>
-                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Hook Line</span>
-                          <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-snug break-words mt-0.5">{post.hook}</p>
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">{t('hookLineLabel', 'Hook Line')}</span>
+                          <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-snug break-words mt-0.5">{t(post.hook)}</p>
                         </div>
                         <div>
-                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Caption Copy</span>
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">{t('captionCopyLabel', 'Caption Copy')}</span>
                           <p className="text-[10px] font-medium text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed break-words mt-0.5">
-                            {post.caption}
+                            {t(post.caption)}
                           </p>
                         </div>
                       </div>
@@ -2518,10 +2519,10 @@ export const StrategyModule = () => {
                       {/* CTA & Hashtags */}
                       <div className="space-y-1 text-[9.5px] pt-0.5">
                         <div className="font-extrabold text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-1 rounded-md text-[9.5px] break-words">
-                          CTA: {post.cta}
+                          {t('ctaLabel', 'CTA')}: {t(post.cta)}
                         </div>
                         <div className="text-purple-700 dark:text-purple-300 font-bold text-[9px] break-words">
-                          {post.hashtags}
+                          {t(post.hashtags)}
                         </div>
                       </div>
                     </div>
@@ -2536,7 +2537,7 @@ export const StrategyModule = () => {
                         className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[9.5px] transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         <FileText className="w-2.5 h-2.5" />
-                        <span>Copy</span>
+                        <span>{t('copyBtn', 'Copy')}</span>
                       </button>
 
                       <button
@@ -2575,7 +2576,7 @@ export const StrategyModule = () => {
                         className="px-2.5 py-0.5 rounded bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-extrabold text-[9.5px] shadow-2xs flex items-center gap-1 transition-all cursor-pointer"
                       >
                         <Sparkles className="w-2.5 h-2.5" />
-                        <span>Create Studio →</span>
+                        <span>{t('createStudioBtn', 'Create Studio →')}</span>
                       </button>
                     </div>
 
@@ -2597,7 +2598,7 @@ export const StrategyModule = () => {
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-brand-500 dark:text-brand-400 shrink-0" />
-                <span>Schedule Content Calendar</span>
+                <span>{t('scheduleContentCalendarModalTitle', 'Schedule Content Calendar')}</span>
               </h3>
               <button 
                 onClick={() => setShowScheduleModal(false)}
@@ -2610,12 +2611,12 @@ export const StrategyModule = () => {
             {/* Content */}
             <div className="space-y-4 py-1">
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Enter the number of days you would like to generate and populate in your Content Calendar from your Strategy Hub.
+                {t('enterNumberOfDaysSub', 'Enter the number of days you would like to generate and populate in your Content Calendar from your Strategy Hub.')}
               </p>
               
               <div className="space-y-3">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  How many days to schedule?
+                  {t('howManyDaysToScheduleQuestion', 'How many days to schedule?')}
                 </label>
 
                 {/* Input with side suffix badge */}
@@ -2627,16 +2628,16 @@ export const StrategyModule = () => {
                     value={scheduleDays}
                     onChange={(e) => setScheduleDays(e.target.value)}
                     className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-extrabold text-sm sm:text-base focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 shadow-sm transition-all"
-                    placeholder="Enter days (e.g. 30)"
+                    placeholder={t('enterDaysPlaceholder', 'Enter days (e.g. 30)')}
                   />
                   <span className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-brand-500/10 border border-brand-500/30 text-brand-600 dark:text-brand-400 font-black text-xs uppercase tracking-wider shrink-0">
-                    Days
+                    {t('daysUnit', 'Days')}
                   </span>
                 </div>
 
                 {/* Preset Quick Select Pills */}
                 <div className="space-y-1.5 pt-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Quick Select:</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t('quickSelectLabel', 'Quick Select:')}</span>
                   <div className="grid grid-cols-4 gap-1.5">
                     {[7, 14, 21, 30].map(d => {
                       const maxPlan = thirtyDayPlan.length || 30;
@@ -2653,7 +2654,7 @@ export const StrategyModule = () => {
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
                           }`}
                         >
-                          {d} Days
+                          {d} {t('daysUnit', 'Days')}
                         </button>
                       );
                     })}
@@ -2661,7 +2662,7 @@ export const StrategyModule = () => {
                 </div>
 
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-1">
-                  Maximum available days from your strategy: <span className="font-extrabold text-brand-600 dark:text-brand-400">{thirtyDayPlan.length || 30} Days</span>.
+                  {t('maximumAvailableDaysSub', 'Maximum available days from your strategy:')} <span className="font-extrabold text-brand-600 dark:text-brand-400">{thirtyDayPlan.length || 30} {t('daysUnit', 'Days')}</span>.
                 </p>
               </div>
             </div>
@@ -2672,7 +2673,7 @@ export const StrategyModule = () => {
                 onClick={() => setShowScheduleModal(false)}
                 className="w-full sm:w-auto px-4 py-2.5 text-xs font-bold rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
               >
-                Cancel
+                {t('cancelBtn', 'Cancel')}
               </button>
               <button
                 onClick={() => confirmGenerateCalendar(scheduleDays)}
@@ -2682,10 +2683,10 @@ export const StrategyModule = () => {
                 {isCreatingCalendarCampaign ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    Generating...
+                    {t('generatingBtn', 'Generating...')}
                   </>
                 ) : (
-                  'Generate'
+                  t('generateBtn', 'Generate')
                 )}
               </button>
             </div>
@@ -2712,10 +2713,10 @@ export const StrategyModule = () => {
                 </div>
                 <div>
                   <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                    Custom Image Visual Brief
+                    {t('customImageVisualBriefTitle', 'Custom Image Visual Brief')}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Upload an image asset &amp; describe how AI should utilize it for {activeWorkspace.brandName}
+                    {t('uploadImageAssetSub', 'Upload an image asset & describe how AI should utilize it for')} {activeWorkspace.brandName}
                   </p>
                 </div>
               </div>
@@ -2740,11 +2741,11 @@ export const StrategyModule = () => {
                 <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5 text-brand-500" />
-                    1. Upload Reference Image
+                    1. {t('uploadReferenceImageStep', 'Upload Reference Image')}
                   </span>
                   {imagePreviewUrl && (
                     <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                      Image Loaded
+                      {t('imageLoadedTag', 'Image Loaded')}
                     </span>
                   )}
                 </label>
@@ -2770,7 +2771,7 @@ export const StrategyModule = () => {
                         onClick={() => fileInputRef.current?.click()}
                         className="px-3.5 py-2 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-lg hover:bg-slate-100 transition-all cursor-pointer"
                       >
-                        Change Image
+                        {t('changeImageBtn', 'Change Image')}
                       </button>
                       <button
                         type="button"
@@ -2779,7 +2780,7 @@ export const StrategyModule = () => {
                           setImagePreviewUrl('');
                         }}
                         className="p-2 rounded-xl bg-red-500/80 hover:bg-red-500 text-white shadow-lg transition-all cursor-pointer"
-                        title="Remove image"
+                        title={t('removeImageTitle', 'Remove image')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -2801,10 +2802,10 @@ export const StrategyModule = () => {
                       <UploadCloud className="w-6 h-6" />
                     </div>
                     <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      Click to browse or drag &amp; drop reference image
+                      {t('clickToBrowseOrDragDrop', 'Click to browse or drag & drop reference image')}
                     </p>
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-                      Supports PNG, JPG, JPEG, WebP, SVG, GIF (Max 10MB)
+                      {t('supportsFormatSub', 'Supports PNG, JPG, JPEG, WebP, SVG, GIF (Max 10MB)')}
                     </p>
                   </div>
                 )}
@@ -2815,7 +2816,7 @@ export const StrategyModule = () => {
                 <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-                    2. What should AI do with this image? / Custom Directive
+                    2. {t('whatShouldAiDoQuestion', 'What should AI do with this image? / Custom Directive')}
                   </span>
                 </label>
 
@@ -2823,13 +2824,13 @@ export const StrategyModule = () => {
                   rows={4}
                   value={imageDirective}
                   onChange={(e) => setImageDirective(e.target.value)}
-                  placeholder="Tell us what you want us to do with the uploaded image (e.g. 'Use this product photo to design our main campaign poster', 'Extract product style & brand colors for Instagram post visuals', 'Incorporate this product showcase into our 30-day strategy')..."
+                  placeholder={t('tellUsDirectivePlaceholder', "Tell us what you want us to do with the uploaded image (e.g. 'Use this product photo to design our main campaign poster', 'Extract product style & brand colors for Instagram post visuals', 'Incorporate this product showcase into our 30-day strategy')...")}
                   className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 transition-all resize-none"
                 />
 
                 {/* Quick Presets */}
                 <div className="space-y-1.5 pt-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Preset Directives:</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('quickPresetDirectives', 'Quick Preset Directives:')}</span>
                   <div className="flex flex-wrap gap-1.5">
                     {[
                       "Use as primary product focus in campaign posts",
@@ -2864,7 +2865,7 @@ export const StrategyModule = () => {
                 }}
                 className="px-4 py-2.5 text-xs font-bold rounded-xl text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                Cancel
+                {t('cancelBtn', 'Cancel')}
               </button>
 
               <button
@@ -2876,12 +2877,12 @@ export const StrategyModule = () => {
                 {isSubmittingImageBrief ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Generating Custom Strategy...</span>
+                    <span>{t('generatingCustomStrategyBtn', 'Generating Custom Strategy...')}</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
-                    <span>Generate Strategy</span>
+                    <span>{t('generateStrategyBtn', 'Generate Strategy')}</span>
                   </>
                 )}
               </button>
@@ -2901,7 +2902,7 @@ export const StrategyModule = () => {
               title="View Calendar Events"
             >
               <Calendar className="w-5 h-5 text-white shrink-0" />
-              <span className="tracking-wide">View Calendar</span>
+              <span className="tracking-wide">{t('viewCalendarBtn', 'View Calendar')}</span>
             </button>
           ) : (
             <button 
@@ -2910,7 +2911,7 @@ export const StrategyModule = () => {
               title="Generate content calendar events from strategy"
             >
               <Calendar className="w-5 h-5 text-white shrink-0" />
-              <span className="tracking-wide">Generate Calendar</span>
+              <span className="tracking-wide">{t('generateCalendarBtn', 'Generate Calendar')}</span>
             </button>
           )}
         </div>

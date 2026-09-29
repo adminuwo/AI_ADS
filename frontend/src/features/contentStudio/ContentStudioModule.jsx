@@ -961,7 +961,7 @@ export const ContentStudioModule = () => {
           {/* Render Active Sub-Page parameters & editor canvas */}
           {tab === 'BLOG' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="p-4 sm:p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="p-4 sm:p-5 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
                   <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t('blog', 'Blog')} Parameters</h2>
                   <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 uppercase tracking-wider">
@@ -1028,7 +1028,7 @@ export const ContentStudioModule = () => {
                 </button>
               </div>
 
-              <div className="lg:col-span-2 p-4 sm:p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="lg:col-span-2 p-4 sm:p-5 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="flex flex-wrap items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5 gap-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Editorial Canvas</span>
@@ -1144,7 +1144,7 @@ export const ContentStudioModule = () => {
           {tab === 'SOCIAL' && (
             <div className="space-y-3.5 flex flex-col">
               {/* TOP: Social Media Parameters (Full-Width Compact) */}
-              <div className="p-4 sm:p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="p-4 sm:p-5 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
                   <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
@@ -1264,7 +1264,7 @@ export const ContentStudioModule = () => {
               </div>
 
               {/* BOTTOM: Generated Social Asset (Full-Width Compact) */}
-              <div className="p-4 sm:p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="p-4 sm:p-5 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
                   <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400">
@@ -1372,7 +1372,7 @@ export const ContentStudioModule = () => {
                     <div className="flex flex-col space-y-2.5">
 
                       {/* ── CARD 1: HOOK / HEADLINE ── */}
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm hover:border-brand-500/40 transition-colors">
+                      <div className="p-3.5 accent-card rounded-xl bg-white dark:bg-slate-900 space-y-2 shadow-sm hover:border-brand-500/40 transition-colors">
                         <div className="flex items-center justify-between">
                           <span className="px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
                             + HOOK / HEADLINE
@@ -1400,7 +1400,7 @@ export const ContentStudioModule = () => {
                       </div>
 
                       {/* ── CARD 3: CAPTION & BODY COPY ── */}
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm hover:border-emerald-500/40 transition-colors">
+                      <div className="p-3.5 accent-card rounded-xl bg-white dark:bg-slate-900 space-y-2 shadow-sm hover:border-emerald-500/40 transition-colors">
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <div className="flex items-center gap-2">
                             <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase tracking-widest">
@@ -1466,7 +1466,7 @@ export const ContentStudioModule = () => {
                       </div>
 
                       {/* ── CARD 4: CALL TO ACTION (CTA) ── */}
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm hover:border-amber-500/40 transition-colors">
+                      <div className="p-3.5 accent-card rounded-xl bg-white dark:bg-slate-900 space-y-2 shadow-sm hover:border-amber-500/40 transition-colors">
                         <div className="flex items-center justify-between">
                           <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[8px] font-black uppercase tracking-widest">
                             🎯 CALL TO ACTION (CTA)
@@ -1494,7 +1494,7 @@ export const ContentStudioModule = () => {
                       </div>
 
                       {/* ── CARD 5: SEO HASHTAGS & KEYWORDS ── */}
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm hover:border-rose-500/40 transition-colors">
+                      <div className="p-3.5 accent-card rounded-xl bg-white dark:bg-slate-900 space-y-2 shadow-sm hover:border-rose-500/40 transition-colors">
                         <div className="flex items-center justify-between">
                           <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
                             <Hash className="w-3 h-3" /> SEO HASHTAGS &amp; TAGS
@@ -1521,7 +1521,7 @@ export const ContentStudioModule = () => {
                       </div>
 
                       {/* ── CARD 6: CREATIVE COPY VARIATIONS & ANGLES ── */}
-                      <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm hover:border-cyan-500/40 transition-colors">
+                      <div className="p-5 accent-card rounded-2xl bg-white dark:bg-slate-900 space-y-4 shadow-sm hover:border-cyan-500/40 transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center border border-cyan-500/20">
@@ -1654,7 +1654,7 @@ export const ContentStudioModule = () => {
           {/* 3. Email Copy Studio */}
           {tab === 'EMAIL' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-6 xl:col-span-5 p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-5 h-fit">
+              <div className="lg:col-span-6 xl:col-span-5 p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-5 h-fit">
                 <div>
                   <h2 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Email Details</h2>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Provide details to draft the perfect email</p>
@@ -1849,7 +1849,7 @@ export const ContentStudioModule = () => {
                 </button>
               </div>
 
-              <div className="lg:col-span-6 xl:col-span-7 p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="lg:col-span-6 xl:col-span-7 p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="flex flex-wrap items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5 gap-2">
                   <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Generated Email Copy</h2>
                   {emailResult && (
@@ -1952,7 +1952,7 @@ export const ContentStudioModule = () => {
           {/* 4. Ad Copy Studio */}
           {tab === 'AD_COPY' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Ad Copy Parameters</h2>
                   <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 uppercase tracking-wider">
@@ -2018,7 +2018,7 @@ export const ContentStudioModule = () => {
                 </button>
               </div>
 
-              <div className="lg:col-span-2 p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="lg:col-span-2 p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
                 <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Generated Ad Copy Variations</h2>
                 {adResult ? (
                   <div className="space-y-4 text-xs">
@@ -2072,7 +2072,7 @@ export const ContentStudioModule = () => {
         <div className="space-y-6">
           {/* MAIN CONTENT STUDIO HUB PAGE VIEW (when no channel card is selected) */}
           {/* Header Bar */}
-          <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <PenTool className="w-5 h-5 text-brand-600 dark:text-brand-400" />
@@ -2096,7 +2096,8 @@ export const ContentStudioModule = () => {
                 colorClass: 'from-blue-500/10 to-sky-500/5',
                 hoverBorder: 'hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] dark:hover:border-blue-400/40',
                 badgeBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-                iconColor: 'text-blue-500'
+                iconColor: 'text-blue-500',
+                leftBorderColor: '#3b82f6'
               },
               {
                 id: 'SOCIAL',
@@ -2106,7 +2107,8 @@ export const ContentStudioModule = () => {
                 colorClass: 'from-purple-500/10 to-indigo-500/5',
                 hoverBorder: 'hover:border-purple-400/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] dark:hover:border-purple-400/40',
                 badgeBg: 'bg-brand-500/10 text-brand-600 dark:text-brand-400',
-                iconColor: 'text-brand-500'
+                iconColor: 'text-brand-500',
+                leftBorderColor: '#a855f7'
               },
               {
                 id: 'EMAIL',
@@ -2116,7 +2118,8 @@ export const ContentStudioModule = () => {
                 colorClass: 'from-emerald-500/10 to-teal-500/5',
                 hoverBorder: 'hover:border-emerald-400/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] dark:hover:border-emerald-400/40',
                 badgeBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-                iconColor: 'text-emerald-500'
+                iconColor: 'text-emerald-500',
+                leftBorderColor: '#10b981'
               }
             ].map((card) => {
               const Icon = card.icon;
@@ -2124,7 +2127,8 @@ export const ContentStudioModule = () => {
                 <button
                   key={card.id}
                   onClick={() => openSubPage(card.id)}
-                  className={`p-5 rounded-3xl text-left transition-all duration-300 border flex flex-col justify-between group relative overflow-hidden bg-white/80 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 ${card.hoverBorder}`}
+                  className={`p-5 rounded-3xl text-left transition-all duration-300 border-t border-r border-b flex flex-col justify-between group relative overflow-hidden bg-white/80 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 ${card.hoverBorder}`}
+                  style={{ borderLeft: `4px solid ${card.leftBorderColor}` }}
                 >
                   {/* Light low-opacity glow edge backdrop */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${card.colorClass} opacity-30 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
@@ -2152,7 +2156,7 @@ export const ContentStudioModule = () => {
           </div>
 
           {/* Clean Overview Card below grid */}
-          <div className="p-8 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 text-center space-y-3">
+          <div className="p-8 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 text-center space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto">
               <Sparkles className="w-6 h-6" />
             </div>

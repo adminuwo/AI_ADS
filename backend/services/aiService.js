@@ -509,9 +509,11 @@ const generate = async (prompt, options = {}) => {
 
 const generateJSON = async (prompt, options = {}) => {
   const reqTag = options.reqId ? `[WB:${options.reqId}] ` : '[AI-Service] ';
-  const jsonInstruction = `\n\nIMPORTANT: Respond ONLY with valid JSON. No markdown, no code blocks, no explanation. Just raw JSON.`;
+  const targetLang = options.targetLanguage || options.language;
+  const langDirective = targetLang ? `\nCRITICAL LANGUAGE INSTRUCTION: Write and output ALL text, headlines, titles, copy, descriptions, hooks, sections, and content strictly in "${targetLang}" language.` : '';
+  const jsonInstruction = `\n\nIMPORTANT: Respond ONLY with valid JSON. No markdown, no code blocks, no explanation. Just raw JSON.${langDirective}`;
 
-  console.log(`${reqTag}AI generateJSON started...`);
+  console.log(`${reqTag}AI generateJSON started (${targetLang || 'English'})...`);
 
   let result = null;
   try {

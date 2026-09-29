@@ -3,6 +3,7 @@
  * AI-powered content: social posts, blog articles, email, ad copy, SEO briefs.
  */
 const { generate, generateJSON } = require('../services/aiService');
+const { buildLanguageInstruction } = require('../utils/languageHelper');
 const BrandProfile = require('../models/BrandProfile');
 const Content = require('../models/Content');
 
@@ -190,7 +191,9 @@ Return a JSON object with this exact structure:
   "expectedEngagement": "High ROI & Virality"
 }`;
 
-    const result = await generateJSON(prompt, { model, temperature: 0.85 });
+    const targetLang = req.body.languageCode || req.body.targetLanguage || req.body.language;
+    const fullPrompt = prompt + '\n' + buildLanguageInstruction(targetLang);
+    const result = await generateJSON(fullPrompt, { model, temperature: 0.85, targetLanguage: targetLang });
     const postData = result?.data || result;
 
     if (!postData) return res.status(500).json({ success: false, error: 'Generation failed' });
@@ -277,7 +280,9 @@ Return JSON:
   "internalLinkSuggestions": ["topic1", "topic2"]
 }`;
 
-    const result = await generateJSON(prompt, { model, temperature: 0.7, maxTokens: 6000 });
+    const targetLang = req.body.languageCode || req.body.targetLanguage || req.body.language;
+    const fullPrompt = prompt + '\n' + buildLanguageInstruction(targetLang);
+    const result = await generateJSON(fullPrompt, { model, temperature: 0.7, maxTokens: 6000, targetLanguage: targetLang });
     if (!result) return res.status(500).json({ success: false, error: 'Generation failed' });
 
     const draftData = result?.data || result;
@@ -417,7 +422,9 @@ Return JSON:
 
     let emailData = null;
     try {
-      const result = await generateJSON(prompt, { model, temperature: 0.8 });
+      const targetLang = req.body.languageCode || req.body.targetLanguage || req.body.language;
+      const fullPrompt = prompt + '\n' + buildLanguageInstruction(targetLang);
+      const result = await generateJSON(fullPrompt, { model, temperature: 0.8, targetLanguage: targetLang });
       if (result) {
         emailData = result?.data || result;
       }
@@ -508,7 +515,9 @@ Return JSON:
   "keyBenefits": ["benefit1", "benefit2"]
 }`;
 
-    const result = await generateJSON(prompt, { model, temperature: 0.85 });
+    const targetLang = req.body.languageCode || req.body.targetLanguage || req.body.language;
+    const fullPrompt = prompt + '\n' + buildLanguageInstruction(targetLang);
+    const result = await generateJSON(fullPrompt, { model, temperature: 0.85, targetLanguage: targetLang });
     if (!result) return res.status(500).json({ success: false, error: 'Generation failed' });
 
     const adData = result?.data || result;

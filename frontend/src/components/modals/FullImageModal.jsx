@@ -92,7 +92,7 @@ export const FullImageModal = ({ imageUrl, title = '', brandName = '', onClose }
 
         <button
           onClick={handleDownload}
-          className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white text-xs font-black flex items-center gap-2 border border-emerald-400/40 shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95"
+          className="btn-primary px-6 py-2.5 rounded-2xl text-xs font-black flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
         >
           {downloaded ? <Check className="w-4 h-4 text-white" /> : <Download className="w-4 h-4" />}
           <span>{downloaded ? 'Downloaded to Device!' : 'Download Full Image'}</span>

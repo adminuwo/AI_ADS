@@ -99,19 +99,7 @@ const Toast = ({ message, type = 'error', onClose }) => {
 };
 
 export const SeoModule = () => {
-  const { 
-    user,
-    activeWorkspace, 
-    setActiveModule, 
-    seoSearchData, 
-    setSeoSearchData,
-    seoSearchDataMap,
-    isSeoAuditingMap,
-    saveSeoDataForWorkspace,
-    getSeoDataForWorkspace,
-    runSeoAuditInBackground,
-    t 
-  } = useWorkspace();
+  const { user, activeWorkspace, setActiveModule, seoSearchData, setSeoSearchData, seoSearchDataMap, isSeoAuditingMap, saveSeoDataForWorkspace, getSeoDataForWorkspace, runSeoAuditInBackground, t } = useWorkspace();
 
   const userPlanNorm = (user?.plan || 'starter').toLowerCase();
   const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
@@ -337,18 +325,18 @@ export const SeoModule = () => {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Header */}
-      <div className="p-5 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-5 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-brand-500 flex items-center justify-center text-white shadow-md shadow-cyan-500/20">
               <Bot className="w-4 h-4" />
             </div>
             <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              SEO Keyword Intelligence & Competitor Gap Engine
+              {t("SEO Keyword Intelligence & Competitor Gap Engine", "SEO Keyword Intelligence & Competitor Gap Engine")}
             </h1>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 pl-10">
-            Real-time verified on-page scraping, Google SERP rankings, and dynamic competitor keyword gap analysis.
+            {t("Real-time verified on-page scraping, Google SERP rankings, and dynamic competitor keyword gap analysis.", "Real-time verified on-page scraping, Google SERP rankings, and dynamic competitor keyword gap analysis.")}
           </p>
         </div>
 
@@ -356,19 +344,19 @@ export const SeoModule = () => {
         <div className="flex flex-wrap items-center gap-2 text-[10px] font-black">
           <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" title="Directly extracted from live website HTML tags">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            VERIFIED ON-PAGE
+            {t("VERIFIED ON-PAGE", "VERIFIED ON-PAGE")}
           </span>
           <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20" title="Organic search engine positions">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            SEARCH RANKINGS
+            {t("SEARCH RANKINGS", "SEARCH RANKINGS")}
           </span>
           <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20" title="Real competitor SERP advantage vs target">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-            COMPETITOR GAP
+            {t("COMPETITOR GAP", "COMPETITOR GAP")}
           </span>
           <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="AI-synthesized strategic growth recommendation">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            AI OPPORTUNITY
+            {t("AI OPPORTUNITY", "AI OPPORTUNITY")}
           </span>
           {dataIntegrity && (
             <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold ml-1">
@@ -380,13 +368,13 @@ export const SeoModule = () => {
       </div>
 
       {/* Top Input Control Bar */}
-      <div className="p-5 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+      <div className="p-5 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-          {/* Target Website URL */}
+          {/* {t("Target Website URL", "Target Website URL")} */}
           <div className="md:col-span-5 space-y-1.5">
             <label className="block text-[11px] font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-emerald-500" />
-              Target Website URL
+              {t("Target Website URL", "Target Website URL")}
             </label>
             <input
               type="text"
@@ -397,11 +385,11 @@ export const SeoModule = () => {
             />
           </div>
 
-          {/* Target Focus Topic */}
+          {/* {t("Target Focus Topic", "Target Focus Topic")} */}
           <div className="md:col-span-4 space-y-1.5">
             <label className="block text-[11px] font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-cyan-500" />
-              Target Focus Topic
+              {t("Target Focus Topic", "Target Focus Topic")}
             </label>
             <input
               type="text"
@@ -412,20 +400,20 @@ export const SeoModule = () => {
             />
           </div>
 
-          {/* Search Intent */}
+          {/* {t("Search Intent", "Search Intent")} */}
           <div className="md:col-span-2 space-y-1.5">
             <label className="block text-[11px] font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              Search Intent
+              {t("Search Intent", "Search Intent")}
             </label>
             <select
               value={intent}
               onChange={(e) => setIntent(e.target.value)}
               className="w-full glass-input text-xs font-semibold"
             >
-              <option value="Commercial">Commercial (Compare)</option>
-              <option value="Transactional">Transactional (Buy / Convert)</option>
-              <option value="Informational">Informational (Learn)</option>
-              <option value="Navigational">Navigational (Find)</option>
+              <option value="Commercial">{t("Commercial (Compare)", "Commercial (Compare)")}</option>
+              <option value="Transactional">{t("Transactional (Buy / Convert)", "Transactional (Buy / Convert)")}</option>
+              <option value="Informational">{t("Informational (Learn)", "Informational (Learn)")}</option>
+              <option value="Navigational">{t("Navigational (Find)", "Navigational (Find)")}</option>
             </select>
           </div>
 
@@ -438,7 +426,7 @@ export const SeoModule = () => {
               title="Crawl live URL and analyze SERP rankings"
             >
               {isAuditing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-              <span>{isAuditing ? '...' : 'Audit'}</span>
+              <span>{isAuditing ? '...' : t('Audit', 'Audit')}</span>
             </button>
           </div>
         </div>
@@ -454,7 +442,7 @@ export const SeoModule = () => {
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
               }`}
             >
-              Overview Matrix ({totalAnalyzedKeywords})
+              {t("Overview Matrix", "Overview Matrix")} ({totalAnalyzedKeywords})
             </button>
 
             <button
@@ -466,7 +454,7 @@ export const SeoModule = () => {
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              1. On-Page Terms & Collections ({onSiteKeywords.length})
+              {t("1. On-Page Terms & Collections", "1. On-Page Terms & Collections")} ({onSiteKeywords.length})
             </button>
 
             <button
@@ -490,7 +478,7 @@ export const SeoModule = () => {
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-purple-400" />
-              3. Competitor Gaps ({competitorGaps.length})
+              {t("3. Competitor Gaps", "3. Competitor Gaps")} ({competitorGaps.length})
             </button>
 
             <button
@@ -502,7 +490,7 @@ export const SeoModule = () => {
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-amber-400" />
-              4. AI Opportunities ({opportunityKeywords.length})
+              {t("4. AI Opportunities", "4. AI Opportunities")} ({opportunityKeywords.length})
             </button>
 
             {keywordClusters.length > 0 && (
@@ -515,7 +503,7 @@ export const SeoModule = () => {
                 }`}
               >
                 <Layers3 className="w-3 h-3" />
-                Topic Clusters ({keywordClusters.length})
+                {t("Topic Clusters", "Topic Clusters")} ({keywordClusters.length})
               </button>
             )}
           </div>
@@ -524,13 +512,13 @@ export const SeoModule = () => {
 
       {/* Main Empty / Loading / Launch Screen */}
       {isAuditing ? (
-        <div className="text-center py-16 px-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 max-w-2xl mx-auto space-y-4 shadow-xl">
+        <div className="text-center py-16 px-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 max-w-2xl mx-auto space-y-4 shadow-xl">
           <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 flex items-center justify-center mx-auto text-cyan-500 border border-cyan-500/20 shadow-lg">
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
           <div className="space-y-1 max-w-md mx-auto">
             <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-              Autonomous SEO Agents Crawling...
+              {t("Autonomous SEO Agents Crawling...", "Autonomous SEO Agents Crawling...")}
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
               Crawls live HTML tags, discovers verified Google SERP rankings, detects real competitors, and calculates exact keyword gaps.
@@ -542,25 +530,27 @@ export const SeoModule = () => {
           </div>
         </div>
       ) : !initialized ? (
-        <div className="text-center py-16 px-6 rounded-3xl glass-card border border-dashed border-slate-200 dark:border-slate-800 max-w-2xl mx-auto space-y-4">
+        <div className="text-center py-16 px-6 rounded-3xl accent-card glass-card border border-dashed border-slate-200 dark:border-slate-800 max-w-2xl mx-auto space-y-4">
           <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 flex items-center justify-center mx-auto text-cyan-500 border border-cyan-500/20 shadow-lg">
             <Search className="w-8 h-8" />
           </div>
           <div className="space-y-1 max-w-md mx-auto">
             <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-              Enter Website URL to Launch Intelligence Audit
+              {t("Enter Website URL to Launch Intelligence Audit", "Enter Website URL to Launch Intelligence Audit")}
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
               Crawls live HTML tags, discovers verified Google SERP rankings, detects real competitors, and calculates exact keyword gaps.
             </p>
           </div>
-          <button
-            onClick={() => handleRunMultiAgentAudit(seedKeyword || getDefaultSeed())}
-            disabled={isAuditing}
-            className="btn-primary text-xs px-6 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
-          >
-            Run Verified SEO Analysis
-          </button>
+          <div className="flex justify-center">
+            <button
+              onClick={() => handleRunMultiAgentAudit(seedKeyword || getDefaultSeed())}
+              disabled={isAuditing}
+              className="btn-primary text-xs px-6 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
+            >
+              {t("Run Verified SEO Analysis", "Run Verified SEO Analysis")}
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-6">
@@ -572,11 +562,11 @@ export const SeoModule = () => {
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
-                    ⚡ Quick Wins (AI-Suggested Ranking Opportunities)
+                    ⚡ {t("Quick Wins (AI-Suggested Ranking Opportunities)", "Quick Wins (AI-Suggested Ranking Opportunities)")}
                   </h3>
                 </div>
                 <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-                  {quickWins.length} AI-Suggested Wins Available
+                  {quickWins.length} {t("AI-Suggested Wins Available", "AI-Suggested Wins Available")}
                 </span>
               </div>
 
@@ -609,12 +599,12 @@ export const SeoModule = () => {
             </div>
           )}
 
-          {/* ═════════ 3-COLUMN SECTIONS (ON-PAGE, SERP RANKINGS, COMPETITOR GAPS) ═════════ */}
+          {/* ═════════ 3-COLUMN SECTIONS (ON-PAGE, SERP RANKINGS, {t("COMPETITOR GAP", "COMPETITOR GAP")}S) ═════════ */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
             
-            {/* 🟢 COLUMN 1: ON-PAGE KEYWORDS (VERIFIED ON-PAGE) */}
+            {/* 🟢 COLUMN 1: ON-PAGE KEYWORDS ({t("VERIFIED ON-PAGE", "VERIFIED ON-PAGE")}) */}
             {(activeTab === 'all' || activeTab === 'onSite') && (
-              <div className="p-5 rounded-3xl glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
+              <div className="p-5 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-emerald-500/20">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
@@ -625,7 +615,7 @@ export const SeoModule = () => {
                         On-Page Terms & Collections
                       </h2>
                       <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block">
-                        Verified from live HTML tags, body & collection links
+                        {t("Verified from live HTML tags, body & collection links", "Verified from live HTML tags, body & collection links")}
                       </span>
                     </div>
                   </div>
@@ -659,7 +649,7 @@ export const SeoModule = () => {
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="px-2 py-0.5 rounded font-black text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                                {isCollection ? 'VERIFIED COLLECTION LINK' : 'VERIFIED ON-PAGE'}
+                                {isCollection ? 'VERIFIED COLLECTION LINK' : '{t("VERIFIED ON-PAGE", "VERIFIED ON-PAGE")}'}
                               </span>
                               <span className="px-1.5 py-0.5 rounded font-bold text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                                 {formatCleanSource(kw.source)}
@@ -699,9 +689,9 @@ export const SeoModule = () => {
               </div>
             )}
 
-            {/* 🔵 COLUMN 2: CURRENT SEARCH RANKINGS */}
+            {/* 🔵 COLUMN 2: CURRENT {t("SEARCH RANKINGS", "SEARCH RANKINGS")} */}
             {(activeTab === 'all' || activeTab === 'rankings') && (
-              <div className="p-5 rounded-3xl glass-card border border-blue-500/30 dark:border-blue-500/20 bg-gradient-to-b from-blue-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
+              <div className="p-5 rounded-3xl accent-card glass-card border border-blue-500/30 dark:border-blue-500/20 bg-gradient-to-b from-blue-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-blue-500/20">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-xs">
@@ -709,10 +699,10 @@ export const SeoModule = () => {
                     </div>
                     <div>
                       <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                        Current Search Rankings
+                        {t("Current Search Rankings", "Current Search Rankings")}
                       </h2>
                       <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold block">
-                        Search engine keyword positions
+                        {t("Search engine keyword positions", "Search engine keyword positions")}
                       </span>
                     </div>
                   </div>
@@ -819,9 +809,9 @@ export const SeoModule = () => {
               </div>
             )}
 
-            {/* 🟣 COLUMN 3: COMPETITOR KEYWORD GAPS (COMPETITOR GAP) */}
+            {/* 🟣 COLUMN 3: COMPETITOR KEYWORD GAPS ({t("COMPETITOR GAP", "COMPETITOR GAP")}) */}
             {(activeTab === 'all' || activeTab === 'competitors') && (
-              <div className="p-5 rounded-3xl glass-card border border-purple-500/30 dark:border-purple-500/20 bg-gradient-to-b from-purple-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
+              <div className="p-5 rounded-3xl accent-card glass-card border border-purple-500/30 dark:border-purple-500/20 bg-gradient-to-b from-purple-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-purple-500/20">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black text-xs">
@@ -829,7 +819,7 @@ export const SeoModule = () => {
                     </div>
                     <div>
                       <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                        Competitor Keyword Gaps
+                        {t("Competitor Keyword Gaps", "Competitor Keyword Gaps")}
                       </h2>
                       <span className="text-[10px] text-purple-600 dark:text-purple-400 font-bold block">
                         {competitorGaps.some(g => {
@@ -838,8 +828,8 @@ export const SeoModule = () => {
                           const isGoogle = Boolean(g.provenance?.provider && g.provenance.provider.toLowerCase().includes('google') && !g.provenance.provider.toLowerCase().includes('tavily'));
                           return g.isVerifiedGap && isGoogle && hasExactCompPos && hasExactTargetPos;
                         })
-                          ? 'Where competitors outrank target domain'
-                          : 'AI-suggested competitor opportunities'}
+                          ? '{t("Where competitors outrank target domain", "Where competitors outrank target domain")}'
+                          : '{t("AI-suggested competitor opportunities", "AI-suggested competitor opportunities")}'}
                       </span>
                     </div>
                   </div>
@@ -906,7 +896,7 @@ export const SeoModule = () => {
                                   ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30'
                                   : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30'
                               }`}>
-                                {isBothPositionsVerified ? 'COMPETITOR GAP' : 'AI-SUGGESTED GAP'}
+                                {isBothPositionsVerified ? '{t("COMPETITOR GAP", "COMPETITOR GAP")}' : 'AI-SUGGESTED GAP'}
                               </span>
                               <span className="px-1.5 py-0.5 rounded font-bold text-[9px] bg-rose-500/10 text-rose-600 border border-rose-500/20">
                                 {kw.gapType || 'Content gap'}
@@ -967,9 +957,9 @@ export const SeoModule = () => {
 
           </div>
 
-          {/* ═════════ SECTION 4: AI OPPORTUNITY KEYWORDS & ACTION ITEMS ═════════ */}
+          {/* ═════════ SECTION 4: {t("AI OPPORTUNITY", "AI OPPORTUNITY")} KEYWORDS & ACTION ITEMS ═════════ */}
           {(activeTab === 'all' || activeTab === 'opportunities') && opportunityKeywords.length > 0 && (
-            <div className="p-6 rounded-3xl glass-card border border-amber-500/30 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/[0.02] to-transparent space-y-4">
+            <div className="p-6 rounded-3xl accent-card glass-card border border-amber-500/30 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/[0.02] to-transparent space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-amber-500/20">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-xs">
@@ -977,13 +967,13 @@ export const SeoModule = () => {
                   </div>
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                      <span>AI-Suggested Opportunities & Recommended Actions</span>
+                      <span>{t("AI-Suggested Opportunities & Recommended Actions", "AI-Suggested Opportunities & Recommended Actions")}</span>
                       <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
                         AI-Suggested Recommendation
                       </span>
                     </h3>
                     <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold block">
-                      Recommendations synthesized from website content, ranking data & competitor gaps
+                      {t("Recommendations synthesized from website content, ranking data & competitor gaps", "Recommendations synthesized from website content, ranking data & competitor gaps")}
                     </span>
                   </div>
                 </div>
@@ -1002,7 +992,7 @@ export const SeoModule = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="px-2 py-0.5 rounded font-black text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                          AI OPPORTUNITY
+                          {t("AI OPPORTUNITY", "AI OPPORTUNITY")}
                         </span>
                         <span className="text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
                           {opp.evidenceBasis || 'Evidence: Content Gap Analysis'}
@@ -1038,16 +1028,16 @@ export const SeoModule = () => {
 
           {/* ═════════ SECTION 5: DISCOVERED COMPETITORS OVERVIEW ═════════ */}
           {(activeTab === 'all' || activeTab === 'competitors') && competitors.length > 0 && (
-            <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-purple-500" />
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
-                    Market Competitor Intelligence
+                    {t("Market Competitor Intelligence", "Market Competitor Intelligence")}
                   </h3>
                 </div>
                 <span className="text-[10px] font-bold text-slate-500">
-                  Overview of Direct Competitors & Category Rivals
+                  {t("Overview of Direct Competitors & Category Rivals", "Overview of Direct Competitors & Category Rivals")}
                 </span>
               </div>
 
@@ -1087,12 +1077,12 @@ export const SeoModule = () => {
 
           {/* ═════════ SECTION 6: DYNAMIC KEYWORD TOPIC CLUSTERS ═════════ */}
           {(activeTab === 'all' || activeTab === 'clusters') && keywordClusters.length > 0 && (
-            <div className="p-6 rounded-3xl glass-card border border-cyan-500/30 dark:border-cyan-500/20 space-y-4">
+            <div className="p-6 rounded-3xl accent-card glass-card border border-cyan-500/30 dark:border-cyan-500/20 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20">
                 <div className="flex items-center gap-2">
                   <Layers3 className="w-4 h-4 text-cyan-500" />
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>AI-Suggested Topic Clusters & Strategic Content Mapping</span>
+                    <span>{t("AI-Suggested Topic Clusters & Strategic Content Mapping", "AI-Suggested Topic Clusters & Strategic Content Mapping")}</span>
                     <span className="text-[9px] font-bold text-cyan-600 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">
                       AI-Suggested Topic Modeling
                     </span>
@@ -1134,7 +1124,7 @@ export const SeoModule = () => {
 
           {/* ═════════ TECHNICAL ON-PAGE STRATEGY & RICH SCHEMA BLUEPRINT ═════════ */}
           {brief && (
-            <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
@@ -1142,7 +1132,7 @@ export const SeoModule = () => {
                   </div>
                   <div>
                     <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
-                      Technical Strategy & Google Rich Schema Blueprint
+                      {t("Technical Strategy & Google Rich Schema Blueprint", "Technical Strategy & Google Rich Schema Blueprint")}
                     </h3>
                     <p className="text-xs text-slate-500">
                       Optimized for target entity: <strong className="text-brand-600 dark:text-brand-400">{brief.primaryKeyword}</strong> ({brief.searchIntent} Intent)
@@ -1159,7 +1149,7 @@ export const SeoModule = () => {
                     className="btn-primary text-xs flex items-center gap-1.5 px-4 py-2 rounded-xl"
                   >
                     <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Schema.org JSON-LD</span>
+                    <span>{t("Copy Schema.org JSON-LD", "Copy Schema.org JSON-LD")}</span>
                   </button>
                 )}
               </div>
@@ -1167,7 +1157,7 @@ export const SeoModule = () => {
               {/* Title & Meta Preview */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-2">
-                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Suggested High-CTR Title Tags</span>
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">{t("Suggested High-CTR Title Tags", "Suggested High-CTR Title Tags")}</span>
                   <ul className="space-y-1.5">
                     {(brief.suggestedTitles || []).map((tItem, i) => (
                       <li key={i} className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-start gap-2">
@@ -1179,7 +1169,7 @@ export const SeoModule = () => {
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-1.5">
-                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Meta Description (155 Chars)</span>
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">{t("Meta Description (155 Chars)", "Meta Description (155 Chars)")}</span>
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
                     {brief.metaDescription}
                   </p>
@@ -1217,7 +1207,7 @@ export const SeoModule = () => {
                 </div>
 
                 <div className="md:col-span-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-2">
-                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Internal Linking Blueprint</span>
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">{t("Internal Linking Blueprint", "Internal Linking Blueprint")}</span>
                   <div className="flex flex-col gap-1.5">
                     {(brief.internalLinkingSuggestions || []).map((link, i) => (
                       <span key={i} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border border-cyan-500/20 truncate">
@@ -1236,7 +1226,7 @@ export const SeoModule = () => {
               <button
                 onClick={handleProceedToStrategy}
                 disabled={isGeneratingStrategy}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-extrabold text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60 cursor-pointer"
+                className="flex items-center gap-2 px-6 py-3 btn-primary rounded-full font-extrabold text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60 cursor-pointer"
               >
                 {isGeneratingStrategy ? (
                   <>
@@ -1246,7 +1236,7 @@ export const SeoModule = () => {
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
-                    <span>Generate AI Strategy</span>
+                    <span>{t("Generate AI Strategy", "Generate AI Strategy")}</span>
                     <ChevronRight className="w-4 h-4" />
                   </>
                 )}
@@ -1256,7 +1246,7 @@ export const SeoModule = () => {
                 onClick={() => setActiveModule('campaigns')}
                 className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-full font-extrabold text-xs shadow-2xl hover:bg-brand-500 hover:scale-105 active:scale-95 transition-all cursor-pointer"
               >
-                <span>Proceed to Campaign</span>
+                <span>{t("Proceed to Campaign", "Proceed to Campaign")}</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}

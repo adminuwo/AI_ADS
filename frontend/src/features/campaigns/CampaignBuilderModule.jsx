@@ -27,6 +27,7 @@ const POST_STATUS_COLORS = {
 
 // ─── Create Campaign Modal ─────────────────────────────────────────────────────
 const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
+  const { t } = useWorkspace();
   const [form, setForm] = useState({
     campaignName: '',
     campaignGoal: '',
@@ -51,7 +52,7 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.campaignName.trim() || !form.campaignGoal.trim()) {
-      setError('Campaign name and goal are required');
+      setError(t('nameAndGoalRequired', 'Campaign name and goal are required'));
       return;
     }
     setLoading(true);
@@ -81,8 +82,8 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
       <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden">
         <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">Create Campaign</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">AI will generate a complete posting plan</p>
+            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">{t('createCampaign', 'Create Campaign')}</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t('createCampaignSubtitle', 'AI will generate a complete posting plan')}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <X className="w-4 h-4 text-slate-500" />
@@ -97,27 +98,27 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Campaign Name *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('campaignNameLabel', 'Campaign Name *')}</label>
               <input
                 type="text"
                 value={form.campaignName}
                 onChange={(e) => setForm((p) => ({ ...p, campaignName: e.target.value }))}
-                placeholder="e.g. Q3 Brand Awareness Drive"
+                placeholder={t('campaignNamePlaceholder', 'e.g. Q3 Brand Awareness Drive')}
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Campaign Goal *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('campaignGoalLabel', 'Campaign Goal *')}</label>
               <input
                 type="text"
                 value={form.campaignGoal}
                 onChange={(e) => setForm((p) => ({ ...p, campaignGoal: e.target.value }))}
-                placeholder="e.g. Increase brand awareness and drive 20% more website traffic"
+                placeholder={t('campaignGoalPlaceholder', 'e.g. Increase brand awareness and drive 20% more website traffic')}
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Start Date</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('startDateLabel', 'Start Date')}</label>
               <input
                 type="date"
                 value={form.startDate}
@@ -126,7 +127,7 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">End Date</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('endDateLabel', 'End Date')}</label>
               <input
                 type="date"
                 value={form.endDate}
@@ -135,17 +136,17 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Posting Frequency</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('postingFrequencyLabel', 'Posting Frequency')}</label>
               <select
                 value={form.postingFrequency}
                 onChange={(e) => setForm((p) => ({ ...p, postingFrequency: e.target.value }))}
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
               >
-                {FREQUENCIES.map((f) => (<option key={f}>{f}</option>))}
+                {FREQUENCIES.map((f) => (<option key={f} value={f}>{t(f.toLowerCase(), f)}</option>))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Budget (optional)</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('budgetLabel', 'Budget (optional)')}</label>
               <input
                 type="number"
                 value={form.budget}
@@ -157,7 +158,7 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Target Platforms</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">{t('targetPlatformsLabel', 'Target Platforms')}</label>
             <div className="flex flex-wrap gap-2">
               {PLATFORMS.map((p) => (
                 <button
@@ -177,7 +178,7 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Target Audience (optional)</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('targetAudienceLabel', 'Target Audience (optional)')}</label>
             <input
               type="text"
               value={form.targetAudience}
@@ -197,17 +198,17 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
             <div className="text-xs">
               <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                 <Target className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                Generate AI Strategy Roadmap immediately
+                {t('autoGenerateStrategyLabel', 'Generate AI Strategy Roadmap immediately')}
               </span>
               <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
-                Builds a 30-day strategy plan tailored specifically to this campaign's target goal.
+                {t('autoGenerateStrategyDesc', "Builds a 30-day strategy plan tailored specifically to this campaign's target goal.")}
               </p>
             </div>
           </label>
 
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-              Cancel
+              {t('cancel', 'Cancel')}
             </button>
             <button
               type="submit"
@@ -215,7 +216,7 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
               className="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold flex items-center gap-2 transition-colors disabled:opacity-60"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              {loading ? 'Creating...' : 'Create Campaign'}
+              {loading ? t('creating', 'Creating...') : t('createCampaign', 'Create Campaign')}
             </button>
           </div>
         </form>
@@ -225,72 +226,105 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
 };
 
 // ─── Campaign Card ─────────────────────────────────────────────────────────────
-const CampaignCard = ({ campaign, onSelect, onDelete }) => (
-  <div
-    onClick={() => onSelect(campaign)}
-    className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 hover:border-brand-500/50 cursor-pointer transition-all hover:shadow-lg hover:shadow-brand-500/10 space-y-3"
-  >
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">{campaign.campaignName}</h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">{campaign.campaignGoal}</p>
-      </div>
-      <span className={`px-2.5 py-1 rounded-lg text-xs font-bold flex-shrink-0 ${STATUS_COLORS[campaign.status] || STATUS_COLORS.Draft}`}>
-        {campaign.status}
-      </span>
-    </div>
-    <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-      <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{new Date(campaign.startDate).toLocaleDateString()}</span>
-      <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{campaign.postingFrequency}</span>
-      {campaign.totalPosts > 0 && <span className="flex items-center gap-1"><BarChart3 className="w-3.5 h-3.5" />{campaign.totalPosts} posts</span>}
-    </div>
-    <div className="flex items-center justify-between">
-      <div className="flex flex-wrap gap-1">
-        {(campaign.platforms || []).slice(0, 3).map((p) => (
-          <span key={p} className="px-2 py-0.5 rounded-lg bg-brand-500/10 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 text-xs font-bold">{p}</span>
-        ))}
-        {campaign.platforms?.length > 3 && (
-          <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs">+{campaign.platforms.length - 3}</span>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect(campaign);
-          }}
-          className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors ${
-            (campaign.totalPosts > 0)
-              ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
-              : 'bg-brand-500/10 hover:bg-brand-500/20 text-brand-700 dark:text-brand-300'
-          }`}
-        >
-          {campaign.totalPosts > 0 ? (
+const CampaignCard = ({ campaign, onSelect, onDelete }) => {
+  const { t } = useWorkspace();
+  return (
+    <div
+      onClick={() => onSelect(campaign)}
+      className="p-5 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 hover:border-brand-500/50 cursor-pointer transition-all hover:shadow-lg hover:shadow-brand-500/10 flex flex-col justify-between gap-4"
+    >
+      <div className="space-y-3">
+        {/* Header: Title, Goal, Status */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">{campaign.campaignName}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">{campaign.campaignGoal}</p>
+          </div>
+          <span className={`px-2.5 py-1 rounded-lg text-xs font-bold flex-shrink-0 ${STATUS_COLORS[campaign.status] || STATUS_COLORS.Draft}`}>
+            {t((campaign.status || 'Draft').toLowerCase(), campaign.status)}
+          </span>
+        </div>
+
+        {/* Metadata: Date & Frequency */}
+        <div className="flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
+          <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-slate-400" />{new Date(campaign.startDate).toLocaleDateString()}</span>
+          <span className="text-slate-300 dark:text-slate-700">•</span>
+          <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" />{t((campaign.postingFrequency || '').toLowerCase(), campaign.postingFrequency)}</span>
+          {campaign.totalPosts > 0 && (
             <>
-              <Target className="w-3 h-3" />
-              {campaign.aiGeneratedStrategy ? 'View Strategy' : 'Generate Strategy'}
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-3 h-3" />
-              Generate Plan
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <span className="flex items-center gap-1.5 font-semibold text-brand-600 dark:text-brand-400"><BarChart3 className="w-3.5 h-3.5" />{campaign.totalPosts} {t('posts', 'posts')}</span>
             </>
           )}
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); onDelete(campaign._id); }}
-          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        </div>
+
+        {/* Platforms Badges Row */}
+        <div className="flex items-center flex-wrap gap-1.5 pt-0.5">
+          {(campaign.platforms || []).slice(0, 4).map((p) => (
+            <span key={p} className="px-2.5 py-0.5 rounded-lg bg-brand-500/10 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 text-xs font-bold whitespace-nowrap">
+              {p}
+            </span>
+          ))}
+          {campaign.platforms?.length > 4 && (
+            <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-semibold whitespace-nowrap">
+              +{campaign.platforms.length - 4}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Action Footer Bar */}
+      <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+        <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate">
+          {campaign.totalPosts > 0 ? (
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>{campaign.totalPosts} {t('postsReady', 'posts scheduled')}</span>
+            </span>
+          ) : (
+            <span className="text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <span>{t('readyToPlan', 'Ready to plan')}</span>
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(campaign);
+            }}
+            className="btn-primary px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 cursor-pointer shadow-sm hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            {campaign.totalPosts > 0 ? (
+              <>
+                <Target className="w-3.5 h-3.5" />
+                <span>{campaign.aiGeneratedStrategy ? t('viewStrategy', 'View Strategy') : t('generateStrategy', 'Generate Strategy')}</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{t('generatePlan', 'Generate Plan')}</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(campaign._id); }}
+            className="p-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+            title={t('deleteCampaign', 'Delete Campaign')}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ─── Campaign Detail View ──────────────────────────────────────────────────────
 const CampaignDetail = ({ campaign, onBack }) => {
-  const { setActiveModule, updateWorkspace, activeWorkspace, setGeneratedStrategy } = useWorkspace();
+  const { setActiveModule, updateWorkspace, activeWorkspace, setGeneratedStrategy, t } = useWorkspace();
   const workspaceId = activeWorkspace?._id || activeWorkspace?.id || campaign.workspaceId;
 
   const [posts, setPosts] = useState([]);
@@ -407,7 +441,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
               <h2 className="text-lg font-extrabold text-slate-900 dark:text-white truncate">{campaign.campaignName}</h2>
               {campaignStrategy && (
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10.5px] font-bold border border-emerald-500/30 flex items-center gap-1">
-                  <Target className="w-3 h-3" /> Strategy Active
+                  <Target className="w-3 h-3" /> {t('strategyActive', 'Strategy Active')}
                 </span>
               )}
             </div>
@@ -424,7 +458,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm disabled:opacity-60 cursor-pointer"
               >
                 {generatingStrategy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Target className="w-3.5 h-3.5" />}
-                {generatingStrategy ? 'Generating Strategy...' : campaignStrategy?.gtmStrategy ? 'View Strategy' : 'Generate Strategy'}
+                {generatingStrategy ? t('generatingStrategy', 'Generating Strategy...') : campaignStrategy?.gtmStrategy ? t('viewStrategy', 'View Strategy') : t('generateStrategy', 'Generate Strategy')}
               </button>
 
               {campaignStrategy?.gtmStrategy && (
@@ -432,10 +466,10 @@ const CampaignDetail = ({ campaign, onBack }) => {
                   onClick={() => handleGenerateStrategyAndGoToPlan(true)}
                   disabled={generatingStrategy}
                   className="px-3 py-2 rounded-xl border border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer"
-                  title="Regenerate Strategy with GEO, SEO & GTM from Plan Topics"
+                  title={t('regenerateStrategyTooltip', 'Regenerate Strategy with GEO, SEO & GTM from Plan Topics')}
                 >
                   <RefreshCw className="w-3 h-3" />
-                  <span>Regenerate Strategy</span>
+                  <span>{t('regenerateStrategy', 'Regenerate Strategy')}</span>
                 </button>
               )}
 
@@ -445,7 +479,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
                 className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold flex items-center gap-2 transition-colors disabled:opacity-60 cursor-pointer"
               >
                 {generatingPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                {generatingPlan ? 'Generating Plan...' : 'Regenerate Plan'}
+                {generatingPlan ? t('generatingPlan', 'Generating Plan...') : t('regeneratePlan', 'Regenerate Plan')}
               </button>
             </>
           )}
@@ -465,8 +499,6 @@ const CampaignDetail = ({ campaign, onBack }) => {
         </div>
       )}
 
-
-
       {/* ─── Strategy Completion Modal ─── */}
       {showStrategyModal && campaignStrategy && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
@@ -477,8 +509,8 @@ const CampaignDetail = ({ campaign, onBack }) => {
                   <Target className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Campaign Strategy Ready!</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Synthesized specifically for "{campaign.campaignName}"</p>
+                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white">{t('campaignStrategyReady', 'Campaign Strategy Ready!')}</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t('synthesizedFor', 'Synthesized specifically for')} "{campaign.campaignName}"</p>
                 </div>
               </div>
               <button onClick={() => setShowStrategyModal(false)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
@@ -488,23 +520,23 @@ const CampaignDetail = ({ campaign, onBack }) => {
 
             <div className="p-6 space-y-4 max-h-[65vh] overflow-y-auto">
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Target Goal</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">{t('targetGoal', 'Target Goal')}</span>
                 <p className="text-xs font-bold text-slate-900 dark:text-white">{campaignStrategy.businessGoal || campaign.campaignGoal}</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">🎁 Lead Magnet</span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">🎁 {t('leadMagnet', 'Lead Magnet')}</span>
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{campaignStrategy.leadMagnet}</p>
                 </div>
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">📢 Primary CTA</span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">📢 {t('primaryCta', 'Primary CTA')}</span>
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{campaignStrategy.primaryCta}</p>
                 </div>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">⚡ 30-Day Tactical Plan</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">⚡ {t('thirtyDayTacticalPlan', '30-Day Tactical Plan')}</span>
                 <p className="text-xs text-slate-600 dark:text-slate-400">
                   30 structured daily action items across {(campaignStrategy.bestPlatforms || campaign.platforms || []).join(', ')} are linked to this campaign.
                 </p>
@@ -519,7 +551,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
                 }}
                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
               >
-                <Target className="w-3.5 h-3.5" /> Open Strategy Module <ArrowRight className="w-3.5 h-3.5" />
+                <Target className="w-3.5 h-3.5" /> {t('openStrategyModule', 'Open Strategy Module')} <ArrowRight className="w-3.5 h-3.5" />
               </button>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -530,13 +562,13 @@ const CampaignDetail = ({ campaign, onBack }) => {
                   }}
                   className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
                 >
-                  <Sparkles className="w-3.5 h-3.5" /> Generate Posts Now
+                  <Sparkles className="w-3.5 h-3.5" /> {t('generatePostsNow', 'Generate Posts Now')}
                 </button>
                 <button
                   onClick={() => setShowStrategyModal(false)}
                   className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors"
                 >
-                  Close
+                  {t('close', 'Close')}
                 </button>
               </div>
             </div>
@@ -547,12 +579,12 @@ const CampaignDetail = ({ campaign, onBack }) => {
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Posts', value: posts.length, icon: BarChart3, color: 'text-blue-500' },
-          { label: 'Generated', value: posts.filter((p) => p.status === 'Generated' || p.status === 'Approved').length, icon: CheckCircle2, color: 'text-emerald-500' },
-          { label: 'Platforms', value: campaign.platforms?.length || 0, icon: Layers, color: 'text-brand-500' },
-          { label: 'Pending', value: posts.filter((p) => p.status === 'Draft').length, icon: Clock, color: 'text-amber-500' },
+          { label: t('totalPosts', 'Total Posts'), value: posts.length, icon: BarChart3, color: 'text-blue-500' },
+          { label: t('generated', 'Generated'), value: posts.filter((p) => p.status === 'Generated' || p.status === 'Approved').length, icon: CheckCircle2, color: 'text-emerald-500' },
+          { label: t('platforms', 'Platforms'), value: campaign.platforms?.length || 0, icon: Layers, color: 'text-brand-500' },
+          { label: t('pending', 'Pending'), value: posts.filter((p) => p.status === 'Draft').length, icon: Clock, color: 'text-amber-500' },
         ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="p-4 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
+          <div key={label} className="p-4 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <Icon className={`w-4 h-4 ${color}`} />
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{label}</span>
@@ -568,13 +600,13 @@ const CampaignDetail = ({ campaign, onBack }) => {
           <Loader2 className="w-6 h-6 animate-spin text-brand-500" />
         </div>
       ) : posts.length === 0 ? (
-        <div className="p-12 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 text-center space-y-4">
+        <div className="p-12 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 text-center space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 mx-auto flex items-center justify-center">
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No plan generated yet</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Click "Generate Plan" to create a complete content calendar with AI-crafted posts for each day and platform.</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{t('noPlanGeneratedYet', 'No plan generated yet')}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{t('noPlanGeneratedDesc', 'Click "Generate Plan" to create a complete content calendar with AI-crafted posts for each day and platform.')}</p>
           </div>
           <button
             onClick={() => handleGeneratePlan()}
@@ -582,7 +614,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-brand-500/20 disabled:opacity-60 cursor-pointer"
           >
             {generatingPlan ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-            {generatingPlan ? 'Generating Plan...' : 'Generate Plan'}
+            {generatingPlan ? t('generatingPlan', 'Generating Plan...') : t('generatePlan', 'Generate Plan')}
           </button>
         </div>
       ) : (
@@ -592,7 +624,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
               <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{date}</h3>
               <div className="space-y-2">
                 {datePosts.map((post) => (
-                  <div key={post._id} className="p-4 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div key={post._id} className="p-4 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -609,7 +641,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
                         )}
                       </div>
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-bold flex-shrink-0 ${POST_STATUS_COLORS[post.status] || POST_STATUS_COLORS.Draft}`}>
-                        {post.status}
+                        {t((post.status || 'Draft').toLowerCase(), post.status)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 pt-0.5">
@@ -690,14 +722,14 @@ export const CampaignBuilderModule = () => {
       )}
 
       {/* Header */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5 text-brand-600 dark:text-brand-400" />
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Campaign Builder</h1>
+            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">{t('campaignBuilderTitle', 'Campaign Builder')}</h1>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-            AI-powered campaign planning with auto-generated post schedules for{' '}
+            {t('campaignBuilderSubtitle', 'AI-powered campaign planning with auto-generated post schedules for')}{' '}
             <strong className="text-slate-900 dark:text-white">{activeWorkspace?.brandName || 'your brand'}</strong>
           </p>
         </div>
@@ -706,7 +738,7 @@ export const CampaignBuilderModule = () => {
             <RefreshCw className="w-4 h-4" />
           </button>
           <button onClick={() => setShowCreate(true)} className="btn-primary text-xs flex items-center gap-2">
-            <Plus className="w-4 h-4" /> New Campaign
+            <Plus className="w-4 h-4" /> {t('newCampaign', 'New Campaign')}
           </button>
         </div>
       </div>
@@ -723,18 +755,18 @@ export const CampaignBuilderModule = () => {
           <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
         </div>
       ) : campaigns.length === 0 ? (
-        <div className="p-16 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 text-center space-y-4">
+        <div className="p-16 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-brand-500/10 dark:bg-brand-500/20 flex items-center justify-center mx-auto">
             <Layers className="w-8 h-8 text-brand-500" />
           </div>
           <div>
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">No Campaigns Yet</h3>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{t('noCampaignsYet', 'No Campaigns Yet')}</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-              Create your first campaign and let AI generate a complete posting schedule with captions, hashtags, and visual prompts.
+              {t('noCampaignsDesc', 'Create your first campaign and let AI generate a complete posting schedule with captions, hashtags, and visual prompts.')}
             </p>
           </div>
           <button onClick={() => setShowCreate(true)} className="btn-primary mx-auto flex items-center gap-2">
-            <Sparkles className="w-4 h-4" /> Create First Campaign
+            <Sparkles className="w-4 h-4" /> {t('createFirstCampaign', 'Create First Campaign')}
           </button>
         </div>
       ) : (

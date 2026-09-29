@@ -394,7 +394,7 @@ export const Login = ({ onLoginSuccess }) => {
               className={`w-full py-3.5 mt-3 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
                 success
                   ? 'bg-emerald-600 text-white shadow-md'
-                  : 'bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-lg shadow-brand-500/25 active:scale-[0.98]'
+                  : 'btn-primary shadow-lg shadow-brand-500/25 active:scale-[0.98]'
               }`}
             >
               {isLoading ? (

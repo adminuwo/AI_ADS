@@ -136,7 +136,7 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Parameters */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Visual Parameters</h2>
         <div>
           <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Topic / Campaign Name</label>
@@ -168,7 +168,7 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
       </div>
 
       {/* Output Canvas */}
-      <div className="lg:col-span-2 p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="lg:col-span-2 p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Visual Output Canvas</h2>
         {result ? (
           <div className="space-y-4 animate-in fade-in">
@@ -262,7 +262,7 @@ const CarouselStudio = ({ workspace }) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Carousel Parameters</h2>
         <div>
           <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Carousel Topic</label>
@@ -282,13 +282,13 @@ const CarouselStudio = ({ workspace }) => {
             className="w-full accent-purple-500" />
         </div>
         <button onClick={handleGenerate} disabled={drafting}
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
+          className="w-full btn-primary py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60">
           {drafting ? <Loader2 className="w-4 h-4 animate-spin" /> : <LayoutGrid className="w-4 h-4" />}
           {drafting ? 'Crafting Slides...' : 'Generate Carousel Brief'}
         </button>
       </div>
 
-      <div className="lg:col-span-2 p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="lg:col-span-2 p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Carousel Slide Brief</h2>
         {result ? (
           <div className="space-y-4 animate-in fade-in">
@@ -374,7 +374,7 @@ const ReelScriptStudio = ({ workspace }) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
           <Film className="w-4 h-4 text-rose-500" /> Reel Script Parameters
         </h2>
@@ -399,13 +399,13 @@ const ReelScriptStudio = ({ workspace }) => {
           </select>
         </div>
         <button onClick={handleGenerate} disabled={drafting}
-          className="w-full bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
+          className="w-full btn-primary py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60">
           {drafting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Film className="w-4 h-4" />}
           {drafting ? 'Writing Script...' : 'Generate Reel Script'}
         </button>
       </div>
 
-      <div className="lg:col-span-2 p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="lg:col-span-2 p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Reel Script & Shot List</h2>
         {result ? (
           <div className="space-y-4 animate-in fade-in">
@@ -510,7 +510,7 @@ const StoryboardStudio = ({ workspace }) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-amber-500" /> Storyboard Parameters
         </h2>
@@ -535,13 +535,13 @@ const StoryboardStudio = ({ workspace }) => {
             className="w-full accent-amber-500" />
         </div>
         <button onClick={handleGenerate} disabled={drafting}
-          className="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
+          className="w-full btn-primary py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-60">
           {drafting ? <Loader2 className="w-4 h-4 animate-spin" /> : <BookOpen className="w-4 h-4" />}
           {drafting ? 'Building Storyboard...' : 'Generate Storyboard'}
         </button>
       </div>
 
-      <div className="lg:col-span-2 p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="lg:col-span-2 p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Storyboard Frames & Shot List</h2>
         {result ? (
           <div className="space-y-4 animate-in fade-in">
@@ -636,7 +636,7 @@ const BrandKitStudio = ({ workspace }) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
           <Brush className="w-4 h-4 text-brand-500" /> Brand Kit Parameters
         </h2>
@@ -661,7 +661,7 @@ const BrandKitStudio = ({ workspace }) => {
         </button>
       </div>
 
-      <div className="lg:col-span-2 p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="lg:col-span-2 p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Brand Visual System</h2>
         {result ? (
           <div className="space-y-5 animate-in fade-in">
@@ -856,16 +856,16 @@ export const CreativeStudioModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in w-full max-w-[1600px] mx-auto p-6">
       <div className="space-y-6">
-        {/* Clean Header */}
-        <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+        {/* Header Bar */}
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-purple-600 text-white flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-purple-600 text-white flex items-center justify-center shadow-md shrink-0">
               <Palette className="w-5 h-5" />
             </div>
-            <div>
+            <div className="space-y-0.5">
               <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Creative Studio</h1>
-              <p className="text-xs text-slate-500">
-                High-Resolution AI Visual Creative & Ad Rendering for <strong>{activeWorkspace?.brandName || 'Brand'}</strong>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                High-Resolution AI Visual Creative &amp; Ad Rendering for <strong className="text-slate-900 dark:text-white">{activeWorkspace?.brandName || 'Brand'}</strong>
               </p>
             </div>
           </div>

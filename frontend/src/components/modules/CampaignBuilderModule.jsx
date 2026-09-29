@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Layers, Sparkles, Calendar, CheckCircle2, ArrowRight } from 'lucide-react';
 
@@ -17,7 +17,7 @@ export const CampaignBuilderModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in">
       {/* Header Bar */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5 text-brand-400" />
@@ -36,7 +36,7 @@ export const CampaignBuilderModule = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Input Form */}
-        <div className="p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">Campaign Parameters</h2>
           
           <div>
@@ -72,7 +72,7 @@ export const CampaignBuilderModule = () => {
         </div>
 
         {/* Output Campaign Plan */}
-        <div className="lg:col-span-2 p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+        <div className="lg:col-span-2 p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">Campaign Theme & Asset Hierarchy</h2>
 
           {generated ? (

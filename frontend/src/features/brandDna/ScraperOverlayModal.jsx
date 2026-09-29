@@ -219,191 +219,205 @@ export const ScraperOverlayModal = () => {
         </div>
 
         {!result ? (
-          /* STEP 1: SINGLE UNIFIED INPUT FORM */
-          <form onSubmit={handleExtractBrandDna} className="space-y-5">
-            
-            {/* SECTION 1: WEBSITE & BRAND NAME */}
-            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3.5">
-              <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                <Globe className="w-4 h-4 text-brand-500" />
-                <span>1. Website Domain & Brand Name</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                    {t('targetDomainUrl', 'Target Domain URL')}
-                  </label>
-                  <div className="relative">
-                    <Globe className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                    <input
-                      type="text"
-                      placeholder="e.g. https://nike.com"
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all font-semibold"
-                    />
+          /* STEP 1: SINGLE UNIFIED INPUT FORM (COMPACT 2-COLUMN ZERO-SCROLL LAYOUT) */
+          <form onSubmit={handleExtractBrandDna} className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              
+              {/* LEFT COLUMN: Section 1 & Section 2 */}
+              <div className="space-y-3 flex flex-col justify-between">
+                
+                {/* SECTION 1: WEBSITE & BRAND NAME */}
+                <div className="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5">
+                  <div className="flex items-center gap-2 text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">
+                    <Globe className="w-3.5 h-3.5 text-brand-500" />
+                    <span>1. Website Domain & Brand Name</span>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                    {t('brandNameOptional', 'Brand / Company Name (Optional)')}
-                  </label>
-                  <div className="relative">
-                    <Building className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                    <input
-                      type="text"
-                      placeholder="e.g. Nike"
-                      value={brandName}
-                      onChange={(e) => setBrandName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all font-semibold"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* SECTION 2: CUSTOM BRAND LOGO UPLOAD */}
-            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  <span>2. Brand Logo</span>
-                </div>
-                {logoFile && (
-                  <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Logo Selected
-                  </span>
-                )}
-              </div>
-
-              {!logoPreview ? (
-                <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-white hover:bg-slate-100/50 cursor-pointer transition-all text-center">
-                  <div className="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center mb-1.5">
-                    <Upload className="w-5 h-5" />
-                  </div>
-                  <span className="text-xs font-bold text-slate-800">Upload High-Res Brand Logo</span>
-                  <span className="text-[10px] text-slate-400 font-medium mt-0.5">Supports PNG, SVG, JPG, WEBP</span>
-                  <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={handleLogoSelect} className="hidden" />
-                </label>
-              ) : (
-                <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    <img src={logoPreview} alt="Brand Logo Preview" className="w-12 h-12 rounded-xl object-contain bg-slate-50 p-1 border border-slate-200 shadow-sm" />
+                  <div className="space-y-2">
                     <div>
-                      <h5 className="text-xs font-extrabold text-slate-900">{logoFile?.name || 'Uploaded Brand Logo'}</h5>
-                      <p className="text-[10px] text-slate-500 font-semibold">{formatFileSize(logoFile?.size)}</p>
+                      <label className="block text-[10px] font-bold text-slate-700 mb-1">
+                        {t('targetDomainUrl', 'Target Domain URL')}
+                      </label>
+                      <div className="relative">
+                        <Globe className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="text"
+                          placeholder="e.g. https://nike.com"
+                          value={url}
+                          onChange={(e) => setUrl(e.target.value)}
+                          className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-700 mb-1">
+                        {t('brandNameOptional', 'Brand / Company Name (Optional)')}
+                      </label>
+                      <div className="relative">
+                        <Building className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="text"
+                          placeholder="e.g. Nike"
+                          value={brandName}
+                          onChange={(e) => setBrandName(e.target.value)}
+                          className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all font-semibold"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleRemoveLogo}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                 </div>
-              )}
-            </div>
 
-            {/* SECTION 3: MULTIPLE BRAND GUIDELINES / DOCUMENTS */}
-            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                  <FileText className="w-4 h-4 text-blue-500" />
-                  <span>3. Brand Guideline Documents (Multiple)</span>
-                </div>
-                {documentFiles.length > 0 && (
-                  <span className="text-[11px] text-brand-600 font-extrabold bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
-                    {documentFiles.length} {documentFiles.length === 1 ? 'Document' : 'Documents'}
-                  </span>
-                )}
-              </div>
+                {/* SECTION 2: CUSTOM BRAND LOGO UPLOAD */}
+                <div className="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5 flex-1 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      <span>2. Brand Logo</span>
+                    </div>
+                    {logoFile && (
+                      <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Logo Selected
+                      </span>
+                    )}
+                  </div>
 
-              {/* Upload Dropzone */}
-              <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-white hover:bg-slate-100/50 cursor-pointer transition-all text-center">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-1.5">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <span className="text-xs font-bold text-slate-800">Upload PDF, Word Decks, or Text Guidelines</span>
-                <span className="text-[10px] text-slate-400 font-medium mt-0.5">Select multiple files (.pdf, .doc, .docx, .txt)</span>
-                <input type="file" multiple accept=".pdf,.doc,.docx,.txt" onChange={handleDocumentsSelect} className="hidden" />
-              </label>
-
-              {/* Document Files Chips List */}
-              {documentFiles.length > 0 && (
-                <div className="space-y-2 mt-2">
-                  {documentFiles.map((doc, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl">
+                  {!logoPreview ? (
+                    <label className="flex-1 min-h-[64px] flex items-center justify-center p-3 border-2 border-dashed border-slate-200 rounded-xl bg-white hover:bg-slate-100/60 cursor-pointer transition-all text-center gap-2.5 group">
+                      <div className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <Upload className="w-4 h-4" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-xs font-bold text-slate-800 block">Upload Brand Logo</span>
+                        <span className="text-[9px] text-slate-400 font-medium block">PNG, SVG, JPG, WEBP</span>
+                      </div>
+                      <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={handleLogoSelect} className="hidden" />
+                    </label>
+                  ) : (
+                    <div className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded-xl">
                       <div className="flex items-center gap-2.5 truncate">
-                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 font-extrabold text-[10px] rounded-md border border-blue-200 uppercase">
-                          {doc.name.split('.').pop()}
-                        </span>
-                        <span className="text-xs font-bold text-slate-800 truncate max-w-[240px] sm:max-w-sm">{doc.name}</span>
-                        <span className="text-[10px] text-slate-400 font-semibold">({formatFileSize(doc.size)})</span>
+                        <img src={logoPreview} alt="Logo" className="w-9 h-9 rounded-lg object-contain bg-slate-50 p-1 border border-slate-200 shadow-2xs" />
+                        <div className="truncate">
+                          <h5 className="text-xs font-extrabold text-slate-900 truncate">{logoFile?.name || 'Brand Logo'}</h5>
+                          <p className="text-[9px] text-slate-500 font-semibold">{formatFileSize(logoFile?.size)}</p>
+                        </div>
                       </div>
                       <button
                         type="button"
-                        onClick={() => handleRemoveDocument(idx)}
+                        onClick={handleRemoveLogo}
                         className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* SECTION 4: MULTIPLE BRAND IMAGES & MEDIA ASSETS */}
-            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                  <Image className="w-4 h-4 text-purple-500" />
-                  <span>4. Brand Images & Banners (Multiple)</span>
-                </div>
-                {imageFiles.length > 0 && (
-                  <span className="text-[11px] text-purple-600 font-extrabold bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
-                    {imageFiles.length} {imageFiles.length === 1 ? 'Image' : 'Images'}
-                  </span>
-                )}
               </div>
 
-              {/* Upload Dropzone */}
-              <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-white hover:bg-slate-100/50 cursor-pointer transition-all text-center">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-1.5">
-                  <Image className="w-5 h-5" />
-                </div>
-                <span className="text-xs font-bold text-slate-800">Upload Product Photos, Creatives & Banners</span>
-                <span className="text-[10px] text-slate-400 font-medium mt-0.5">Select multiple images (.png, .jpg, .jpeg, .webp)</span>
-                <input type="file" multiple accept="image/*" onChange={handleImagesSelect} className="hidden" />
-              </label>
-
-              {/* Image Previews Grid */}
-              {imagePreviews.length > 0 && (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5 pt-1">
-                  {imagePreviews.map((img, idx) => (
-                    <div key={img.id || idx} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-square bg-slate-100 shadow-sm">
-                      <img src={img.url} alt={`Brand Media ${idx + 1}`} className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(idx)}
-                        className="absolute top-1 right-1 p-1 bg-slate-900/80 text-white hover:bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
+              {/* RIGHT COLUMN: Section 3 & Section 4 */}
+              <div className="space-y-3 flex flex-col justify-between">
+                
+                {/* SECTION 3: MULTIPLE BRAND GUIDELINES / DOCUMENTS */}
+                <div className="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">
+                      <FileText className="w-3.5 h-3.5 text-blue-500" />
+                      <span>3. Brand Guideline Documents</span>
                     </div>
-                  ))}
+                    {documentFiles.length > 0 && (
+                      <span className="text-[9px] text-brand-600 font-extrabold bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">
+                        {documentFiles.length} {documentFiles.length === 1 ? 'Doc' : 'Docs'}
+                      </span>
+                    )}
+                  </div>
+
+                  <label className="flex items-center justify-center p-3 border-2 border-dashed border-slate-200 rounded-xl bg-white hover:bg-slate-100/60 cursor-pointer transition-all text-center gap-2.5 group">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-xs font-bold text-slate-800 block">Upload Guidelines / Decks</span>
+                      <span className="text-[9px] text-slate-400 font-medium block">Multiple PDF, DOC, DOCX, TXT</span>
+                    </div>
+                    <input type="file" multiple accept=".pdf,.doc,.docx,.txt" onChange={handleDocumentsSelect} className="hidden" />
+                  </label>
+
+                  {documentFiles.length > 0 && (
+                    <div className="space-y-1.5 max-h-20 overflow-y-auto pr-1">
+                      {documentFiles.map((doc, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-1.5 bg-white border border-slate-200 rounded-lg text-xs">
+                          <div className="flex items-center gap-2 truncate">
+                            <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 font-extrabold text-[9px] rounded uppercase">
+                              {doc.name.split('.').pop()}
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-800 truncate max-w-[140px] sm:max-w-[180px]">{doc.name}</span>
+                            <span className="text-[9px] text-slate-400">({formatFileSize(doc.size)})</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveDocument(idx)}
+                            className="p-1 text-slate-400 hover:text-red-500 rounded"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {/* SECTION 4: MULTIPLE BRAND IMAGES & MEDIA ASSETS */}
+                <div className="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5 flex-1 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">
+                      <Image className="w-3.5 h-3.5 text-purple-500" />
+                      <span>4. Brand Images & Creatives</span>
+                    </div>
+                    {imageFiles.length > 0 && (
+                      <span className="text-[9px] text-purple-600 font-extrabold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                        {imageFiles.length} {imageFiles.length === 1 ? 'Img' : 'Imgs'}
+                      </span>
+                    )}
+                  </div>
+
+                  <label className="flex items-center justify-center p-3 border-2 border-dashed border-slate-200 rounded-xl bg-white hover:bg-slate-100/60 cursor-pointer transition-all text-center gap-2.5 group">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <Image className="w-4 h-4" />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-xs font-bold text-slate-800 block">Upload Product Photos / Banners</span>
+                      <span className="text-[9px] text-slate-400 font-medium block">Multiple PNG, JPG, WEBP</span>
+                    </div>
+                    <input type="file" multiple accept="image/*" onChange={handleImagesSelect} className="hidden" />
+                  </label>
+
+                  {imagePreviews.length > 0 && (
+                    <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-1 max-h-20 overflow-y-auto pr-1">
+                      {imagePreviews.map((img, idx) => (
+                        <div key={img.id || idx} className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-square bg-slate-100 shadow-2xs">
+                          <img src={img.url} alt={`Brand Media ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(idx)}
+                            className="absolute top-0.5 right-0.5 p-0.5 bg-slate-900/80 text-white hover:bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+              </div>
             </div>
 
             {/* UNIFIED SUBMIT ACTION BUTTON */}
             <button
               type="submit"
               disabled={loading || !isFormValid}
-              className="w-full btn-primary py-4 rounded-2xl font-extrabold text-xs shadow-xl shadow-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:scale-[1.005]"
+              className="w-full btn-primary py-3 rounded-xl font-extrabold text-xs shadow-lg shadow-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:scale-[1.002] mt-1"
             >
               {loading ? (
                 <>
@@ -412,7 +426,7 @@ export const ScraperOverlayModal = () => {
                 </>
               ) : (
                 <>
-                  <Dna className="w-4.5 h-4.5" />
+                  <Dna className="w-4 h-4" />
                   <span>Extract & Generate Complete Brand DNA Memory</span>
                 </>
               )}

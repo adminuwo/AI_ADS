@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Repeat, Sparkles, Send, Copy, Check, FileText, Share2, Mail, Layers, HelpCircle } from 'lucide-react';
@@ -53,7 +53,7 @@ export const RepurposeModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in">
       {/* Header Bar */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Repeat className="w-5 h-5 text-brand-400" />
@@ -75,7 +75,7 @@ export const RepurposeModule = () => {
       </div>
 
       {/* Select Source Asset */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 space-y-3">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-3">
         <label className="block text-xs font-bold text-slate-300">Select Approved Source Asset</label>
         <select 
           value={selectedSource}
@@ -94,7 +94,7 @@ export const RepurposeModule = () => {
       {repurposed && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in">
           {/* Output 1: LinkedIn Post */}
-          <div className="p-5 rounded-3xl glass-card border border-slate-800 space-y-3">
+          <div className="p-5 rounded-3xl accent-card glass-card border border-slate-800 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <span className="text-xs font-bold text-white flex items-center gap-1.5">
                 <Share2 className="w-4 h-4 text-brand-400" /> 1. LinkedIn Post
@@ -105,7 +105,7 @@ export const RepurposeModule = () => {
           </div>
 
           {/* Output 2: Twitter Thread */}
-          <div className="p-5 rounded-3xl glass-card border border-slate-800 space-y-3">
+          <div className="p-5 rounded-3xl accent-card glass-card border border-slate-800 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <span className="text-xs font-bold text-white flex items-center gap-1.5">
                 <Repeat className="w-4 h-4 text-cyan-400" /> 2. Twitter/X Thread
@@ -120,7 +120,7 @@ export const RepurposeModule = () => {
           </div>
 
           {/* Output 3: Newsletter Email */}
-          <div className="p-5 rounded-3xl glass-card border border-slate-800 space-y-3">
+          <div className="p-5 rounded-3xl accent-card glass-card border border-slate-800 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <span className="text-xs font-bold text-white flex items-center gap-1.5">
                 <Mail className="w-4 h-4 text-purple-400" /> 3. Newsletter Email
@@ -131,7 +131,7 @@ export const RepurposeModule = () => {
           </div>
 
           {/* Output 4: Carousel Outline */}
-          <div className="p-5 rounded-3xl glass-card border border-slate-800 space-y-3">
+          <div className="p-5 rounded-3xl accent-card glass-card border border-slate-800 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <span className="text-xs font-bold text-white flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-amber-400" /> 4. Carousel Outline
@@ -149,7 +149,7 @@ export const RepurposeModule = () => {
           </div>
 
           {/* Output 5: FAQs & Schema */}
-          <div className="p-5 rounded-3xl glass-card border border-slate-800 space-y-3 col-span-1 md:col-span-2">
+          <div className="p-5 rounded-3xl accent-card glass-card border border-slate-800 space-y-3 col-span-1 md:col-span-2">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <span className="text-xs font-bold text-white flex items-center gap-1.5">
                 <HelpCircle className="w-4 h-4 text-emerald-400" /> 5. FAQ Bank & Schema

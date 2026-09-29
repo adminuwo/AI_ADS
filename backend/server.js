@@ -1213,6 +1213,7 @@ app.post('/api/workspace/upload-doc', upload.single('file'), async (req, res) =>
 });
 
 const { generateJSON } = require('./services/aiService');
+const { buildLanguageInstruction } = require('./utils/languageHelper');
 
 app.post('/api/workspace/:id/generate-strategy', async (req, res) => {
   const { id } = req.params;
@@ -1334,9 +1335,12 @@ Return a JSON object with this exact structure:
 Ensure "thirtyDayPlan" contains 30 distinct daily items from day 1 to 30.
 Return ONLY valid JSON.`;
 
+    const targetLang = req.body.languageCode || req.body.targetLanguage || req.body.language;
+    const fullPrompt = prompt + '\n' + buildLanguageInstruction(targetLang);
+
     let strategy = null;
     try {
-      const aiResponse = await generateJSON(prompt, { temperature: 0.7 });
+      const aiResponse = await generateJSON(fullPrompt, { temperature: 0.7, targetLanguage: targetLang });
       strategy = aiResponse?.data || (aiResponse && typeof aiResponse === 'object' && !aiResponse.data ? aiResponse : null);
     } catch (aiErr) {
       console.warn('[Strategy Engine] AI synthesis error, using brand-specific fallback builder:', aiErr.message);
@@ -1673,9 +1677,12 @@ Return ONLY a valid JSON object matching this schema exactly:
   "pillar": "Relevant content pillar"
 }`;
 
+    const targetLang = req.body.languageCode || req.body.targetLanguage || req.body.language;
+    const fullPrompt = prompt + '\n' + buildLanguageInstruction(targetLang);
+
     let updatedCard = null;
     try {
-      const aiRes = await generateJSON(prompt, { reqId: `REGEN-CARD-${day}` });
+      const aiRes = await generateJSON(fullPrompt, { reqId: `REGEN-CARD-${day}`, targetLanguage: targetLang });
       updatedCard = aiRes?.data || (aiRes && typeof aiRes === 'object' && !aiRes.data ? aiRes : null);
     } catch (aiErr) {
       console.warn('[Strategy Card Engine] AI generation fallback:', aiErr.message);

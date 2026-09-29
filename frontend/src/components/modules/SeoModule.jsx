@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { API_BASE } from '../../config/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Search, Layers, FileText, Code2, Sparkles, Send, ShieldAlert, CheckCircle2 } from 'lucide-react';
@@ -62,7 +62,7 @@ export const SeoModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in">
       {/* Header Bar */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Search className="w-5 h-5 text-brand-400" />
@@ -85,7 +85,7 @@ export const SeoModule = () => {
       {/* Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Col 1: Keyword Workspace */}
-        <div className="p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
             <Layers className="w-4 h-4 text-brand-400" />
             Keyword & Intent Workspace
@@ -145,7 +145,7 @@ export const SeoModule = () => {
         </div>
 
         {/* Col 2 & 3: Generated Structured Brief */}
-        <div className="lg:col-span-2 p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+        <div className="lg:col-span-2 p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <FileText className="w-4 h-4 text-cyan-400" />

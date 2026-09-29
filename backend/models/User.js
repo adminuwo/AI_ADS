@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema(
       pushNotif: { type: Boolean, default: false },
       theme: { type: String, enum: ['light', 'dark', 'system'], default: 'light' },
       language: { type: String, default: 'English' },
+      preferredLanguageCode: { type: String, default: 'en-IN' },
     },
 
     // Billing

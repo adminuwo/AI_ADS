@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { plansAPI } from '../../services/api';
 import { Settings, CreditCard, Key, Sparkles, Check, ShieldCheck, Globe, Zap, Loader2, DollarSign, Layers } from 'lucide-react';
@@ -176,7 +176,7 @@ export const SettingsBillingModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in pb-12">
       {/* Header Bar */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Settings className="w-5 h-5 text-brand-600 dark:text-brand-400" />
@@ -219,7 +219,7 @@ export const SettingsBillingModule = () => {
       </div>
 
       {/* Subscription Tiers Grid (Database-Driven) */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-5">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
@@ -332,7 +332,7 @@ export const SettingsBillingModule = () => {
       </div>
 
       {/* API Keys & Webhooks Card */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
           <Key className="w-4 h-4 text-brand-500" />
           AISA Connect™ Production API Keys

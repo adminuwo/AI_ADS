@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { BarChart3, TrendingUp, Sparkles, RefreshCw, Eye, MousePointer, Award } from 'lucide-react';
 
@@ -21,7 +21,7 @@ export const AnalyticsModule = () => {
   return (
     <div className="space-y-6 animate-in fade-in">
       {/* Header Bar */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-brand-400" />
@@ -38,7 +38,7 @@ export const AnalyticsModule = () => {
         {metrics.map((m, idx) => {
           const Icon = m.icon;
           return (
-            <div key={idx} className="p-4 rounded-2xl glass-card border border-slate-800 space-y-2">
+            <div key={idx} className="p-4 rounded-2xl accent-card glass-card border border-slate-800 space-y-2">
               <div className="flex justify-between items-center text-xs text-slate-400 font-semibold">
                 <span>{m.title}</span>
                 <Icon className={`w-4 h-4 ${m.color}`} />
@@ -51,7 +51,7 @@ export const AnalyticsModule = () => {
       </div>
 
       {/* AI Recommendation Engine Card */}
-      <div className="p-6 rounded-3xl glass-card border border-slate-800 space-y-4">
+      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-800 space-y-4">
         <h2 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-cyan-400" />
           Closed-Loop AI Recommendation Engine
