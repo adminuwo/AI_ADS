@@ -131,11 +131,9 @@ const MainContent = () => {
         );
       case 'campaigns':
         return (
-          <PlanGate moduleName="Campaign Builder" moduleId="campaigns">
-            <NoBrandGate moduleName="Campaign Builder">
-              <CampaignBuilderModule />
-            </NoBrandGate>
-          </PlanGate>
+          <NoBrandGate moduleName="Campaign Builder">
+            <CampaignBuilderModule />
+          </NoBrandGate>
         );
       case 'creative':
       case 'creativeStudio':

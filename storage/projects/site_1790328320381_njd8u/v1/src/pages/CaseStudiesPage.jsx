@@ -1,11 +1,11 @@
 import React from 'react';
 import SectionRenderer from '../components/SectionRenderer';
 
-export default function ContactPage({ page, setActivePage, siteData }) {
+export default function CaseStudiesPage({ page, setActivePage, siteData }) {
   const sections = page?.sections || [];
 
   return (
-    <div className="page-container page-page_contact">
+    <div className="page-container page-page_case_studies">
       {sections.map((section) => (
         <SectionRenderer
           key={section.id || Math.random().toString()}

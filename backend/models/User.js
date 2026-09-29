@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
     // Credits & Subscription
     credits: { type: Number, default: 500 },
     plan: { type: String, enum: ['free', 'starter', 'pro', 'enterprise'], default: 'free' },
+    workspacesCreatedCount: { type: Number, default: 0 },
 
     // Settings
     settings: {

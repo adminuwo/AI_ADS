@@ -248,7 +248,8 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 const isActive = activeModule === m.id;
                 const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
                 const isStarterUser = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
-                const isModuleLocked = isStarterUser && ['campaigns', 'approvals', 'websiteBuilder', 'websitebuilder', 'builder'].includes(m.id);
+                const isHighestPlan = userPlanNorm === 'enterprise' || userPlanNorm === 'unlimited';
+                const isModuleLocked = (!isHighestPlan && ['approvals', 'websiteBuilder', 'websitebuilder', 'builder'].includes(m.id));
 
                 return (
                   <button

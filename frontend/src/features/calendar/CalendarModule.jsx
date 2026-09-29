@@ -8,8 +8,10 @@ import {
 } from 'lucide-react';
 
 export const CalendarModule = () => {
-  const { activeWorkspace, setActiveModule, calendarEvents, setStudioTarget, setGeneratedContent, generatedStrategy, generatedPostsTracker, setSelectedAssetContext, showCustomAlert, showToast, t } = useWorkspace();
+  const { user, activeWorkspace, setActiveModule, calendarEvents, setStudioTarget, setGeneratedContent, generatedStrategy, generatedPostsTracker, setSelectedAssetContext, showCustomAlert, showToast, t } = useWorkspace();
   const workspaceId = activeWorkspace?._id || activeWorkspace?.id || 'ws_001';
+  const userPlanNorm = (activeWorkspace?.user?.plan || user?.plan || 'starter').toLowerCase();
+  const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
 
   // Read 30-day strategy plan from workspace or context
   const strategyPlan = activeWorkspace?.currentStrategy?.thirtyDayPlan || generatedStrategy?.thirtyDayPlan || [];
@@ -195,6 +197,10 @@ export const CalendarModule = () => {
 
   // Handle Edit Post Toggle
   const toggleEditPost = (post) => {
+    if (isCampaignLocked) {
+      showCustomAlert({ title: 'Feature Locked', message: 'Manual editing of calendar events is locked on the Starter Plan. Upgrade to Pro.', type: 'warning' });
+      return;
+    }
     if (isEditingPost) {
       setIsEditingPost(false);
       setEditFormData({});
@@ -225,6 +231,10 @@ export const CalendarModule = () => {
 
   // Generate / Create Calendar Campaign
   const handleCreateCampaign = async () => {
+    if (!hasStrategyPlan) {
+      showCustomAlert({ title: 'Strategy Required', message: 'Please generate a Campaign Strategy first before generating the calendar.', type: 'warning' });
+      return;
+    }
     if (!campaignConfig.startDate || !campaignConfig.endDate) {
       showCustomAlert({ title: 'Campaign Setup Required', message: 'Please select Campaign Start and End dates.', type: 'warning' });
       return;

@@ -1092,13 +1092,15 @@ export const WorkspaceProvider = ({ children }) => {
   const openScraperModal = (mode = 'NEW_BRAND') => {
     if (mode === 'NEW_BRAND') {
       const limit = getWorkspaceLimit(user?.plan);
-      if (workspaces.length >= limit) {
+      const createdCount = Math.max(workspaces.length, user?.workspacesCreatedCount || 0);
+
+      if (createdCount >= limit) {
         showCustomAlert({
           title: 'Workspace Limit Reached!',
-          message: `Your active plan (${user?.plan || 'Starter'}) allows a maximum of ${limit} Brand DNA Workspaces. Please upgrade your plan to add more brand workspaces.`,
+          message: 'You have already used the number of limit of your brand workspace. Upgrade your plan for more brand space.',
           type: 'warning',
-          confirmText: 'Upgrade Plan Now',
-          cancelText: 'Cancel',
+          confirmText: 'Upgrade Plan',
+          cancelText: 'OK',
           onConfirm: () => {
             setActiveModule('settings');
             if (setActiveSettingsTab) setActiveSettingsTab('billing');
@@ -1268,13 +1270,15 @@ export const WorkspaceProvider = ({ children }) => {
 
   const addWorkspace = async (newWs) => {
     const limit = getWorkspaceLimit(user?.plan);
-    if (workspaces.length >= limit) {
+    const createdCount = Math.max(workspaces.length, user?.workspacesCreatedCount || 0);
+
+    if (createdCount >= limit) {
       showCustomAlert({
         title: 'Workspace Limit Reached!',
-        message: `Your active plan (${user?.plan || 'Starter'}) permits a maximum of ${limit} Brand DNA Workspaces. Please upgrade your plan to add more brand workspaces.`,
+        message: 'You have already used the number of limit of your brand workspace. Upgrade your plan for more brand space.',
         type: 'warning',
-        confirmText: 'Upgrade Plan Now',
-        cancelText: 'Cancel',
+        confirmText: 'Upgrade Plan',
+        cancelText: 'OK',
         onConfirm: () => {
           setActiveModule('settings');
           if (setActiveSettingsTab) setActiveSettingsTab('billing');
@@ -1308,6 +1312,10 @@ export const WorkspaceProvider = ({ children }) => {
           return [savedDoc, ...prev];
         });
         setActiveWorkspaceId(savedDoc.id);
+        
+        // Optimistically increment locally
+        setUser(prev => prev ? { ...prev, workspacesCreatedCount: (prev.workspacesCreatedCount || 0) + 1 } : prev);
+
         return savedDoc;
       }
     } catch (e) {
@@ -1355,17 +1363,24 @@ export const WorkspaceProvider = ({ children }) => {
 
   const deleteWorkspace = async (idToDelete) => {
     if (!idToDelete) return;
+
+    // Optimistic Update: Update UI instantly
+    const updated = workspaces.filter(w => w.id !== idToDelete && w._id !== idToDelete);
+    setWorkspaces(updated);
+
+    if (activeWorkspaceId === idToDelete || activeWorkspace?._id === idToDelete) {
+      if (updated.length > 0) {
+        setActiveWorkspaceId(updated[0].id || updated[0]._id);
+      } else {
+        setActiveWorkspaceId('ws_empty');
+      }
+    }
+
+    // Perform API call in background
     try {
       await fetch(`${API_BASE}/workspace/${idToDelete}`, { method: 'DELETE' });
     } catch (e) {
       console.log('Workspace Delete Note:', e.message);
-    }
-    const updated = workspaces.filter(w => w.id !== idToDelete && w._id !== idToDelete);
-    setWorkspaces(updated);
-    if (activeWorkspaceId === idToDelete || activeWorkspace?._id === idToDelete) {
-      if (updated.length > 0) {
-        setActiveWorkspaceId(updated[0].id || updated[0]._id);
-      }
     }
   };
 

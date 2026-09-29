@@ -3,8 +3,8 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { siteData } from './data/siteData';
 import HomePage from './pages/HomePage';
-import CatalogPage from './pages/CatalogPage';
-import ContactPage from './pages/ContactPage';
+import CaseStudiesPage from './pages/CaseStudiesPage';
+import BookAConsultationPage from './pages/BookAConsultationPage';
 
 export default function App() {
   const [activePage, setActivePage] = useState('Home');
@@ -18,10 +18,10 @@ export default function App() {
     switch (activePage) {
       case 'Home':
         return <HomePage page={pageMap['Home']} setActivePage={setActivePage} siteData={siteData} />;
-      case 'Catalog':
-        return <CatalogPage page={pageMap['Catalog']} setActivePage={setActivePage} siteData={siteData} />;
-      case 'Contact':
-        return <ContactPage page={pageMap['Contact']} setActivePage={setActivePage} siteData={siteData} />;
+      case 'Case Studies':
+        return <CaseStudiesPage page={pageMap['Case Studies']} setActivePage={setActivePage} siteData={siteData} />;
+      case 'Book a Consultation':
+        return <BookAConsultationPage page={pageMap['Book a Consultation']} setActivePage={setActivePage} siteData={siteData} />;
       default:
         return <HomePage page={pageMap['Home']} setActivePage={setActivePage} siteData={siteData} />;
     }

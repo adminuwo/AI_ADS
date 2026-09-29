@@ -817,6 +817,13 @@ app.post('/api/workspace/save-dna', async (req, res) => {
       const workspaceId = workspaceDoc._id.toString();
 
       savedWorkspace = workspaceDoc;
+      
+      if (cleanEmail) {
+        await User.findOneAndUpdate(
+          { email: cleanEmail },
+          { $inc: { workspacesCreatedCount: 1 } }
+        ).catch(e => console.log('Error incrementing workspacesCreatedCount', e.message));
+      }
 
       // Step B: Map Preview Brand DNA payload to Canonical BrandProfile schema
       const brandProfilePayload = mapPreviewToBrandProfile(workspaceData, workspaceId);

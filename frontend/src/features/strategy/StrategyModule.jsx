@@ -126,13 +126,15 @@ export const StrategyModule = () => {
     setGeneratedStrategy,
     setStudioTarget,
     showCustomAlert,
-    setGeneratedContent,
     language,
+    setIsSettingsModalOpen,
+    setActiveSettingsTab,
     t
   } = useWorkspace();
 
   const userPlanNorm = (user?.plan || 'starter').toLowerCase();
-  const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
+  const isCampaignLocked = false;
+  const isHighestPlan = userPlanNorm === 'enterprise' || userPlanNorm === 'unlimited';
 
   const [selectedStrategyType, setSelectedStrategyType] = useState(() => {
     const strat = activeWorkspace?.currentStrategy;
@@ -158,7 +160,7 @@ export const StrategyModule = () => {
   const [gtmStrategy,       setGtmStrategy]       = useState(null);
   const [seoStrategy,       setSeoStrategy]       = useState(null);
   const [geoStrategy,       setGeoStrategy]       = useState(null);
-  const [geoSeoGtmTab,      setGeoSeoGtmTab]      = useState('gtm');
+  const [geoSeoGtmTab,      setGeoSeoGtmTab]      = useState('seo');
 
   // UI state
   const [selectedWeek,  setSelectedWeek]  = useState('ALL');
@@ -251,6 +253,17 @@ export const StrategyModule = () => {
       return;
     }
 
+    const genCountKey = `image_brief_gen_count_${activeWorkspace?.id || 'default'}`;
+    const genCount = parseInt(localStorage.getItem(genCountKey) || '0', 10);
+    if ((userPlanNorm === 'pro' || userPlanNorm === 'growth') && genCount >= 3) {
+      showCustomAlert({
+        title: 'Limit Reached',
+        message: 'You have reached the maximum limit of 3 Image Brief generations for your plan. Please upgrade to unlock unlimited generation.',
+        type: 'warning'
+      });
+      return;
+    }
+
     setIsSubmittingImageBrief(true);
     try {
       const wsId = activeWorkspace?.id || activeWorkspace?._id || 'default_ws';
@@ -338,6 +351,8 @@ export const StrategyModule = () => {
       setImageBriefToastMsg('Custom Social Media Strategy generated successfully for all platforms!');
       setShowImageBriefToast(true);
       setTimeout(() => setShowImageBriefToast(false), 4500);
+
+      localStorage.setItem(genCountKey, (genCount + 1).toString());
 
       // Reset modal and switch active tab to 'custom'
       setShowImageBriefModal(false);
@@ -1251,7 +1266,19 @@ export const StrategyModule = () => {
             )}
 
             <button
-              onClick={() => setShowImageBriefModal(true)}
+              onClick={() => {
+                if (isCampaignLocked) {
+                  showCustomAlert({
+                    title: 'Feature Locked',
+                    message: 'Image Brief Strategy is a premium feature. Please upgrade your plan to unlock.',
+                    type: 'warning',
+                    confirmText: 'Upgrade Plan',
+                    cancelText: 'Cancel'
+                  });
+                  return;
+                }
+                setShowImageBriefModal(true);
+              }}
               className="group relative px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-100 font-extrabold text-xs tracking-wider border border-slate-200 dark:border-slate-700 hover:border-brand-500/50 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
               title="Upload reference image and specify custom visual instructions for AI strategy"
             >
@@ -1380,7 +1407,19 @@ export const StrategyModule = () => {
             {t('noImageBriefSub', 'Upload a reference product image and enter custom visual instructions to generate an image-guided 30-day social media roadmap.')}
           </p>
           <button
-            onClick={() => setShowImageBriefModal(true)}
+            onClick={() => {
+              if (isCampaignLocked) {
+                showCustomAlert({
+                  title: 'Feature Locked',
+                  message: 'Image Brief Strategy is a premium feature. Please upgrade your plan to unlock.',
+                  type: 'warning',
+                  confirmText: 'Upgrade Plan',
+                  cancelText: 'Cancel'
+                });
+                return;
+              }
+              setShowImageBriefModal(true);
+            }}
             className="btn-primary text-xs flex items-center gap-2 mx-auto px-6 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 hover:scale-105 transition-all cursor-pointer font-extrabold"
           >
             <UploadCloud className="w-4 h-4 text-white" />
@@ -1663,7 +1702,19 @@ export const StrategyModule = () => {
                 </p>
               </div>
               <button
-                onClick={() => setShowImageBriefModal(true)}
+                onClick={() => {
+                  if (isCampaignLocked) {
+                    showCustomAlert({
+                      title: 'Feature Locked',
+                      message: 'Image Brief Strategy is a premium feature. Please upgrade your plan to unlock.',
+                      type: 'warning',
+                      confirmText: 'Upgrade Plan',
+                      cancelText: 'Cancel'
+                    });
+                    return;
+                  }
+                  setShowImageBriefModal(true);
+                }}
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
               >
                 <UploadCloud className="w-4 h-4" />
@@ -1712,6 +1763,7 @@ export const StrategyModule = () => {
             )}
           </div>
 
+
           {/* ══════════ ROW: GTM, SEO & GEO STRATEGY INTELLIGENCE ══════════ */}
           <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-indigo-500/8 via-purple-500/5 to-cyan-500/8 dark:from-slate-900/95 dark:to-slate-900/90 border border-indigo-200/60 dark:border-indigo-900/40 shadow-sm backdrop-blur-md space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1736,15 +1788,28 @@ export const StrategyModule = () => {
               <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 w-fit self-start sm:self-auto">
                 <button
                   type="button"
-                  onClick={() => setGeoSeoGtmTab('gtm')}
+                  onClick={() => {
+                    if (!isHighestPlan) {
+                      showCustomAlert({
+                        title: 'Feature Locked',
+                        message: 'GTM Strategy is a premium feature. Please upgrade your plan to unlock.',
+                        type: 'warning',
+                        confirmText: 'Upgrade Plan',
+                        cancelText: 'Cancel'
+                      });
+                    } else {
+                      setGeoSeoGtmTab('gtm');
+                    }
+                  }}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                    geoSeoGtmTab === 'gtm'
+                    geoSeoGtmTab === 'gtm' && !isHighestPlan
                       ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-xs'
                       : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white'
                   }`}
                 >
-                  <Rocket className="w-3.5 h-3.5" />
+                  {!isHighestPlan ? <Lock className="w-3.5 h-3.5 text-slate-400" /> : <Rocket className="w-3.5 h-3.5" />}
                   <span>{t('gtmTab', 'Go-To-Market (GTM)')}</span>
+                  {!isHighestPlan && <span className="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-700 text-[9px] font-medium flex items-center gap-1">PRO</span>}
                 </button>
                 <button
                   type="button"
@@ -1758,6 +1823,7 @@ export const StrategyModule = () => {
                   <Search className="w-3.5 h-3.5" />
                   <span>{t('seoTab', 'SEO Strategy')}</span>
                 </button>
+                {!(userPlanNorm === 'starter' || userPlanNorm === 'free') && (
                 <button
                   type="button"
                   onClick={() => setGeoSeoGtmTab('geo')}
@@ -1770,11 +1836,12 @@ export const StrategyModule = () => {
                   <MapPin className="w-3.5 h-3.5" />
                   <span>{t('geoTab', 'GEO Targeting')}</span>
                 </button>
+                )}
               </div>
             </div>
 
             {/* TAB CONTENT: GTM */}
-            {geoSeoGtmTab === 'gtm' && (
+            {isHighestPlan && geoSeoGtmTab === 'gtm' && (
               <div className="space-y-5 animate-in fade-in duration-200">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-indigo-200/50 dark:border-indigo-900/30 space-y-2">
@@ -1986,6 +2053,7 @@ export const StrategyModule = () => {
           </div>
 
           {/* ROW 4: Funnel Architecture */}
+          {isCampaignLocked ? null : (
           <div className="p-6 rounded-3xl bg-gradient-to-br from-rose-500/6 via-purple-500/4 to-emerald-500/6 dark:from-slate-900/90 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-900/40 shadow-sm backdrop-blur-md space-y-5">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
@@ -2012,6 +2080,7 @@ export const StrategyModule = () => {
               ))}
             </div>
           </div>
+          )}
         </div>
       )}
 
