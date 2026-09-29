@@ -6,10 +6,17 @@ export const PlanGate = ({ children, moduleName, moduleId, requiredTier = 'Pro /
   const { user, activeWorkspace, setIsSettingsModalOpen, setActiveSettingsTab, setActiveModule } = useWorkspace();
   const planNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
 
-  const isStarter = planNorm === 'starter' || planNorm === 'base' || planNorm === 'free';
+  const isStarter = planNorm === 'starter' || planNorm === 'free';
+  const isBase = planNorm === 'base';
   
-  // Modules locked for Starter tier: campaigns, approvals, websiteBuilder
-  const isLocked = isStarter && ['campaigns', 'approvals', 'websiteBuilder', 'websitebuilder', 'builder'].includes(moduleId);
+  // Modules locked for Starter tier: campaigns
+  const isLockedForStarter = isStarter && ['campaigns'].includes(moduleId);
+  
+  const isHighestPlan = planNorm === 'enterprise' || planNorm === 'unlimited';
+  // Approvals and Website Builder are locked for ALL plans EXCEPT the highest
+  const isLockedForAll = !isHighestPlan && ['approvals', 'websiteBuilder', 'websitebuilder', 'builder'].includes(moduleId);
+
+  const isLocked = isLockedForStarter || isLockedForAll;
 
   if (!isLocked) {
     return children;

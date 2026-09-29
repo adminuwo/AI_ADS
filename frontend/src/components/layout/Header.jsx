@@ -43,6 +43,7 @@ export const Header = () => {
     userAvatar,
     user,
     logout,
+    showCustomAlert,
     t
   } = useWorkspace();
 
@@ -170,7 +171,16 @@ export const Header = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteWorkspace(wsId);
+                        showCustomAlert({
+                          title: 'Delete Workspace',
+                          message: `Do you want to delete your workspace "${ws.brandName}"?`,
+                          type: 'warning',
+                          confirmText: 'Yes, Delete',
+                          cancelText: 'Cancel',
+                          onConfirm: () => {
+                            deleteWorkspace(wsId);
+                          }
+                        });
                       }}
                       className="p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors opacity-70 hover:opacity-100"
                       title={`Delete ${ws.brandName}`}

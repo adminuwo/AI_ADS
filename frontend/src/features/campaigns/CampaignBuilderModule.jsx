@@ -27,6 +27,10 @@ const POST_STATUS_COLORS = {
 
 // ─── Create Campaign Modal ─────────────────────────────────────────────────────
 const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
+  const { user } = useWorkspace();
+  const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const isCampaignLocked = false;
+
   const [form, setForm] = useState({
     campaignName: '',
     campaignGoal: '',
@@ -42,10 +46,29 @@ const CreateCampaignModal = ({ workspaceId, onClose, onCreated }) => {
   const [error, setError] = useState('');
 
   const togglePlatform = (p) => {
-    setForm((prev) => ({
-      ...prev,
-      platforms: prev.platforms.includes(p) ? prev.platforms.filter((x) => x !== p) : [...prev.platforms, p],
-    }));
+    setForm((prev) => {
+      if (prev.platforms.includes(p)) {
+        return { ...prev, platforms: prev.platforms.filter((x) => x !== p) };
+      } else {
+        if (userPlanNorm === 'starter' || userPlanNorm === 'free') {
+          if (prev.platforms.length >= 2) {
+            alert('Starter Plan is limited to 2 target platforms. Upgrade to unlock more.');
+            return prev;
+          }
+        } else if (userPlanNorm === 'base') {
+          if (prev.platforms.length >= 3) {
+            alert('Base Plan is limited to 3 target platforms. Upgrade to Pro/Growth to unlock more.');
+            return prev;
+          }
+        } else if (userPlanNorm === 'pro' || userPlanNorm === 'growth') {
+          if (prev.platforms.length >= 5) {
+            alert('Pro/Growth Plan is limited to 5 target platforms.');
+            return prev;
+          }
+        }
+        return { ...prev, platforms: [...prev.platforms, p] };
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -290,7 +313,9 @@ const CampaignCard = ({ campaign, onSelect, onDelete }) => (
 
 // ─── Campaign Detail View ──────────────────────────────────────────────────────
 const CampaignDetail = ({ campaign, onBack }) => {
-  const { setActiveModule, updateWorkspace, activeWorkspace, setGeneratedStrategy } = useWorkspace();
+  const { user, setActiveModule, updateWorkspace, activeWorkspace, setGeneratedStrategy } = useWorkspace();
+  const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const isCampaignLocked = false;
   const workspaceId = activeWorkspace?._id || activeWorkspace?.id || campaign.workspaceId;
 
   const [posts, setPosts] = useState([]);
@@ -427,7 +452,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
                 {generatingStrategy ? 'Generating Strategy...' : campaignStrategy?.gtmStrategy ? 'View Strategy' : 'Generate Strategy'}
               </button>
 
-              {campaignStrategy?.gtmStrategy && (
+              {!isCampaignLocked && campaignStrategy?.gtmStrategy && (
                 <button
                   onClick={() => handleGenerateStrategyAndGoToPlan(true)}
                   disabled={generatingStrategy}
@@ -439,6 +464,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
                 </button>
               )}
 
+              {!isCampaignLocked && (
               <button
                 onClick={() => handleGeneratePlan()}
                 disabled={generatingPlan}
@@ -447,6 +473,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
                 {generatingPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
                 {generatingPlan ? 'Generating Plan...' : 'Regenerate Plan'}
               </button>
+              )}
             </>
           )}
         </div>
@@ -633,7 +660,9 @@ const CampaignDetail = ({ campaign, onBack }) => {
 
 // ─── Main {t('campaignsTitle', 'Campaign Builder')} Module ──────────────────────────────────────────────
 export const CampaignBuilderModule = () => {
-  const {activeWorkspace, t } = useWorkspace();
+  const {activeWorkspace, user, t, showCustomAlert, setIsSettingsModalOpen, setActiveSettingsTab } = useWorkspace();
+  const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const isCampaignLocked = false;
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -705,7 +734,38 @@ export const CampaignBuilderModule = () => {
           <button onClick={loadCampaigns} className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
             <RefreshCw className="w-4 h-4" />
           </button>
-          <button onClick={() => setShowCreate(true)} className="btn-primary text-xs flex items-center gap-2">
+          <button 
+            onClick={() => {
+              const getCampaignLimit = (plan) => {
+                const p = (plan || 'starter').toLowerCase();
+                if (p === 'starter' || p === 'base' || p === 'free') return 3;
+                if (p === 'pro' || p === 'growth' || p === 'professional') return 10;
+                return 9999;
+              };
+              const campaignLimit = getCampaignLimit(userPlanNorm);
+
+              if (campaigns.length >= campaignLimit) {
+                if (showCustomAlert) {
+                  showCustomAlert({
+                    title: 'Upgrade Plan for More Campaigns',
+                    message: `Your current plan is limited to ${campaignLimit} campaigns. Upgrade your plan to unlock more AI campaigns and scale your marketing.`,
+                    type: 'warning',
+                    confirmText: 'Upgrade Plan',
+                    cancelText: 'Cancel',
+                    onConfirm: () => {
+                      if (setActiveSettingsTab) setActiveSettingsTab('billing');
+                      if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
+                    }
+                  });
+                } else {
+                  alert(`Your plan is limited to ${campaignLimit} campaigns. Upgrade to unlock more.`);
+                }
+                return;
+              }
+              setShowCreate(true);
+            }} 
+            className="btn-primary text-xs flex items-center gap-2"
+          >
             <Plus className="w-4 h-4" /> New Campaign
           </button>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { approvalsAPI } from '../../services/api';
-import { CheckCircle2, ShieldCheck, ShieldAlert, XCircle, UserCheck, Loader2 } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, ShieldAlert, XCircle, UserCheck, Loader2, Lock } from 'lucide-react';
 
 const getCleanItemTitle = (item) => {
   if (!item) return 'Untitled Content';
@@ -136,10 +136,13 @@ const renderParsedContentPreview = (selectedItem) => {
 };
 
 export const ApprovalsDeskModule = () => {
-  const { approvalsQueue, setApprovalsQueue, activeRole, activeWorkspace, setActiveModule, setGeneratedContent, setStudioTarget, t } = useWorkspace();
+  const { approvalsQueue, setApprovalsQueue, activeRole, activeWorkspace, setActiveModule, setGeneratedContent, setStudioTarget, t, user } = useWorkspace();
   const [selectedItem, setSelectedItem] = useState(approvalsQueue[0] || null);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
 
   useEffect(() => {
     if (approvalsQueue.length > 0 && !selectedItem) {
@@ -231,6 +234,16 @@ export const ApprovalsDeskModule = () => {
       if (mainEl) mainEl.scrollTop = 0;
     }
   };
+
+  if (isCampaignLocked) {
+    return (
+      <div className="space-y-6 animate-in fade-in w-full max-w-[1600px] mx-auto p-6 h-[80vh] flex flex-col items-center justify-center text-center">
+        <Lock className="w-16 h-16 text-slate-300 dark:text-slate-700 mb-4" />
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Approvals Desk is Locked</h2>
+        <p className="text-slate-500 max-w-md">Upgrade your plan to unlock the Approvals Desk and team workflow management features.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in w-full max-w-[1600px] mx-auto p-6">

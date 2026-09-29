@@ -38,7 +38,10 @@ import { ClarificationCard } from './ClarificationCard';
 import { telemetry, initGlobalTelemetryListeners } from '../../services/telemetryClient';
 
 export const AIWebsiteBuilderModule = () => {
-  const { activeWorkspace, setActiveModule, theme, toggleTheme, t } = useWorkspace();
+  const { activeWorkspace, setActiveModule, theme, toggleTheme, t, user } = useWorkspace();
+
+  const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
 
   // Initialize global click tracker
   useEffect(() => {

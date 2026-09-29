@@ -6,7 +6,7 @@ import {
   TrendingUp, BarChart3, Tag, Hash, ChevronRight, Copy, Check,
   RefreshCw, Globe, CheckCircle2, Loader2, AlertCircle, Bot,
   ExternalLink, ArrowUpRight, Zap, Target, Users, ShieldCheck,
-  Layers3, Compass, CheckCircle, HelpCircle, ArrowRight
+  Layers3, Compass, CheckCircle, HelpCircle, ArrowRight, Lock
 } from 'lucide-react';
 
 const getIntentStyle = (intent) => {
@@ -115,6 +115,7 @@ export const SeoModule = () => {
 
   const userPlanNorm = (user?.plan || 'starter').toLowerCase();
   const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
+  const isAiOpportunitiesLocked = isCampaignLocked || userPlanNorm === 'pro' || userPlanNorm === 'growth';
   const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
 
   const handleProceedToStrategy = async () => {
@@ -306,7 +307,7 @@ export const SeoModule = () => {
     const currentWsId = ws._id || ws.id || ws.brandName || 'ws_default';
     const cached = getSeoDataForWorkspace(currentWsId);
 
-    if (cached && (cached.onSiteKeywords?.length > 0 || cached.rankingKeywords?.length > 0 || cached.competitorGaps?.length > 0)) {
+    if (cached && (cached.generatedAt || cached.keywordClusters?.length > 0 || cached.onSiteKeywords?.length > 0 || cached.rankingKeywords?.length > 0 || cached.competitorGaps?.length > 0 || cached.brief)) {
       const sanitizedOnSite = (cached.onSiteKeywords || []).map(k => ({
         ...k,
         source: formatCleanSource(k.source)
@@ -326,6 +327,7 @@ export const SeoModule = () => {
     } else {
       const defaultSeed = getDefaultSeed();
       setSeedKeyword(defaultSeed);
+      setInitialized(false);
     }
   }, [activeWorkspace?._id || activeWorkspace?.id || activeWorkspace?.brandName || 'ws_default', seoSearchDataMap]);
 
@@ -821,6 +823,15 @@ export const SeoModule = () => {
 
             {/* 🟣 COLUMN 3: COMPETITOR KEYWORD GAPS (COMPETITOR GAP) */}
             {(activeTab === 'all' || activeTab === 'competitors') && (
+              (userPlanNorm === 'starter' || userPlanNorm === 'free') ? (
+                <div className="p-5 rounded-3xl glass-card border border-purple-500/30 dark:border-purple-500/20 bg-gradient-to-b from-purple-500/[0.02] to-transparent flex flex-col items-center justify-center h-full text-center space-y-3 shadow-sm min-h-[300px]">
+                  <Lock className="w-8 h-8 text-purple-400" />
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Competitor Gaps Locked</h3>
+                    <p className="text-[10px] text-slate-500">Upgrade your plan to unlock competitor gap analysis.</p>
+                  </div>
+                </div>
+              ) : (
               <div className="p-5 rounded-3xl glass-card border border-purple-500/30 dark:border-purple-500/20 bg-gradient-to-b from-purple-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-purple-500/20">
                   <div className="flex items-center gap-2">
@@ -963,12 +974,23 @@ export const SeoModule = () => {
                   )}
                 </div>
               </div>
+              )
             )}
 
           </div>
 
           {/* ═════════ SECTION 4: AI OPPORTUNITY KEYWORDS & ACTION ITEMS ═════════ */}
-          {(activeTab === 'all' || activeTab === 'opportunities') && opportunityKeywords.length > 0 && (
+          {(activeTab === 'all' || activeTab === 'opportunities') && (
+            isAiOpportunitiesLocked ? (
+              <div className="p-6 rounded-3xl glass-card border border-amber-500/30 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/[0.02] to-transparent flex flex-col items-center justify-center text-center space-y-3 min-h-[200px]">
+                <Lock className="w-8 h-8 text-amber-400" />
+                <div className="space-y-1">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">AI Opportunities Locked</h3>
+                  <p className="text-[10px] text-slate-500">Upgrade your plan to unlock AI-suggested SEO opportunities.</p>
+                </div>
+              </div>
+            ) : (
+            opportunityKeywords.length > 0 && (
             <div className="p-6 rounded-3xl glass-card border border-amber-500/30 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/[0.02] to-transparent space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-amber-500/20">
                 <div className="flex items-center gap-2">
@@ -1034,7 +1056,8 @@ export const SeoModule = () => {
                 ))}
               </div>
             </div>
-          )}
+            )
+          ))}
 
           {/* ═════════ SECTION 5: DISCOVERED COMPETITORS OVERVIEW ═════════ */}
           {(activeTab === 'all' || activeTab === 'competitors') && competitors.length > 0 && (
@@ -1159,7 +1182,7 @@ export const SeoModule = () => {
                     className="btn-primary text-xs flex items-center gap-1.5 px-4 py-2 rounded-xl"
                   >
                     <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Schema.org JSON-LD</span>
+                    <span>Copy Schema</span>
                   </button>
                 )}
               </div>
@@ -1232,34 +1255,14 @@ export const SeoModule = () => {
 
           {/* Floating Action Button */}
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-            {isCampaignLocked ? (
-              <button
-                onClick={handleProceedToStrategy}
-                disabled={isGeneratingStrategy}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-extrabold text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60 cursor-pointer"
-              >
-                {isGeneratingStrategy ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Generating Strategy...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
-                    <span>Generate AI Strategy</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={() => setActiveModule('campaigns')}
-                className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-full font-extrabold text-xs shadow-2xl hover:bg-brand-500 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              >
-                <span>Proceed to Campaign</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={() => setActiveModule('campaigns')}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full font-extrabold text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
+              <span>Generate Campaign</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}

@@ -19,6 +19,7 @@ export const ContentStudioModule = () => {
     setApprovalsQueue,
     studioTarget,
     setStudioTarget,
+    generatedContent,
     setGeneratedContent,
     markPostAsGenerated,
     showToast,
@@ -49,6 +50,27 @@ export const ContentStudioModule = () => {
       setTab(targetChannel);
     }
   }, [studioTarget]);
+
+  // Restore last generated content if available
+  useEffect(() => {
+    if (studioTarget) return; // studioTarget takes precedence
+    if (generatedContent && !activeSubPage) {
+      const type = generatedContent.type || (generatedContent.headline ? 'NEWSPAPER' : generatedContent.subject ? 'EMAIL' : generatedContent.platform ? 'SOCIAL' : 'BLOG');
+      
+      setActiveSubPage(type);
+      setTab(type);
+      
+      if (type === 'BLOG') {
+        setBlogDraft({ title: generatedContent.title || '', content: generatedContent.content || '' });
+      } else if (type === 'SOCIAL') {
+        setSocialResult(generatedContent);
+      } else if (type === 'EMAIL') {
+        setEmailResult(generatedContent);
+      } else if (type === 'NEWSPAPER') {
+        setNewspaperDraft(generatedContent);
+      }
+    }
+  }, [generatedContent, studioTarget, activeSubPage]);
 
   const openSubPage = (channelId) => {
     setActiveSubPage(channelId);
@@ -712,6 +734,16 @@ export const ContentStudioModule = () => {
 
   // ─── Regenerate individual section ───────────────────────────────────────────
   const handleRegenerateSection = async (section) => {
+    if (isStarter && ['cta', 'shortCaption', 'longCaption', 'hashtags', 'variations'].includes(section)) {
+      showCustomAlert({
+        title: 'Feature Locked',
+        message: 'Regeneration for this section is a premium feature. Please upgrade your plan to unlock.',
+        type: 'warning',
+        confirmText: 'Upgrade Plan',
+        cancelText: 'Cancel'
+      });
+      return;
+    }
     setRegeneratingSection(section);
     try {
       const res = await contentAPI.generateSocialPost({
@@ -1201,19 +1233,7 @@ export const ContentStudioModule = () => {
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                         <Sparkles className="w-3 h-3 text-brand-500" /> AI Copywriting Prompt
                       </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[8px] font-extrabold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-1.5 py-0.5 rounded-md">
-                          EDITABLE
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setSocialPrompt(buildSocialPrompt(socialTopic, socialPlatform, socialPostType))}
-                          className="text-[9px] font-bold text-slate-500 hover:text-brand-500 underline flex items-center gap-0.5"
-                          title="Reset to default copy prompt"
-                        >
-                          <RefreshCw className="w-2.5 h-2.5" /> Reset
-                        </button>
-                      </div>
+
                     </div>
                     <textarea
                       rows={4}
@@ -1229,19 +1249,7 @@ export const ContentStudioModule = () => {
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
                         <ImageIcon className="w-3 h-3" /> AI Visual / Image Prompt
                       </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[8px] font-extrabold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded-md">
-                          EDITABLE
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setSocialImagePrompt(buildSocialImagePrompt(socialTopic, visualStyle))}
-                          className="text-[9px] font-bold text-slate-500 hover:text-purple-500 underline flex items-center gap-0.5"
-                          title="Reset to default visual prompt"
-                        >
-                          <RefreshCw className="w-2.5 h-2.5" /> Reset
-                        </button>
-                      </div>
+
                     </div>
                     <textarea
                       rows={4}
@@ -1343,6 +1351,8 @@ export const ContentStudioModule = () => {
                       </div>
                       <button
                         onClick={() => {
+                          const updatedResult = { ...socialResult, hasVisitedCreative: true };
+                          setSocialResult(updatedResult);
                           if (setGeneratedContent) {
                             setGeneratedContent({
                               platform: socialPlatform,
@@ -1358,14 +1368,15 @@ export const ContentStudioModule = () => {
                               strategyPillar: socialResult?.strategyPillar || activeWorkspace?.positioningSummary || 'Brand Strategy',
                               imageUrl: socialResult?.imageUrl,
                               imagePrompt: socialResult?.imagePrompt || `${socialTopic} — ${activeWorkspace?.brandName || 'Brand'} commercial advertising photography, 8k`,
-                              data: socialResult,
+                              data: updatedResult,
+                              hasVisitedCreative: true
                             });
                           }
                           setActiveModule('creative');
                         }}
                         className="py-1.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all shadow-md cursor-pointer hover:scale-105 shrink-0"
                       >
-                        <Sparkles className="w-3.5 h-3.5" /> Design Visual in Creative Studio →
+                        <Sparkles className="w-3.5 h-3.5" /> {socialResult?.hasVisitedCreative || socialResult?.imageUrl ? 'View Creative Studio →' : 'Design Visual in Creative Studio →'}
                       </button>
                     </div>
                     {/* Structured Rectangle Cards Stack (Vertical Layout Compact) */}
@@ -1378,14 +1389,7 @@ export const ContentStudioModule = () => {
                             + HOOK / HEADLINE
                           </span>
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleRegenerateSection('hook')}
-                              disabled={regeneratingSection === 'hook'}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-brand-50 hover:text-brand-600 text-[9px] font-bold uppercase tracking-wide transition-all disabled:opacity-50"
-                            >
-                              {regeneratingSection === 'hook' ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-2.5 h-2.5" />}
-                              {regeneratingSection === 'hook' ? 'Regenerating...' : 'Regenerate'}
-                            </button>
+
                             <button
                               onClick={() => navigator.clipboard.writeText(socialResult.hook || '')}
                               className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-brand-500 transition-colors"
@@ -1430,14 +1434,7 @@ export const ContentStudioModule = () => {
                           </div>
 
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleRegenerateSection(captionMode === 'short' ? 'shortCaption' : 'longCaption')}
-                              disabled={regeneratingSection === 'shortCaption' || regeneratingSection === 'longCaption'}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 text-[9px] font-bold uppercase tracking-wide transition-all disabled:opacity-50"
-                            >
-                              {(regeneratingSection === 'shortCaption' || regeneratingSection === 'longCaption') ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-2.5 h-2.5" />}
-                              {(regeneratingSection === 'shortCaption' || regeneratingSection === 'longCaption') ? 'Regenerating...' : 'Regenerate'}
-                            </button>
+
                             <button
                               onClick={() => {
                                 const txt = captionMode === 'short'
@@ -1472,14 +1469,7 @@ export const ContentStudioModule = () => {
                             🎯 CALL TO ACTION (CTA)
                           </span>
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleRegenerateSection('cta')}
-                              disabled={regeneratingSection === 'cta'}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-amber-50 hover:text-amber-600 text-[9px] font-bold uppercase tracking-wide transition-all disabled:opacity-50"
-                            >
-                              {regeneratingSection === 'cta' ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-2.5 h-2.5" />}
-                              {regeneratingSection === 'cta' ? 'Regenerating...' : 'Regenerate'}
-                            </button>
+
                             <button
                               onClick={() => navigator.clipboard.writeText(socialResult.cta || socialResult.callToAction || '')}
                               className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-amber-500 transition-colors"
@@ -1499,14 +1489,7 @@ export const ContentStudioModule = () => {
                           <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
                             <Hash className="w-3 h-3" /> SEO HASHTAGS &amp; TAGS
                           </span>
-                          <button
-                            onClick={() => handleRegenerateSection('hashtags')}
-                            disabled={regeneratingSection === 'hashtags'}
-                            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 text-[9px] font-bold uppercase tracking-wide transition-all disabled:opacity-50"
-                          >
-                            {regeneratingSection === 'hashtags' ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-2.5 h-2.5" />}
-                            {regeneratingSection === 'hashtags' ? 'Regenerating...' : 'Regenerate'}
-                          </button>
+
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {(socialResult.hashtags?.length > 0 ? socialResult.hashtags : ['#BrandContent', '#AIMarketing', '#SocialMediaStrategy', '#ContentVelocity', '#BrandDNA']).map((h, i) => (
@@ -1529,17 +1512,10 @@ export const ContentStudioModule = () => {
                             </div>
                             <div>
                               <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">CREATIVE COPY ANGLES & VARIATIONS</h4>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">STORYTELLING · PROBLEM-SOLUTION · URGENCY</p>
+                              {!isStarter && <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">STORYTELLING · PROBLEM-SOLUTION · URGENCY</p>}
                             </div>
                           </div>
-                          <button
-                            onClick={() => handleRegenerateSection('variations')}
-                            disabled={regeneratingSection === 'variations'}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-cyan-50 hover:text-cyan-600 text-[9px] font-bold uppercase tracking-wide transition-all disabled:opacity-50 border border-slate-200 dark:border-slate-700"
-                          >
-                            {regeneratingSection === 'variations' ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                            {regeneratingSection === 'variations' ? 'Regenerating...' : 'Regenerate Angles'}
-                          </button>
+
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1552,24 +1528,38 @@ export const ContentStudioModule = () => {
                               type: 'PROBLEM-SOLUTION',
                               text: socialResult.problemSolution || 'Struggling to create consistent, high-quality content? Our AI platform solves that instantly. Get scroll-stopping text copy, optimized captions, and brand-aligned hashtags in seconds.'
                             }
-                          ]).map((variant, i) => (
-                            <div key={i} className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-[9px] font-black uppercase tracking-widest border border-cyan-500/20">
-                                  {variant.type || `ANGLE ${i + 1}`}
-                                </span>
-                                <button
-                                  onClick={() => navigator.clipboard.writeText(variant.text || '')}
-                                  className="p-1 rounded text-slate-400 hover:text-brand-500 transition-colors"
-                                >
-                                  <Copy className="w-3.5 h-3.5" />
-                                </button>
+                          ]).map((variant, i) => {
+                            const typeStr = (variant.type || '').toUpperCase();
+                            const isVariantLocked = (userPlanNorm === 'starter' || userPlanNorm === 'free' || userPlanNorm === 'base') && (typeStr.includes('STORYTELLING') || typeStr.includes('PROBLEM'));
+                            
+                            return (
+                              <div key={i} className={`p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2 relative overflow-hidden ${isVariantLocked ? 'opacity-80' : ''}`}>
+                                <div className="flex items-center justify-between">
+                                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-[9px] font-black uppercase tracking-widest border border-cyan-500/20">
+                                    {variant.type || `ANGLE ${i + 1}`}
+                                  </span>
+                                  {!isVariantLocked && (
+                                    <button
+                                      onClick={() => navigator.clipboard.writeText(variant.text || '')}
+                                      className="p-1 rounded text-slate-400 hover:text-brand-500 transition-colors"
+                                    >
+                                      <Copy className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                                <p className={`text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed ${isVariantLocked ? 'blur-sm select-none' : ''}`}>
+                                  {variant.text}
+                                </p>
+                                {isVariantLocked && (
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/40 dark:bg-slate-900/40 backdrop-blur-[2px]">
+                                    <div className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg">
+                                      <Lock className="w-3.5 h-3.5" /> PRO PLAN
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                              <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-                                {variant.text}
-                              </p>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -1729,7 +1719,7 @@ export const ContentStudioModule = () => {
                       <option value="long_form">Long-Form (500+ words)</option>
                       <option value="bullet_points">Bullet Points</option>
                       <option value="numbered_steps">Numbered Steps</option>
-                      <option value="storytelling">Storytelling</option>
+                      {!isStarter && <option value="storytelling">Storytelling</option>}
                     </select>
                   </div>
                 </div>

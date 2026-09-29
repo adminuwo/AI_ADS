@@ -59,9 +59,10 @@ export const DashboardModule = () => {
 
   const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
   const isStarter = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
+  const isHighestPlan = userPlanNorm === 'enterprise' || userPlanNorm === 'unlimited';
 
   const handleWebsiteBuilderClick = () => {
-    if (isStarter) {
+    if (!isHighestPlan) {
       if (showCustomAlert) {
         showCustomAlert({
           title: 'AI Website Builder is Locked',
@@ -388,7 +389,7 @@ export const DashboardModule = () => {
               bg: 'bg-[#f5f3ff] dark:bg-purple-950/30 border border-purple-200/80 dark:border-purple-900/50',
               iconBg: 'bg-purple-400/20 text-purple-600',
               btnBg: 'bg-purple-600',
-              isLocked: isStarter
+              isLocked: !isHighestPlan
             },
           ].map((step) => {
             const Icon = step.icon;
@@ -396,7 +397,7 @@ export const DashboardModule = () => {
               <button
                 key={step.id}
                 onClick={() => {
-                  if (step.id === 'websiteBuilder' && isStarter) {
+                  if (step.id === 'websiteBuilder' && !isHighestPlan) {
                     handleWebsiteBuilderClick();
                     return;
                   }
