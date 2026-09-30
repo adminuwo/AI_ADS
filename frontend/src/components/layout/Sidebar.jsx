@@ -24,8 +24,7 @@ import {
   ChevronUp,
   Lock,
   Sparkles,
-  PanelLeftClose,
-  PanelLeft
+  PanelLeftClose
 } from 'lucide-react';
 
 export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: propSetIsMobile }) => {
@@ -183,50 +182,62 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
 
   return (
     <>
-      {/* Mobile Drawer Backdrop Overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(false)}
-          className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 lg:hidden animate-in fade-in transition-opacity"
-        />
-      )}
+      {/* Mobile Drawer Backdrop Overlay with Smooth Fade Out */}
+      <div 
+        onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(false)}
+        className={`fixed inset-0 bg-slate-950/70 z-40 lg:hidden aisa-backdrop-smooth ${
+          isMobileMenuOpen 
+            ? 'opacity-100 pointer-events-auto' 
+            : 'opacity-0 pointer-events-none'
+        }`}
+        aria-hidden="true"
+      />
 
-      <aside className={`h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-white via-purple-50/30 to-white dark:from-[#0b0f19] dark:via-[#131127] dark:to-[#0b0f19] backdrop-blur-xl border-r border-purple-100/60 dark:border-slate-800/80 shadow-[8px_0_30px_rgba(139,92,246,0.06)] dark:shadow-[8px_0_30px_rgba(0,0,0,0.5)] flex flex-col justify-between transition-all duration-300 z-50 fixed lg:sticky top-0 left-0 select-none overflow-hidden ${isCollapsed ? 'w-20' : 'w-72 2xl:w-[280px]'} ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl w-[280px] max-w-[85vw]' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`h-[100dvh] max-h-[100dvh] bg-gradient-to-b from-white via-purple-50/20 to-white dark:from-[#080B1A] dark:via-[#0B0F23] dark:to-[#080B1A] border-r border-purple-100/60 dark:border-slate-800/80 shadow-[8px_0_30px_rgba(139,92,246,0.06)] dark:shadow-[8px_0_30px_rgba(0,0,0,0.5)] flex flex-col justify-between z-50 fixed lg:sticky top-0 left-0 select-none overflow-hidden aisa-sidebar-drawer ${
+        isCollapsed ? 'w-20' : 'w-[280px] max-w-[85vw] lg:w-72 lg:2xl:w-[280px]'
+      } ${
+        isMobileMenuOpen 
+          ? 'translate-x-0 shadow-2xl' 
+          : '-translate-x-full lg:translate-x-0'
+      }`}>
         <div className="flex flex-col h-full overflow-hidden">
           {/* Top Header / Logo (Matches Image 3 on all screen sizes) */}
-          <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center px-2' : 'justify-between px-3 sm:px-4'} shrink-0 border-b border-purple-100/50 dark:border-slate-800/60 bg-white dark:bg-[#070b19] relative`}>
+          <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center px-2' : 'justify-between px-3 sm:px-4'} shrink-0 border-b border-purple-100/50 dark:border-slate-800/60 bg-white dark:bg-[#070b19] relative transition-colors duration-200`}>
             <div className="absolute top-0 left-0 right-0 h-[3px] panch-tattva-ribbon z-40" />
             <div 
               onClick={toggleSidebar}
-              className={`flex items-center ${isCollapsed ? 'justify-center w-full h-full py-1' : 'gap-2.5 min-w-0 flex-1'} cursor-pointer group select-none transition-all active:scale-95`}
+              className={`flex items-center ${isCollapsed ? 'justify-center w-full h-full py-1' : 'gap-2.5 min-w-0 flex-1'} cursor-pointer group select-none active:scale-95`}
               title={isCollapsed ? "Click logo to expand sidebar" : "Click logo to collapse sidebar"}
             >
               <img 
                 src="/logo_icon_only.png?v=10" 
                 alt="AI ADS™ Logo" 
-                className={`${isCollapsed ? 'w-10 h-10' : 'w-10 h-10 sm:w-11 sm:h-11'} object-contain shrink-0 drop-shadow-sm transition-transform group-hover:scale-105`} 
+                className={`${isCollapsed ? 'w-10 h-10' : 'w-10 h-10 sm:w-11 sm:h-11'} object-contain shrink-0 drop-shadow-sm group-hover:scale-105 transition-transform duration-200`} 
                 onError={(e) => { e.target.onerror = null; e.target.src = '/logo_transparent.png?v=10'; }}
               />
-              {!isCollapsed && (
-                <div className="flex items-center font-black text-xl sm:text-2xl tracking-tight leading-none min-w-0">
-                  <span className="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500 bg-clip-text text-transparent truncate">
-                    AI Ads
-                  </span>
-                  <sup className="text-[10px] font-extrabold text-amber-500 ml-1 font-sans -mt-2 select-none shrink-0">—TM</sup>
-                </div>
-              )}
+              <div className={`flex items-center font-black text-xl sm:text-2xl tracking-tight leading-none min-w-0 transition-opacity duration-200 ${
+                isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+              }`}>
+                <span className="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500 bg-clip-text text-transparent truncate">
+                  AI Ads
+                </span>
+                <sup className="text-[10px] font-extrabold text-amber-500 ml-1 font-sans -mt-2 select-none shrink-0">—TM</sup>
+              </div>
             </div>
 
             {/* Collapse / Close Button on Right (Clean teal/emerald button matching Image 3 on mobile & desktop) */}
-            {!isCollapsed && (
-              <button 
-                onClick={toggleSidebar}
-                className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30 transition-all cursor-pointer shrink-0 ml-1 active:scale-95 flex items-center justify-center"
-                title={typeof window !== 'undefined' && window.innerWidth < 1024 ? "Close Navigation Menu" : "Collapse Sidebar"}
-              >
-                <PanelLeftClose className="w-4 h-4" />
-              </button>
-            )}
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleSidebar();
+              }}
+              className={`p-1.5 sm:p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30 active:scale-90 transition-transform duration-150 cursor-pointer shrink-0 ml-1 items-center justify-center ${
+                isCollapsed ? 'hidden' : 'flex'
+              }`}
+              title={typeof window !== 'undefined' && window.innerWidth < 1024 ? "Close Navigation Menu" : "Collapse Sidebar"}
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Clean Navigation Item List (Seamless scrollable container, never overflows viewport) */}
@@ -251,7 +262,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                         : 'bg-white/80 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800/90 border border-slate-200/50 dark:border-slate-800/60 shadow-xs hover:shadow-sm hover:border-purple-200 dark:hover:border-purple-800/50 hover:translate-x-0.5 font-semibold'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 ${
                         isActive 
                           ? 'bg-white/20 text-white shadow-inner' 
@@ -259,23 +270,27 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                       }`}>
                         <Icon className="w-4 h-4" style={!isActive && m.color !== 'spectrum' ? { color: m.color } : {}} />
                       </div>
-                      {!isCollapsed && <span className="truncate">{m.label}</span>}
+                      <span className={`truncate transition-opacity duration-200 whitespace-nowrap min-w-0 ${
+                        isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                      }`}>
+                        {m.label}
+                      </span>
                     </div>
 
-                    {!isCollapsed && (
-                      <div className="flex items-center gap-1 shrink-0">
-                        {isModuleLocked && (
-                          <span className={`flex items-center gap-1 text-[9.5px] font-black px-2 py-0.5 rounded-full shrink-0 ml-1 shadow-xs ${
-                            isActive
-                              ? 'bg-white/25 text-white border border-white/40'
-                              : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-                          }`}>
-                            <Lock className="w-2.5 h-2.5" />
-                            <span>PRO</span>
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    <div className={`transition-opacity duration-200 shrink-0 ${
+                      isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                    }`}>
+                      {isModuleLocked && (
+                        <span className={`flex items-center gap-1 text-[9.5px] font-black px-2 py-0.5 rounded-full ml-1 shadow-xs ${
+                          isActive
+                            ? 'bg-white/25 text-white border border-white/40'
+                            : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                        }`}>
+                          <Lock className="w-2.5 h-2.5" />
+                          <span>PRO</span>
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
@@ -287,7 +302,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
               <button
                 key="plan_btn"
                 onClick={() => handleNavClick('plan')}
-                className={`w-full flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-2xl text-xs font-bold transition-all duration-200 shadow-xs cursor-pointer ${
+                className={`w-full flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-2xl text-xs font-bold transition-colors duration-150 shadow-xs cursor-pointer ${
                   activeModule === 'settings' && activeSettingsTab === 'billing'
                     ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-emerald-500/30 font-extrabold'
                     : 'bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25 dark:border-emerald-500/35'
@@ -295,14 +310,18 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 title={t('plan', 'Subscription & Billing Plan')}
               >
                 <Crown className="w-3.5 h-3.5 shrink-0 text-emerald-500 dark:text-emerald-400" />
-                {!isCollapsed && <span>{t('PLAN', 'PLAN')}</span>}
+                <span className={`transition-opacity duration-200 whitespace-nowrap ${
+                  isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}>
+                  {t('PLAN', 'PLAN')}
+                </span>
               </button>
 
               {/* SETTINGS */}
               <button
                 key="settings_btn"
                 onClick={() => handleNavClick('settings')}
-                className={`w-full flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-2xl text-xs font-bold transition-all duration-200 shadow-xs cursor-pointer ${
+                className={`w-full flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-2xl text-xs font-bold transition-colors duration-150 shadow-xs cursor-pointer ${
                   activeModule === 'settings' && activeSettingsTab === 'account'
                     ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white shadow-cyan-500/30 font-extrabold'
                     : 'bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/25 dark:border-cyan-500/35'
@@ -310,7 +329,11 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 title={t('settings', 'Account Settings')}
               >
                 <Sliders className="w-3.5 h-3.5 shrink-0 text-cyan-500 dark:text-cyan-400" />
-                {!isCollapsed && <span>{t('SETTINGS', 'SETTINGS')}</span>}
+                <span className={`transition-opacity duration-200 whitespace-nowrap ${
+                  isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}>
+                  {t('SETTINGS', 'SETTINGS')}
+                </span>
               </button>
             </div>
           </nav>
@@ -368,32 +391,34 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
             {/* Active User / Workspace Footer Card (Image 3) */}
             <div 
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className={`flex items-center ${isCollapsed ? 'justify-center p-1.5' : 'justify-between p-2 px-2.5'} rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-purple-300 dark:hover:border-purple-700/50 transition-all cursor-pointer select-none group`}
+              className={`flex items-center ${isCollapsed ? 'justify-center p-1.5' : 'justify-between p-2 px-2.5'} rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-purple-300 dark:hover:border-purple-700/50 transition-colors duration-200 cursor-pointer select-none group`}
               title={user?.name || 'Account & Settings'}
             >
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl p-0.5 bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-400 shadow-xs shadow-purple-500/20 shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
                   <div className="w-full h-full rounded-[9px] bg-slate-950 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
                     {userAvatar ? (
-                      <img src={userAvatar} alt="User Avatar" className="w-full h-full object-cover" />
+                       <img src={userAvatar} alt="User Avatar" className="w-full h-full object-cover" />
                     ) : (
                       <img src="/ai_ads_logo_3d.png" alt="User Avatar" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/logo_icon_only.png'; }} />
                     )}
                   </div>
                 </div>
-                {!isCollapsed && (
-                  <div className="min-w-0 flex-1 ml-1.5">
-                    <p className="text-[12.5px] font-bold text-slate-900 dark:text-white truncate leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                      {user?.name || user?.fullName || 'Sonali Gupta'}
-                    </p>
-                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate mt-0.5 font-medium">
-                      {t(user?.plan || activeWorkspace?.subscriptionTier || 'Agency / Scale')}
-                    </p>
-                  </div>
-                )}
+                <div className={`min-w-0 flex-1 ml-1.5 transition-opacity duration-200 ${
+                  isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}>
+                  <p className="text-[12.5px] font-bold text-slate-900 dark:text-white truncate leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    {user?.name || user?.fullName || 'Sonali Gupta'}
+                  </p>
+                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate mt-0.5 font-medium">
+                    {t(user?.plan || activeWorkspace?.subscriptionTier || 'Agency / Scale')}
+                  </p>
+                </div>
               </div>
 
-              {!isCollapsed && (
+              <div className={`transition-opacity duration-200 shrink-0 ${
+                isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+              }`}>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -409,7 +434,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                     <Moon className="w-4 h-4 text-violet-600 dark:text-violet-300" />
                   )}
                 </button>
-              )}
+              </div>
             </div>
           </div>
         </div>

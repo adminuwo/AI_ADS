@@ -191,11 +191,13 @@ const MainContent = () => {
       <CustomPopupModal alertState={customAlert} onClose={closeCustomAlert} />
       <CustomToastContainer toastState={toast} onClose={closeToast} />
 
-      {/* Floating AISA Assistant Toggle Button (Hidden when drawer or mobile menu is open) */}
-      {!isAISAAssistantOpen && !isMobileMenuOpen && (
+      {/* Floating AISA Assistant Toggle Button (Persistently mounted, zero-mount lag) */}
+      {!isAISAAssistantOpen && (
         <button
           onClick={() => setIsAISAAssistantOpen(true)}
-          className="fixed bottom-4 right-4 sm:bottom-8 sm:right-10 z-30 w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 cursor-pointer group"
+          className={`fixed bottom-4 right-4 sm:bottom-8 sm:right-10 z-30 w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer group ${
+            isMobileMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+          }`}
           title="Open AI Ads™ Chatbot Assistant"
         >
           <img
