@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import { seoAPI, strategyAPI } from '../../services/api';
+import { seoAPI } from '../../services/api';
 import {
   Search, Layers, FileText, Code2, Sparkles, Send, ShieldAlert,
   TrendingUp, BarChart3, Tag, Hash, ChevronRight, Copy, Check,
@@ -104,28 +104,6 @@ export const SeoModule = () => {
   const userPlanNorm = (user?.plan || 'starter').toLowerCase();
   const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
   const isAiOpportunitiesLocked = isCampaignLocked || userPlanNorm === 'pro' || userPlanNorm === 'growth';
-  const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
-
-  const handleProceedToStrategy = async () => {
-    if (isGeneratingStrategy) return;
-    setIsGeneratingStrategy(true);
-    try {
-      const workspaceId = activeWorkspace?.id || activeWorkspace?._id || 'default_ws';
-      const seoContext = {
-        primaryKeyword: selectedKeyword?.keyword || seedKeyword || activeWorkspace?.brandName || '',
-        searchIntent: selectedKeyword?.intent || intent || 'Commercial',
-        contentClusters: brief?.contentIdeas || brief?.recommendedArticles || [],
-        targetRegion: brief?.targetRegion || 'National Hubs'
-      };
-      await strategyAPI.generate(workspaceId, { seoContext });
-      setActiveModule('strategy');
-    } catch (err) {
-      console.warn('[SEO Module] Direct Strategy generation notice:', err.message);
-      setActiveModule('strategy');
-    } finally {
-      setIsGeneratingStrategy(false);
-    }
-  };
 
   const wsId = activeWorkspace?._id || activeWorkspace?.id || activeWorkspace?.brandName || 'ws_default';
   const [websiteUrl, setWebsiteUrl] = useState('');
@@ -353,10 +331,10 @@ export const SeoModule = () => {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Header */}
-      <div className="p-5 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-5 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-brand-500 flex items-center justify-center text-white shadow-md shadow-cyan-500/20">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/25">
               <Bot className="w-4 h-4" />
             </div>
             <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
@@ -396,7 +374,7 @@ export const SeoModule = () => {
       </div>
 
       {/* Top Input Control Bar */}
-      <div className="p-5 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+      <div className="p-5 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm border-l-4 border-l-emerald-500">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
           {/* {t("Target Website URL", "Target Website URL")} */}
           <div className="md:col-span-5 space-y-1.5">
@@ -409,14 +387,14 @@ export const SeoModule = () => {
               value={websiteUrl}
               onChange={(e) => setWebsiteUrl(e.target.value)}
               placeholder="https://example.com"
-              className="w-full glass-input text-xs font-semibold"
+              className="w-full glass-input text-xs font-semibold focus:border-emerald-500"
             />
           </div>
 
           {/* {t("Target Focus Topic", "Target Focus Topic")} */}
           <div className="md:col-span-4 space-y-1.5">
             <label className="block text-[11px] font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-cyan-500" />
+              <Layers className="w-3.5 h-3.5 text-emerald-500" />
               {t("Target Focus Topic", "Target Focus Topic")}
             </label>
             <input
@@ -424,7 +402,7 @@ export const SeoModule = () => {
               value={seedKeyword}
               onChange={(e) => setSeedKeyword(e.target.value)}
               placeholder="e.g. Activewear Workout Gear"
-              className="w-full glass-input text-xs font-semibold"
+              className="w-full glass-input text-xs font-semibold focus:border-emerald-500"
             />
           </div>
 
@@ -436,7 +414,7 @@ export const SeoModule = () => {
             <select
               value={intent}
               onChange={(e) => setIntent(e.target.value)}
-              className="w-full glass-input text-xs font-semibold"
+              className="w-full glass-input text-xs font-semibold focus:border-emerald-500"
             >
               <option value="Commercial">{t("Commercial (Compare)", "Commercial (Compare)")}</option>
               <option value="Transactional">{t("Transactional (Buy / Convert)", "Transactional (Buy / Convert)")}</option>
@@ -450,7 +428,7 @@ export const SeoModule = () => {
             <button
               onClick={() => handleRunMultiAgentAudit(seedKeyword)}
               disabled={isAuditing}
-              className="w-full btn-primary px-3 py-2.5 text-xs font-bold whitespace-nowrap shadow-lg shadow-brand-500/20 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="w-full px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25 text-white text-xs font-black whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all active:scale-95"
               title="Crawl live URL and analyze SERP rankings"
             >
               {isAuditing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
@@ -466,8 +444,8 @@ export const SeoModule = () => {
               onClick={() => setActiveTab('all')}
               className={`px-3 py-1.5 rounded-xl transition-all ${
                 activeTab === 'all'
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+                  : 'text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400'
               }`}
             >
               {t("Overview Matrix", "Overview Matrix")} ({totalAnalyzedKeywords})
@@ -477,7 +455,7 @@ export const SeoModule = () => {
               onClick={() => setActiveTab('onSite')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
                 activeTab === 'onSite'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20'
                   : 'text-slate-500 hover:text-emerald-600'
               }`}
             >
@@ -489,11 +467,11 @@ export const SeoModule = () => {
               onClick={() => setActiveTab('rankings')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
                 activeTab === 'rankings'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'text-slate-500 hover:text-blue-600'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+                  : 'text-slate-500 hover:text-emerald-600'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-blue-400" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
               2. Search Rankings ({rankingKeywords.filter(k => !isSystemOrDomainQuery(k.term, activeWorkspace.domainUrl || websiteUrl)).length})
             </button>
 
@@ -501,11 +479,11 @@ export const SeoModule = () => {
               onClick={() => setActiveTab('competitors')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
                 activeTab === 'competitors'
-                  ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20'
-                  : 'text-slate-500 hover:text-purple-600'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+                  : 'text-slate-500 hover:text-emerald-600'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-purple-400" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
               {t("3. Competitor Gaps", "3. Competitor Gaps")} ({competitorGaps.length})
             </button>
 
@@ -513,11 +491,11 @@ export const SeoModule = () => {
               onClick={() => setActiveTab('opportunities')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
                 activeTab === 'opportunities'
-                  ? 'bg-amber-600 text-white shadow-md shadow-amber-500/20'
-                  : 'text-slate-500 hover:text-amber-600'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+                  : 'text-slate-500 hover:text-emerald-600'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
               {t("4. AI Opportunities", "4. AI Opportunities")} ({opportunityKeywords.length})
             </button>
 
@@ -526,8 +504,8 @@ export const SeoModule = () => {
                 onClick={() => setActiveTab('clusters')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
                   activeTab === 'clusters'
-                    ? 'bg-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                    : 'text-slate-500 hover:text-cyan-600'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+                    : 'text-slate-500 hover:text-emerald-600'
                 }`}
               >
                 <Layers3 className="w-3 h-3" />
@@ -540,8 +518,8 @@ export const SeoModule = () => {
 
       {/* Main Empty / Loading / Launch Screen */}
       {isAuditing ? (
-        <div className="text-center py-16 px-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 max-w-2xl mx-auto space-y-4 shadow-xl">
-          <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 flex items-center justify-center mx-auto text-cyan-500 border border-cyan-500/20 shadow-lg">
+        <div className="text-center py-16 px-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 max-w-2xl mx-auto space-y-4 shadow-xl">
+          <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 flex items-center justify-center mx-auto text-emerald-500 border border-emerald-500/20 shadow-lg">
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
           <div className="space-y-1 max-w-md mx-auto">
@@ -552,14 +530,14 @@ export const SeoModule = () => {
               Crawls live HTML tags, discovers verified Google SERP rankings, detects real competitors, and calculates exact keyword gaps.
             </p>
           </div>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-brand-500 text-white font-extrabold text-xs shadow-lg">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-lg">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span>Orchestrating Audit in Background...</span>
           </div>
         </div>
       ) : !initialized ? (
-        <div className="text-center py-16 px-6 rounded-3xl accent-card glass-card border border-dashed border-slate-200 dark:border-slate-800 max-w-2xl mx-auto space-y-4">
-          <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 flex items-center justify-center mx-auto text-cyan-500 border border-cyan-500/20 shadow-lg">
+        <div className="text-center py-16 px-6 rounded-3xl accent-card glass-card border border-dashed border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 max-w-2xl mx-auto space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 flex items-center justify-center mx-auto text-emerald-500 border border-emerald-500/20 shadow-lg">
             <Search className="w-8 h-8" />
           </div>
           <div className="space-y-1 max-w-md mx-auto">
@@ -574,7 +552,7 @@ export const SeoModule = () => {
             <button
               onClick={() => handleRunMultiAgentAudit(seedKeyword || getDefaultSeed())}
               disabled={isAuditing}
-              className="btn-primary text-xs px-6 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25 text-white text-xs font-black cursor-pointer disabled:opacity-50 transition-all active:scale-95"
             >
               {t("Run Verified SEO Analysis", "Run Verified SEO Analysis")}
             </button>
@@ -585,15 +563,15 @@ export const SeoModule = () => {
 
           {/* ⚡ QUICK WINS BANNER (If available) */}
           {quickWins.length > 0 && (activeTab === 'all' || activeTab === 'opportunities') && (
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-500/30 space-y-2.5">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/5 border border-emerald-500/30 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  <Zap className="w-4 h-4 text-emerald-500 fill-emerald-500" />
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
                     ⚡ {t("Quick Wins (AI-Suggested Ranking Opportunities)", "Quick Wins (AI-Suggested Ranking Opportunities)")}
                   </h3>
                 </div>
-                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
                   {quickWins.length} {t("AI-Suggested Wins Available", "AI-Suggested Wins Available")}
                 </span>
               </div>
@@ -603,13 +581,13 @@ export const SeoModule = () => {
                   <div
                     key={i}
                     onClick={() => handleGenerateBrief(qw.term)}
-                    className="p-3 bg-white dark:bg-slate-900/90 rounded-xl border border-amber-500/20 hover:border-amber-500/60 cursor-pointer transition-all space-y-1.5 group shadow-sm"
+                    className="p-3 bg-white dark:bg-slate-900/90 rounded-xl border border-emerald-500/20 hover:border-emerald-500/60 cursor-pointer transition-all space-y-1.5 group shadow-sm"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-amber-500 transition-colors truncate">
+                      <span className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors truncate">
                         {qw.term}
                       </span>
-                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600">
+                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                         {(qw.currentPosition || '').replace(/market\s+dominant/gi, 'Page 2')}
                       </span>
                     </div>
@@ -618,7 +596,7 @@ export const SeoModule = () => {
                       <span>•</span>
                       <span className="truncate">Path: {qw.existingRankingPage}</span>
                     </div>
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium leading-snug">
+                    <p className="text-[10px] text-slate-700 dark:text-slate-300 font-medium leading-snug">
                       👉 {qw.recommendedOptimization}
                     </p>
                   </div>
@@ -642,7 +620,7 @@ export const SeoModule = () => {
                       <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                         On-Page Terms & Collections
                       </h2>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold block">
                         {t("Verified from live HTML tags, body & collection links", "Verified from live HTML tags, body & collection links")}
                       </span>
                     </div>
@@ -719,17 +697,17 @@ export const SeoModule = () => {
 
             {/* 🔵 COLUMN 2: CURRENT {t("SEARCH RANKINGS", "SEARCH RANKINGS")} */}
             {(activeTab === 'all' || activeTab === 'rankings') && (
-              <div className="p-5 rounded-3xl accent-card glass-card border border-blue-500/30 dark:border-blue-500/20 bg-gradient-to-b from-blue-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-blue-500/20">
+              <div className="p-5 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-emerald-500/20">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-xs">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
                       2
                     </div>
                     <div>
                       <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                         {t("Current Search Rankings", "Current Search Rankings")}
                       </h2>
-                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold block">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold block">
                         {t("Search engine keyword positions", "Search engine keyword positions")}
                       </span>
                     </div>
@@ -741,7 +719,7 @@ export const SeoModule = () => {
                     return (
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${
                         verifiedRankCount > 0
-                          ? 'bg-blue-500/10 text-blue-600 border-blue-500/30'
+                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
                           : 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20'
                       }`}>
                         {`${verifiedRankCount} Ranked Keywords`}
@@ -779,15 +757,15 @@ export const SeoModule = () => {
                         <div
                           key={`rank-${idx}`}
                           onClick={() => handleGenerateBrief(kw.term, kw.searchIntent)}
-                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-blue-500/20 hover:border-blue-500/60 hover:shadow-md cursor-pointer transition-all group ${
-                            selectedKeyword === kw.term ? 'ring-2 ring-blue-500' : ''
+                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-md cursor-pointer transition-all group ${
+                            selectedKeyword === kw.term ? 'ring-2 ring-emerald-500' : ''
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className={`px-2 py-0.5 rounded font-black text-[9px] ${
                                 isVerified
-                                  ? 'bg-blue-600 text-white shadow-sm'
+                                  ? 'bg-emerald-600 text-white shadow-sm'
                                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
                               }`}>
                                 {displayPos}
@@ -803,7 +781,7 @@ export const SeoModule = () => {
                               className="p-1 rounded text-slate-400 hover:text-slate-600"
                               title="Copy Keyword"
                             >
-                              {copiedIdx === `rank-${idx}` ? <Check className="w-3.5 h-3.5 text-blue-500" /> : <Copy className="w-3.5 h-3.5" />}
+                              {copiedIdx === `rank-${idx}` ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                           </div>
 
@@ -839,7 +817,7 @@ export const SeoModule = () => {
 
             {(activeTab === 'all' || activeTab === 'competitors') && (
               (userPlanNorm === 'starter' || userPlanNorm === 'free') ? (
-                <div className="p-5 rounded-3xl accent-card glass-card border border-purple-500/30 dark:border-purple-500/20 bg-gradient-to-b from-purple-500/[0.02] to-transparent flex flex-col items-center justify-center h-full text-center space-y-3 shadow-sm min-h-[300px]">
+                <div className="p-5 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col items-center justify-center h-full text-center space-y-3 shadow-sm min-h-[300px]">
                   <Lock className="w-8 h-8 text-purple-400" />
                   <div className="space-y-1">
                     <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">{t("Competitor Gaps Locked", "Competitor Gaps Locked")}</h3>
@@ -847,10 +825,10 @@ export const SeoModule = () => {
                   </div>
                 </div>
               ) : (
-              <div className="p-5 rounded-3xl accent-card glass-card border border-purple-500/30 dark:border-purple-500/20 bg-gradient-to-b from-purple-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-purple-500/20">
+              <div className="p-5 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-emerald-500/20">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black text-xs">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
                       3
                     </div>
                     <div>
@@ -869,7 +847,7 @@ export const SeoModule = () => {
                       </span>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-500/10 text-purple-600 border border-purple-500/30">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
                     {competitorGaps.length} Gaps
                   </span>
                 </div>
@@ -921,8 +899,8 @@ export const SeoModule = () => {
                         <div
                           key={`gap-${idx}`}
                           onClick={() => handleGenerateBrief(kw.term, kw.searchIntent)}
-                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-purple-500/20 hover:border-purple-500/60 hover:shadow-md cursor-pointer transition-all group ${
-                            selectedKeyword === kw.term ? 'ring-2 ring-purple-500' : ''
+                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-md cursor-pointer transition-all group ${
+                            selectedKeyword === kw.term ? 'ring-2 ring-emerald-500' : ''
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
@@ -943,7 +921,7 @@ export const SeoModule = () => {
                               className="p-1 rounded text-slate-400 hover:text-slate-600"
                               title="Copy Keyword"
                             >
-                              {copiedIdx === `gap-${idx}` ? <Check className="w-3.5 h-3.5 text-purple-500" /> : <Copy className="w-3.5 h-3.5" />}
+                              {copiedIdx === `gap-${idx}` ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                           </div>
 
@@ -953,12 +931,12 @@ export const SeoModule = () => {
                           </div>
 
                           {/* Evidence Chain: Keyword → Competitor → Competitor Position → Target Position/Status → Ranking URL */}
-                          <div className="p-2 bg-purple-50/50 dark:bg-purple-950/30 rounded-xl border border-purple-500/15 text-[10px] space-y-1 mt-1.5">
+                          <div className="p-2 bg-emerald-50/50 dark:bg-emerald-950/30 rounded-xl border border-emerald-500/15 text-[10px] space-y-1 mt-1.5">
                             <div className="flex items-center justify-between">
-                              <span className="text-slate-500">Competitor: <strong className="text-purple-600 dark:text-purple-400">{kw.competitor}</strong></span>
+                              <span className="text-slate-500">Competitor: <strong className="text-emerald-600 dark:text-emerald-400">{kw.competitor}</strong></span>
                               <span className={`font-bold ${
                                 isBothPositionsVerified
-                                  ? 'text-emerald-600'
+                                  ? 'text-slate-900 dark:text-white'
                                   : isCompVerifiedOnly
                                     ? 'text-purple-600 dark:text-purple-400'
                                     : 'text-slate-500 font-medium'
@@ -997,7 +975,7 @@ export const SeoModule = () => {
           {/* ═════════ SECTION 4: {t("AI OPPORTUNITY", "AI OPPORTUNITY")} KEYWORDS & ACTION ITEMS ═════════ */}
           {(activeTab === 'all' || activeTab === 'opportunities') && (
             isAiOpportunitiesLocked ? (
-              <div className="p-6 rounded-3xl accent-card glass-card border border-amber-500/30 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/[0.02] to-transparent flex flex-col items-center justify-center text-center space-y-3 min-h-[200px]">
+              <div className="p-6 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col items-center justify-center text-center space-y-3 min-h-[200px]">
                 <Lock className="w-8 h-8 text-amber-400" />
                 <div className="space-y-1">
                   <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">{t("AI Opportunities Locked", "AI Opportunities Locked")}</h3>
@@ -1006,25 +984,25 @@ export const SeoModule = () => {
               </div>
             ) : (
             opportunityKeywords.length > 0 && (
-            <div className="p-6 rounded-3xl accent-card glass-card border border-amber-500/30 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/[0.02] to-transparent space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-amber-500/20">
+            <div className="p-6 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-emerald-500/20">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-xs">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
                     4
                   </div>
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                       <span>{t("AI-Suggested Opportunities & Recommended Actions", "AI-Suggested Opportunities & Recommended Actions")}</span>
-                      <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                         AI-Suggested Recommendation
                       </span>
                     </h3>
-                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold block">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold block">
                       {t("Recommendations synthesized from website content, ranking data & competitor gaps", "Recommendations synthesized from website content, ranking data & competitor gaps")}
                     </span>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 border border-amber-500/30">
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
                   {opportunityKeywords.length} AI Opportunities
                 </span>
               </div>
@@ -1034,14 +1012,14 @@ export const SeoModule = () => {
                   <div
                     key={idx}
                     onClick={() => handleGenerateBrief(opp.term)}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-amber-500/20 hover:border-amber-500/60 hover:shadow-lg cursor-pointer transition-all space-y-2 group shadow-sm"
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-lg cursor-pointer transition-all space-y-2 group shadow-sm"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded font-black text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                        <span className="px-2 py-0.5 rounded font-black text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                           {t("AI OPPORTUNITY", "AI OPPORTUNITY")}
                         </span>
-                        <span className="text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                        <span className="text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
                           {opp.evidenceBasis || 'Evidence: Content Gap Analysis'}
                         </span>
                       </div>
@@ -1050,7 +1028,7 @@ export const SeoModule = () => {
                       </span>
                     </div>
 
-                    <h4 className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-amber-500 transition-colors flex items-center justify-between">
+                    <h4 className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors flex items-center justify-between">
                       <span>{opp.term}</span>
                       <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </h4>
@@ -1063,7 +1041,7 @@ export const SeoModule = () => {
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px]">
                       <span className="font-bold text-slate-400">Action:</span>
-                      <span className="font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
+                      <span className="font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
                         👉 {opp.recommendedAction || 'Create new landing page'}
                       </span>
                     </div>
@@ -1194,7 +1172,7 @@ export const SeoModule = () => {
                       navigator.clipboard.writeText(brief.jsonLdSchema);
                       showToast('Schema.org JSON-LD copied to clipboard!', 'success');
                     }}
-                    className="btn-primary text-xs flex items-center gap-1.5 px-4 py-2 rounded-xl"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>{t("Copy Schema.org JSON-LD", "Copy Schema.org JSON-LD")}</span>
@@ -1209,7 +1187,7 @@ export const SeoModule = () => {
                   <ul className="space-y-1.5">
                     {(brief.suggestedTitles || []).map((tItem, i) => (
                       <li key={i} className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-start gap-2">
-                        <span className="w-4 h-4 rounded-full bg-brand-500/10 text-brand-500 flex items-center justify-center text-[10px] shrink-0 mt-0.5">{i + 1}</span>
+                        <span className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-[10px] shrink-0 mt-0.5">{i + 1}</span>
                         <span>{tItem}</span>
                       </li>
                     ))}
@@ -1235,9 +1213,9 @@ export const SeoModule = () => {
                   <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">H2 / H3 Editorial Hierarchy</span>
                   <div className="space-y-2">
                     {(brief.headingOutline || []).map((sec, i) => (
-                      <div key={i} className="pl-3 border-l-2 border-brand-500 space-y-0.5">
+                      <div key={i} className="pl-3 border-l-2 border-emerald-500 space-y-0.5">
                         <div className="font-extrabold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <ChevronRight className="w-3.5 h-3.5 text-brand-500 shrink-0" />
+                          <ChevronRight className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                           <span>H2: {sec.h2}</span>
                         </div>
                         {sec.h3s && sec.h3s.length > 0 && (
@@ -1258,7 +1236,7 @@ export const SeoModule = () => {
                   <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">{t("Internal Linking Blueprint", "Internal Linking Blueprint")}</span>
                   <div className="flex flex-col gap-1.5">
                     {(brief.internalLinkingSuggestions || []).map((link, i) => (
-                      <span key={i} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border border-cyan-500/20 truncate">
+                      <span key={i} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-slate-800 dark:text-slate-200 border border-emerald-500/20 truncate">
                         🔗 {typeof link === 'string' ? link : `${link.anchorText || 'Link'} → ${link.targetPage || '/features'}`}
                       </span>
                     ))}
@@ -1270,35 +1248,14 @@ export const SeoModule = () => {
 
           {/* Floating Action Button */}
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-            {isCampaignLocked ? (
-              <button
-                onClick={handleProceedToStrategy}
-                disabled={isGeneratingStrategy}
-                className="flex items-center gap-2 px-6 py-3 btn-primary rounded-full font-extrabold text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-60 cursor-pointer"
-              >
-                {isGeneratingStrategy ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Generating Strategy...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
-                    <span>{t("Generate AI Strategy", "Generate AI Strategy")}</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={() => setActiveModule('campaigns')}
-                className="flex items-center gap-2 px-6 py-3 btn-primary rounded-full font-extrabold text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
-                <span>{t("Generate Campaign", "Generate Campaign")}</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={() => setActiveModule('campaigns')}
+              className="flex items-center gap-2 px-7 py-3.5 rounded-full font-black text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-emerald-500/30 border border-white/20 backdrop-blur-xl"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
+              <span>{t("Generate Campaign", "Generate Campaign")}</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
