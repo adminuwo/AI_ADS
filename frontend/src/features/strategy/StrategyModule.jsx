@@ -1187,7 +1187,7 @@ export const StrategyModule = () => {
       )}
 
       {/* ══════════ HEADER ══════════ */}
-      <div className="relative overflow-hidden p-6 sm:p-7 rounded-3xl accent-card bg-gradient-to-r from-purple-500/8 via-indigo-500/5 to-pink-500/8 dark:from-purple-950/30 dark:to-slate-900/90 border border-purple-200/60 dark:border-purple-800/40 border-l-4 border-l-violet-500 shadow-md backdrop-blur-xl">
+      <div className="relative overflow-hidden p-6 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-violet-500 shadow-sm">
         {/* Decorative background orbs */}
         <div className="absolute -top-10 -right-10 w-56 h-56 rounded-full bg-gradient-to-br from-violet-500/10 to-purple-500/8 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-gradient-to-br from-purple-500/10 to-indigo-500/8 blur-3xl pointer-events-none" />

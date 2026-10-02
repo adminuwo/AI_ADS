@@ -2062,7 +2062,7 @@ export const ContentStudioModule = () => {
         <div className="space-y-6">
           {/* MAIN CONTENT STUDIO HUB PAGE VIEW (when no channel card is selected) */}
           {/* Header Bar */}
-          <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-orange-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-orange-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-orange-500/15 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 flex items-center justify-center shrink-0">
@@ -2148,7 +2148,7 @@ export const ContentStudioModule = () => {
           </div>
 
           {/* Clean Overview Card below grid */}
-          <div className="p-8 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-orange-500 text-center space-y-3">
+          <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-orange-500 text-center space-y-3 shadow-sm">
             <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center mx-auto">
               <Sparkles className="w-6 h-6" />
             </div>

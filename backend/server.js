@@ -217,14 +217,41 @@ app.post('/api/auth/login', async (req, res) => {
     });
   }
 
-  // Generate OTP instead of immediate login
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  loginOtpStore.set(cleanEmail, { otp, user, expiresAt: Date.now() + 5 * 60 * 1000 });
+  // Direct Login on valid password (No OTP step required)
+  const userId = user._id ? user._id.toString() : String(user.id || `usr_${Date.now()}`);
+  let userRole = user.role || 'AgencyAdmin';
+  const userEmail = user.email || cleanEmail;
 
-  const { sendLoginOTP } = require('./services/emailService');
-  await sendLoginOTP({ email: cleanEmail, otp, userName: user.name || cleanEmail.split('@')[0] });
+  if (userEmail === 'admin@aiads.com') {
+    userRole = 'SuperAdmin';
+    if (user._id && user.role !== 'SuperAdmin') {
+      user.role = 'SuperAdmin';
+      await user.save().catch(e => console.log('Failed to save SuperAdmin role', e.message));
+    }
+  }
 
-  return res.json({ success: true, requiresOtp: true, message: 'Verification code sent to your email.' });
+  const jwtSecret = process.env.JWT_SECRET || 'ai_ads_secret_key_123';
+  const token = jwt.sign(
+    { userId, email: userEmail, role: userRole },
+    jwtSecret,
+    { expiresIn: '7d' }
+  );
+
+  return res.json({
+    success: true,
+    requiresOtp: false,
+    token,
+    user: {
+      id: userId,
+      _id: userId,
+      email: userEmail,
+      name: user.name || userEmail.split('@')[0],
+      role: userRole,
+      avatar: user.avatar || '',
+      accentColor: user.accentColor || 'indigo',
+      appearance: user.appearance || 'light'
+    }
+  });
 });
 
 app.post('/api/auth/login-verify', async (req, res) => {

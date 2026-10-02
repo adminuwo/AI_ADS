@@ -493,7 +493,7 @@ export const AssetLibraryModule = () => {
         </div>
       )}
 
-      <div className="p-6 accent-card rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-cyan-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+      <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-cyan-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-2xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-bold">
@@ -703,7 +703,7 @@ export const AssetLibraryModule = () => {
           })}
         </div>
       ) : (
-        <div className="p-16 text-center accent-card rounded-3xl bg-white dark:bg-slate-900 space-y-4 flex flex-col items-center justify-center">
+        <div className="p-16 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-cyan-500 space-y-4 flex flex-col items-center justify-center shadow-sm">
           <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500">
             <FolderOpen className="w-8 h-8" />
           </div>

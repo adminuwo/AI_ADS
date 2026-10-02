@@ -331,7 +331,7 @@ export const SeoModule = () => {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Header */}
-      <div className="p-5 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/25">
@@ -352,16 +352,16 @@ export const SeoModule = () => {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {t("VERIFIED ON-PAGE", "VERIFIED ON-PAGE")}
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20" title="Organic search engine positions">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20" title="Organic search engine positions">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
             {t("SEARCH RANKINGS", "SEARCH RANKINGS")}
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20" title="Real competitor SERP advantage vs target">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" title="Real competitor SERP advantage vs target">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {t("COMPETITOR GAP", "COMPETITOR GAP")}
           </span>
-          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="AI-synthesized strategic growth recommendation">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20" title="AI-synthesized strategic growth recommendation">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
             {t("AI OPPORTUNITY", "AI OPPORTUNITY")}
           </span>
           {dataIntegrity && (
@@ -374,7 +374,7 @@ export const SeoModule = () => {
       </div>
 
       {/* Top Input Control Bar */}
-      <div className="p-5 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm border-l-4 border-l-emerald-500">
+      <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 space-y-4 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
           {/* {t("Target Website URL", "Target Website URL")} */}
           <div className="md:col-span-5 space-y-1.5">
@@ -518,7 +518,7 @@ export const SeoModule = () => {
 
       {/* Main Empty / Loading / Launch Screen */}
       {isAuditing ? (
-        <div className="text-center py-16 px-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 max-w-2xl mx-auto space-y-4 shadow-xl">
+        <div className="text-center py-16 px-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 max-w-2xl mx-auto space-y-4 shadow-xl">
           <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 flex items-center justify-center mx-auto text-emerald-500 border border-emerald-500/20 shadow-lg">
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
@@ -536,7 +536,7 @@ export const SeoModule = () => {
           </div>
         </div>
       ) : !initialized ? (
-        <div className="text-center py-16 px-6 rounded-3xl accent-card glass-card border border-dashed border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 max-w-2xl mx-auto space-y-4">
+        <div className="text-center py-16 px-6 rounded-3xl bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 max-w-2xl mx-auto space-y-4">
           <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 flex items-center justify-center mx-auto text-emerald-500 border border-emerald-500/20 shadow-lg">
             <Search className="w-8 h-8" />
           </div>
@@ -610,8 +610,8 @@ export const SeoModule = () => {
             
             {/* 🟢 COLUMN 1: ON-PAGE KEYWORDS ({t("VERIFIED ON-PAGE", "VERIFIED ON-PAGE")}) */}
             {(activeTab === 'all' || activeTab === 'onSite') && (
-              <div className="p-5 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-emerald-500/20">
+              <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 flex flex-col h-full shadow-sm">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
                       1
@@ -648,14 +648,14 @@ export const SeoModule = () => {
                         <div
                           key={`onsite-${idx}`}
                           onClick={() => handleGenerateBrief(kw.term, kw.intent)}
-                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-md cursor-pointer transition-all group ${
+                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:shadow-md cursor-pointer transition-all group ${
                             selectedKeyword === kw.term ? 'ring-2 ring-emerald-500' : ''
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="px-2 py-0.5 rounded font-black text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                                {isCollection ? 'VERIFIED COLLECTION LINK' : '{t("VERIFIED ON-PAGE", "VERIFIED ON-PAGE")}'}
+                                {isCollection ? 'VERIFIED COLLECTION LINK' : t("VERIFIED ON-PAGE", "VERIFIED ON-PAGE")}
                               </span>
                               <span className="px-1.5 py-0.5 rounded font-bold text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                                 {formatCleanSource(kw.source)}
@@ -697,8 +697,8 @@ export const SeoModule = () => {
 
             {/* 🔵 COLUMN 2: CURRENT {t("SEARCH RANKINGS", "SEARCH RANKINGS")} */}
             {(activeTab === 'all' || activeTab === 'rankings') && (
-              <div className="p-5 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-emerald-500/20">
+              <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 flex flex-col h-full shadow-sm">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
                       2
@@ -757,7 +757,7 @@ export const SeoModule = () => {
                         <div
                           key={`rank-${idx}`}
                           onClick={() => handleGenerateBrief(kw.term, kw.searchIntent)}
-                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-md cursor-pointer transition-all group ${
+                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:shadow-md cursor-pointer transition-all group ${
                             selectedKeyword === kw.term ? 'ring-2 ring-emerald-500' : ''
                           }`}
                         >
@@ -765,7 +765,7 @@ export const SeoModule = () => {
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className={`px-2 py-0.5 rounded font-black text-[9px] ${
                                 isVerified
-                                  ? 'bg-emerald-600 text-white shadow-sm'
+                                  ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-slate-100 shadow-xs'
                                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
                               }`}>
                                 {displayPos}
@@ -786,14 +786,14 @@ export const SeoModule = () => {
                           </div>
 
                           {/* Search Query */}
-                          <div className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors flex items-center justify-between">
+                          <div className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors flex items-center justify-between">
                             <span>{kw.term}</span>
                             <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
 
                           {/* Evidence URL */}
                           {evidenceUrl && (
-                            <p className="text-[10px] text-blue-500 font-mono mt-1 truncate" title={evidenceUrl}>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-1 truncate" title={evidenceUrl}>
                               🔗 {evidenceUrl}
                             </p>
                           )}
@@ -817,16 +817,16 @@ export const SeoModule = () => {
 
             {(activeTab === 'all' || activeTab === 'competitors') && (
               (userPlanNorm === 'starter' || userPlanNorm === 'free') ? (
-                <div className="p-5 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col items-center justify-center h-full text-center space-y-3 shadow-sm min-h-[300px]">
-                  <Lock className="w-8 h-8 text-purple-400" />
+                <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 flex flex-col items-center justify-center h-full text-center space-y-3 shadow-sm min-h-[300px]">
+                  <Lock className="w-8 h-8 text-emerald-500" />
                   <div className="space-y-1">
                     <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">{t("Competitor Gaps Locked", "Competitor Gaps Locked")}</h3>
                     <p className="text-[10px] text-slate-500">{t("Upgrade your plan to unlock competitor gap analysis.", "Upgrade your plan to unlock competitor gap analysis.")}</p>
                   </div>
                 </div>
               ) : (
-              <div className="p-5 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col h-full shadow-sm">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-emerald-500/20">
+              <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 flex flex-col h-full shadow-sm">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
                       3
@@ -835,15 +835,15 @@ export const SeoModule = () => {
                       <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                         {t("Competitor Keyword Gaps", "Competitor Keyword Gaps")}
                       </h2>
-                      <span className="text-[10px] text-purple-600 dark:text-purple-400 font-bold block">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold block">
                         {competitorGaps.some(g => {
                           const hasExactCompPos = g.competitorPosition && /^(Verified\s+)?Position\s*#?\d+/i.test(g.competitorPosition);
                           const hasExactTargetPos = g.userPosition && (/^(Verified\s+)?Position\s*#?\d+/i.test(g.userPosition) || (g.userPosition === 'Not Ranking' && g.provenance?.evidenceType?.includes('Target Absent')));
                           const isGoogle = Boolean(g.provenance?.provider && g.provenance.provider.toLowerCase().includes('google') && !g.provenance.provider.toLowerCase().includes('tavily'));
                           return g.isVerifiedGap && isGoogle && hasExactCompPos && hasExactTargetPos;
                         })
-                          ? '{t("Where competitors outrank target domain", "Where competitors outrank target domain")}'
-                          : '{t("AI-suggested competitor opportunities", "AI-suggested competitor opportunities")}'}
+                          ? t("Where competitors outrank target domain", "Where competitors outrank target domain")
+                          : t("AI-suggested competitor opportunities", "AI-suggested competitor opportunities")}
                       </span>
                     </div>
                   </div>
@@ -899,20 +899,16 @@ export const SeoModule = () => {
                         <div
                           key={`gap-${idx}`}
                           onClick={() => handleGenerateBrief(kw.term, kw.searchIntent)}
-                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-md cursor-pointer transition-all group ${
+                          className={`p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:shadow-md cursor-pointer transition-all group ${
                             selectedKeyword === kw.term ? 'ring-2 ring-emerald-500' : ''
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className={`px-2 py-0.5 rounded font-black text-[9px] ${
-                                isBothPositionsVerified
-                                  ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30'
-                                  : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30'
-                              }`}>
-                                {isBothPositionsVerified ? '{t("COMPETITOR GAP", "COMPETITOR GAP")}' : 'AI-SUGGESTED GAP'}
+                              <span className="px-2 py-0.5 rounded font-black text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                {isBothPositionsVerified ? t("COMPETITOR GAP", "COMPETITOR GAP") : 'AI-SUGGESTED GAP'}
                               </span>
-                              <span className="px-1.5 py-0.5 rounded font-bold text-[9px] bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                              <span className="px-1.5 py-0.5 rounded font-bold text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                                 {kw.gapType || 'Content gap'}
                               </span>
                             </div>
@@ -925,35 +921,29 @@ export const SeoModule = () => {
                             </button>
                           </div>
 
-                          <div className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-purple-500 transition-colors flex items-center justify-between">
+                          <div className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors flex items-center justify-between">
                             <span>{kw.term}</span>
                             <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
 
                           {/* Evidence Chain: Keyword → Competitor → Competitor Position → Target Position/Status → Ranking URL */}
-                          <div className="p-2 bg-emerald-50/50 dark:bg-emerald-950/30 rounded-xl border border-emerald-500/15 text-[10px] space-y-1 mt-1.5">
+                          <div className="p-2 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 text-[10px] space-y-1 mt-1.5">
                             <div className="flex items-center justify-between">
-                              <span className="text-slate-500">Competitor: <strong className="text-emerald-600 dark:text-emerald-400">{kw.competitor}</strong></span>
-                              <span className={`font-bold ${
-                                isBothPositionsVerified
-                                  ? 'text-slate-900 dark:text-white'
-                                  : isCompVerifiedOnly
-                                    ? 'text-purple-600 dark:text-purple-400'
-                                    : 'text-slate-500 font-medium'
-                              }`}>{displayCompPos}</span>
+                              <span className="text-slate-500">Competitor: <strong className="text-slate-800 dark:text-slate-200">{kw.competitor}</strong></span>
+                              <span className="font-bold text-slate-900 dark:text-white">{displayCompPos}</span>
                             </div>
                             <div className="flex items-center justify-between text-slate-500">
-                              <span>Target Status: <strong className={isBothPositionsVerified ? "text-rose-500" : "text-slate-500 font-medium"}>{displayTargetPos}</strong></span>
+                              <span>Target Status: <strong className="text-slate-700 dark:text-slate-300 font-medium">{displayTargetPos}</strong></span>
                               <span className="text-[9px] text-slate-400 truncate max-w-[140px]" title={kw.rankingUrl}>{kw.rankingUrl}</span>
                             </div>
-                            <div className="text-[9px] text-slate-400 pt-0.5 border-t border-purple-500/10 flex items-center justify-between">
+                            <div className="text-[9px] text-slate-400 pt-0.5 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
                               <span>{isBothPositionsVerified ? 'Google Organic Search' : 'Competitive Market Analysis'}</span>
                               <span className="font-semibold">{isBothPositionsVerified ? 'Top Competitor Advantage' : 'AI-Suggested Gap'}</span>
                             </div>
                           </div>
 
                           {kw.gapReason && (
-                            <p className="text-[10px] text-purple-700 dark:text-purple-300 mt-1.5 leading-snug font-medium">
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1.5 leading-snug font-medium">
                               🎯 Reason: {
                                 isBothPositionsVerified
                                   ? kw.gapReason
@@ -975,8 +965,8 @@ export const SeoModule = () => {
           {/* ═════════ SECTION 4: {t("AI OPPORTUNITY", "AI OPPORTUNITY")} KEYWORDS & ACTION ITEMS ═════════ */}
           {(activeTab === 'all' || activeTab === 'opportunities') && (
             isAiOpportunitiesLocked ? (
-              <div className="p-6 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent flex flex-col items-center justify-center text-center space-y-3 min-h-[200px]">
-                <Lock className="w-8 h-8 text-amber-400" />
+              <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 flex flex-col items-center justify-center text-center space-y-3 min-h-[200px] shadow-sm">
+                <Lock className="w-8 h-8 text-emerald-500" />
                 <div className="space-y-1">
                   <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">{t("AI Opportunities Locked", "AI Opportunities Locked")}</h3>
                   <p className="text-[10px] text-slate-500">{t("Upgrade your plan to unlock AI-suggested SEO opportunities.", "Upgrade your plan to unlock AI-suggested SEO opportunities.")}</p>
@@ -984,8 +974,8 @@ export const SeoModule = () => {
               </div>
             ) : (
             opportunityKeywords.length > 0 && (
-            <div className="p-6 rounded-3xl accent-card glass-card border border-emerald-500/30 dark:border-emerald-500/20 bg-gradient-to-b from-emerald-500/[0.02] to-transparent space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-emerald-500/20">
+            <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
                     4
@@ -993,7 +983,7 @@ export const SeoModule = () => {
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                       <span>{t("AI-Suggested Opportunities & Recommended Actions", "AI-Suggested Opportunities & Recommended Actions")}</span>
-                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
                         AI-Suggested Recommendation
                       </span>
                     </h3>
@@ -1002,7 +992,7 @@ export const SeoModule = () => {
                     </span>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   {opportunityKeywords.length} AI Opportunities
                 </span>
               </div>
@@ -1012,14 +1002,14 @@ export const SeoModule = () => {
                   <div
                     key={idx}
                     onClick={() => handleGenerateBrief(opp.term)}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-lg cursor-pointer transition-all space-y-2 group shadow-sm"
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:shadow-lg cursor-pointer transition-all space-y-2 group shadow-sm"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded font-black text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                        <span className="px-2 py-0.5 rounded font-black text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                           {t("AI OPPORTUNITY", "AI OPPORTUNITY")}
                         </span>
-                        <span className="text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                        <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
                           {opp.evidenceBasis || 'Evidence: Content Gap Analysis'}
                         </span>
                       </div>
@@ -1028,7 +1018,7 @@ export const SeoModule = () => {
                       </span>
                     </div>
 
-                    <h4 className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors flex items-center justify-between">
+                    <h4 className="font-extrabold text-xs text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors flex items-center justify-between">
                       <span>{opp.term}</span>
                       <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </h4>
@@ -1041,7 +1031,7 @@ export const SeoModule = () => {
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px]">
                       <span className="font-bold text-slate-400">Action:</span>
-                      <span className="font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+                      <span className="font-black text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
                         👉 {opp.recommendedAction || 'Create new landing page'}
                       </span>
                     </div>
@@ -1054,10 +1044,10 @@ export const SeoModule = () => {
 
           {/* ═════════ SECTION 5: DISCOVERED COMPETITORS OVERVIEW ═════════ */}
           {(activeTab === 'all' || activeTab === 'competitors') && competitors.length > 0 && (
-            <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 space-y-4 shadow-sm">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-purple-500" />
+                  <Users className="w-4 h-4 text-emerald-500" />
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
                     {t("Market Competitor Intelligence", "Market Competitor Intelligence")}
                   </h3>
@@ -1069,15 +1059,15 @@ export const SeoModule = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {competitors.map((comp, idx) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-2">
+                  <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1 truncate">
-                        <Globe className="w-3.5 h-3.5 shrink-0" />
+                      <span className="font-extrabold text-xs text-slate-900 dark:text-white flex items-center gap-1 truncate">
+                        <Globe className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
                         {comp.competitorDomain}
                       </span>
                       <span className={`text-[9px] font-bold px-2 py-0.5 rounded whitespace-nowrap ${
                         comp.isDiscoveredSearch
-                          ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
                           : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                       }`}>
                         {comp.isDiscoveredSearch ? 'Discovered Competitor' : 'AI-Suggested Competitor'}
@@ -1088,7 +1078,7 @@ export const SeoModule = () => {
                     </p>
                     <div className="text-[10px] text-slate-500 pt-1 border-t border-slate-200/50 dark:border-slate-800 space-y-0.5">
                       <div>Overlap: <strong>{comp.keywordOverlap}</strong></div>
-                      <div>Advantage: <strong className="text-purple-500">{comp.rankingAdvantage}</strong></div>
+                      <div>Advantage: <strong className="text-slate-800 dark:text-slate-200">{comp.rankingAdvantage}</strong></div>
                       {comp.verifiedUrl && (
                         <div className="text-[9px] text-slate-400 truncate pt-0.5">
                           🔗 {comp.verifiedUrl}
@@ -1103,27 +1093,27 @@ export const SeoModule = () => {
 
           {/* ═════════ SECTION 6: DYNAMIC KEYWORD TOPIC CLUSTERS ═════════ */}
           {(activeTab === 'all' || activeTab === 'clusters') && keywordClusters.length > 0 && (
-            <div className="p-6 rounded-3xl accent-card glass-card border border-cyan-500/30 dark:border-cyan-500/20 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20">
+            <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <Layers3 className="w-4 h-4 text-cyan-500" />
+                  <Layers3 className="w-4 h-4 text-emerald-500" />
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                     <span>{t("AI-Suggested Topic Clusters & Strategic Content Mapping", "AI-Suggested Topic Clusters & Strategic Content Mapping")}</span>
-                    <span className="text-[9px] font-bold text-cyan-600 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">
+                    <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
                       AI-Suggested Topic Modeling
                     </span>
                   </h3>
                 </div>
-                <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400">
+                <span className="text-[10px] font-bold text-slate-500">
                   {keywordClusters.length} Strategic Topic Clusters
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {keywordClusters.map((cluster, i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-cyan-500/20 space-y-2.5">
+                  <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-xs text-cyan-600 dark:text-cyan-400">
+                      <span className="font-extrabold text-xs text-slate-900 dark:text-white">
                         📌 Pillar: {cluster.primaryTopic}
                       </span>
                       <span className="text-[10px] font-bold text-slate-400">
@@ -1139,7 +1129,7 @@ export const SeoModule = () => {
                       ))}
                     </div>
 
-                    <div className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold pt-1 border-t border-cyan-500/10">
+                    <div className="text-[10px] text-slate-700 dark:text-slate-300 font-bold pt-1 border-t border-slate-200 dark:border-slate-800">
                       Action Plan: {cluster.recommendedAction}
                     </div>
                   </div>
@@ -1150,7 +1140,7 @@ export const SeoModule = () => {
 
           {/* ═════════ TECHNICAL ON-PAGE STRATEGY & RICH SCHEMA BLUEPRINT ═════════ */}
           {brief && (
-            <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 space-y-4 shadow-sm">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center">

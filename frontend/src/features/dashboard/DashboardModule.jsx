@@ -156,7 +156,7 @@ export const DashboardModule = () => {
         initial={{ opacity: 0, y: 16, scale: 0.99 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className="p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-[#ffe5ec] via-[#f3e8ff] via-[#e0f2fe] to-[#38bdf8] dark:from-[#1e1b4b] dark:via-[#312e81] dark:to-[#0284c7] border border-white/60 dark:border-indigo-500/30 shadow-xl relative overflow-hidden backdrop-blur-xl flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6"
+        className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-rose-500 shadow-sm relative overflow-hidden flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6"
       >
         {/* Soft Ambient Radial Background Glow */}
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-gradient-to-br from-pink-400/30 via-purple-500/30 to-cyan-400/30 rounded-full blur-3xl pointer-events-none" />

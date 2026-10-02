@@ -252,7 +252,7 @@ const CampaignCard = ({ campaign, onSelect, onDelete }) => {
   return (
     <div
       onClick={() => onSelect(campaign)}
-      className="p-5 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-500 hover:border-blue-500/50 cursor-pointer transition-all hover:shadow-lg hover:shadow-blue-500/10 flex flex-col justify-between gap-4"
+      className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-500 hover:border-blue-500/50 cursor-pointer transition-all hover:shadow-lg hover:shadow-blue-500/10 flex flex-col justify-between gap-4 shadow-sm"
     >
       <div className="space-y-3">
         {/* Header: Title, Goal, Status */}
@@ -609,7 +609,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
           { label: t('platforms', 'Platforms'), value: campaign.platforms?.length || 0, icon: Layers, color: 'text-blue-500' },
           { label: t('pending', 'Pending'), value: posts.filter((p) => p.status === 'Draft').length, icon: Clock, color: 'text-amber-500' },
         ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="p-4 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800">
+          <div key={label} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-500 shadow-sm">
             <div className="flex items-center gap-2">
               <Icon className={`w-4 h-4 ${color}`} />
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{label}</span>
@@ -625,7 +625,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
           <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
         </div>
       ) : posts.length === 0 ? (
-        <div className="p-12 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-500 text-center space-y-4">
+        <div className="p-12 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-500 text-center space-y-4 shadow-sm">
           <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center">
             <Sparkles className="w-6 h-6" />
           </div>
@@ -649,7 +649,7 @@ const CampaignDetail = ({ campaign, onBack }) => {
               <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{date}</h3>
               <div className="space-y-2">
                 {datePosts.map((post) => (
-                  <div key={post._id} className="p-4 rounded-2xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div key={post._id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500/50 space-y-3 shadow-xs">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -749,7 +749,7 @@ export const CampaignBuilderModule = () => {
       )}
 
       {/* Header */}
-      <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-500 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-500 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center shrink-0">
@@ -815,7 +815,7 @@ export const CampaignBuilderModule = () => {
           <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
         </div>
       ) : campaigns.length === 0 ? (
-        <div className="p-16 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-500 text-center space-y-4">
+        <div className="p-16 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-blue-500 text-center space-y-4 shadow-sm">
           <div className="w-16 h-16 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center mx-auto text-blue-500">
             <Layers className="w-8 h-8" />
           </div>

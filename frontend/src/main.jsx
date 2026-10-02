@@ -6,8 +6,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary.jsx'
 import './styles/index.css'
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
-
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+import { GOOGLE_CLIENT_ID } from './config/googleAuth.js';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

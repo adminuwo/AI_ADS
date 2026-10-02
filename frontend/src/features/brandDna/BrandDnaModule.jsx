@@ -470,7 +470,7 @@ export const BrandDnaModule = () => {
   return (
     <div className="space-y-5 animate-in fade-in w-full max-w-[1600px] mx-auto px-1 sm:px-4 pt-1 pb-16">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-500 shadow-md backdrop-blur-xl relative overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-500 shadow-sm relative overflow-hidden">
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
         
         <div className="space-y-1 relative z-10">
@@ -520,7 +520,7 @@ export const BrandDnaModule = () => {
 
       {/* Input bar for URL / Description ONLY if no brand/workspace exists */}
       {!isBrandExist && !effectiveProfile && !loading && (
-        <div className="p-6 rounded-3xl accent-card glass-card border border-slate-200 dark:border-slate-800 space-y-4 shadow-md border-l-4 border-l-amber-500">
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm border-l-4 border-l-amber-500">
           <h2 className="text-sm font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">{t("Initialize Brand AI Analysis", "Initialize Brand AI Analysis")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
