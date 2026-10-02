@@ -64,8 +64,9 @@ export const UWOLoginModal = ({
 
     // 1. Fetch Central /auth/me for highest-fidelity user details
     try {
-      const unifiedApiBase = getUnifiedApiBaseUrl();
-      const meRes = await fetch(`${unifiedApiBase}/auth/me`, {
+      const apis = getApis();
+      const meUrl = apis.unifiedAuth?.me || `${getUnifiedApiBaseUrl()}/unified-auth/me`;
+      const meRes = await fetch(meUrl, {
         headers: { Authorization: `Bearer ${loginData.access_token}` },
       });
       if (meRes.ok) {
@@ -606,6 +607,19 @@ export const UWOLoginModal = ({
                 </>
               )}
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode('signin');
+                setError('');
+                setSuccessMsg('');
+              }}
+              className="w-full py-2 text-center text-xs font-bold text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Sign In</span>
+            </button>
           </form>
         )}
 
@@ -694,6 +708,19 @@ export const UWOLoginModal = ({
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode('signin');
+                setError('');
+                setSuccessMsg('');
+              }}
+              className="w-full py-2 text-center text-xs font-bold text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Sign In</span>
             </button>
           </form>
         )}
