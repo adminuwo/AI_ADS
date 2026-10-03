@@ -298,4 +298,24 @@
 .accent-card-violet  { border-left: 4px solid #8b5cf6; }
 .accent-card-blue    { border-left: 4px solid #3b82f6; }
 
+/* Infinite Marquee Animation for Features Carousel */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-slow {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 45s linear infinite;
+}
+
+.pause-on-hover:hover .animate-marquee-slow {
+  animation-play-state: paused !important;
+}
+
 

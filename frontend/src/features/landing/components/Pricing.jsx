@@ -111,7 +111,7 @@ export const Pricing = () => {
                   <li className="flex items-center gap-2.5"><Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" /> 5 Brand DNA Workspaces</li>
                   <li className="flex items-center gap-2.5"><Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" /> 8K Photorealistic Studio Renders</li>
                   <li className="flex items-center gap-2.5"><Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" /> AI Website & Landing Page Builder</li>
-                  <li className="flex items-center gap-2.5"><Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" /> Approvals Desk & Client Access</li>
+                  <li className="flex items-center gap-2.5"><Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" /> Client Access & Governance</li>
                 </ul>
               </div>
               <button

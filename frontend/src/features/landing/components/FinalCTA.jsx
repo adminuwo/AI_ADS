@@ -23,23 +23,26 @@ export const FinalCTA = () => {
         </div>
 
         <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
-          Stop juggling tools. <br className="hidden sm:inline" />
-          <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 dark:from-indigo-400 dark:via-purple-400 dark:to-cyan-400 bg-clip-text text-transparent">
-            Start shipping on-brand content.
-          </span>
+          Ready to run your marketing at the speed of AI?
         </h2>
 
         <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-          Join forward-thinking marketing teams and growth agencies using AI ADS™ to eliminate brand voice drift and scale campaign velocity.
+          Join the teams replacing fragmented workflows with one intelligent platform.
         </p>
 
-        <div className="pt-2">
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={handleStartTrial}
-            className="btn-primary px-9 py-4 rounded-xl text-base font-extrabold inline-flex items-center gap-3 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full sm:w-auto btn-primary px-9 py-4 rounded-xl text-base font-extrabold inline-flex items-center justify-center gap-3 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
           >
             <span>Start Free Trial</span>
             <ArrowRight className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleStartTrial}
+            className="w-full sm:w-auto px-7 py-4 rounded-xl text-base font-bold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+          >
+            <span>Talk to Our Team</span>
           </button>
         </div>
       </div>

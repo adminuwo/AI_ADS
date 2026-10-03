@@ -343,7 +343,7 @@ export const AutoPilotWizard = ({ isOpen, onClose }) => {
                       { module: 'brands', label: 'View Brand DNA', icon: Globe, color: 'from-blue-500 to-cyan-500' },
                       { module: 'strategy', label: 'View Strategy', icon: Target, color: 'from-teal-500 to-emerald-500' },
                       { module: 'calendar', label: 'View Calendar', icon: Calendar, color: 'from-emerald-500 to-green-500' },
-                      { module: 'approvals', label: 'Review Content', icon: CheckCircle2, color: 'from-brand-500 to-purple-500' },
+                      { module: 'studio', label: 'Content Studio', icon: PenTool, color: 'from-brand-500 to-purple-500' },
                     ].map((nav) => {
                       const Icon = nav.icon;
                       return (

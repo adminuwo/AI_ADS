@@ -18,7 +18,6 @@ import { QuickPostModal } from './features/contentStudio/QuickPostModal';
 import { CampaignBuilderModule } from './features/campaigns/CampaignBuilderModule';
 import { CreativeStudioModule } from './features/creativeStudio/CreativeStudioModule';
 import { AssetLibraryModule } from './features/assetLibrary/AssetLibraryModule';
-import { ApprovalsDeskModule } from './features/approvals/ApprovalsDeskModule';
 import { AnalyticsModule } from './features/analytics/AnalyticsModule';
 import { TeamRbacModule } from './features/teamRbac/TeamRbacModule';
 import { SettingsBillingModule } from './features/settingsBilling/SettingsBillingModule';
@@ -148,14 +147,6 @@ const MainContent = () => {
           <NoBrandGate moduleName="Asset Library">
             <AssetLibraryModule />
           </NoBrandGate>
-        );
-      case 'approvals':
-        return (
-          <PlanGate moduleName="Approvals Desk" moduleId="approvals">
-            <NoBrandGate moduleName="Approvals Desk">
-              <ApprovalsDeskModule />
-            </NoBrandGate>
-          </PlanGate>
         );
       case 'analytics':
         return (

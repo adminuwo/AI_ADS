@@ -870,32 +870,7 @@ export const ContentStudioModule = () => {
   };
 
   const renderSubmitToApprovalsButton = (item, customClass = '') => {
-    if (isStarter) {
-      return (
-        <button
-          type="button"
-          onClick={handleLockedApprovalsClick}
-          className={`py-1 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-xs hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/5 transition-all cursor-pointer group ${customClass}`}
-          title="Locked on Starter Plan — Upgrade to Pro to unlock Approvals Desk"
-        >
-          <Lock className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
-          <span>Submit to Approvals</span>
-          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-            PRO
-          </span>
-        </button>
-      );
-    }
-
-    return (
-      <button
-        type="button"
-        onClick={() => submitToApprovals(item)}
-        className={`btn-primary text-xs py-1 px-3 flex items-center gap-1 shadow-sm ${customClass}`}
-      >
-        <Send className="w-3.5 h-3.5" /> Submit to Approvals
-      </button>
-    );
+    return null;
   };
 
   const submitToApprovals = (item) => {
