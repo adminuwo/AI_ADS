@@ -53,7 +53,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --min-instances="$MIN_INSTANCES" \
   --max-instances="$MAX_INSTANCES" \
   --timeout="$TIMEOUT" \
-  --set-env-vars="NODE_ENV=production"
+  --set-env-vars="NODE_ENV=production,FRONTEND_URL=https://aiads.aisa24.com"
 
 echo ""
 echo "==================================================================="

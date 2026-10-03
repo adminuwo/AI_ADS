@@ -12,6 +12,15 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       port: 3000,
       strictPort: true,
+      allowedHosts: [
+        'aiads.aisa24.com',
+        '.aisa24.com',
+        'aisa24.com',
+        '.uwo24.com',
+        'uwo24.com',
+        'localhost',
+        '127.0.0.1'
+      ],
       proxy: {
         '/api': {
           target: backendTarget,
@@ -24,6 +33,20 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true
         }
       }
+    },
+    preview: {
+      host: '0.0.0.0',
+      port: 3000,
+      strictPort: true,
+      allowedHosts: [
+        'aiads.aisa24.com',
+        '.aisa24.com',
+        'aisa24.com',
+        '.uwo24.com',
+        'uwo24.com',
+        'localhost',
+        '127.0.0.1'
+      ]
     }
   }
 })

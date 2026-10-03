@@ -62,7 +62,7 @@ gcloud run deploy $ServiceName `
     --min-instances=$MinInstances `
     --max-instances=$MaxInstances `
     --timeout=$Timeout `
-    --set-env-vars="NODE_ENV=production"
+    --set-env-vars="NODE_ENV=production,FRONTEND_URL=https://aiads.aisa24.com"
 
 Write-Host ""
 Write-Host "===================================================================" -ForegroundColor Cyan
