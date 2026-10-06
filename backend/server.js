@@ -53,31 +53,80 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
+const CORS_ALLOWED_ORIGINS = [
+  'https://aiads.aisa24.com',
+  'http://aiads.aisa24.com',
+  'https://aisa24.com',
+  'https://www.aisa24.com',
+  'http://aisa24.com',
+  'http://www.aisa24.com',
+  'https://uwo24.com',
+  'https://www.uwo24.com',
+  'https://aimall24.com',
+  'https://www.aimall24.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:8080',
+  'http://localhost:8081',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:8080',
+  process.env.FRONTEND_URL,
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(/[,;]/).map(o => o.trim()) : [])
+].filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  // Allow requests with no origin (such as same-origin requests, mobile apps, or curl)
+  if (!origin) return true;
+  if (CORS_ALLOWED_ORIGINS.includes(origin)) return true;
+
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname;
+    if (
+      hostname === 'aiads.aisa24.com' ||
+      hostname === 'aisa24.com' ||
+      hostname.endsWith('.aisa24.com') ||
+      hostname === 'uwo24.com' ||
+      hostname.endsWith('.uwo24.com') ||
+      hostname === 'aimall24.com' ||
+      hostname.endsWith('.aimall24.com') ||
+      hostname.endsWith('.run.app') ||
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1'
+    ) {
+      return true;
+    }
+  } catch (e) {}
+
+  return process.env.NODE_ENV === 'production' || process.env.ALLOW_ALL_ORIGINS === 'true';
+};
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (such as same-origin requests, mobile apps, or curl)
-    if (!origin) return callback(null, true);
-
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      'http://localhost:8080',
-      'http://localhost:8081',
-      process.env.FRONTEND_URL,
-    ].filter(Boolean);
-
-    if (
-      process.env.NODE_ENV === 'production' ||
-      allowedOrigins.includes(origin) ||
-      process.env.ALLOW_ALL_ORIGINS === 'true'
-    ) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
+    console.warn(`⚠️ [CORS Notice] Unlisted origin: ${origin} (allowing for fallback)`);
     return callback(null, true);
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Application-Key',
+    'X-App-Code',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'x-user-email',
+    'x-device-fingerprint',
+    'x-visitor-id'
+  ]
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));

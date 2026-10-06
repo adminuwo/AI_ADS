@@ -138,7 +138,17 @@ export const ScraperOverlayModal = () => {
         body: formData
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        throw new Error(
+          res.status >= 500
+            ? `Server busy or unavailable (${res.status}). Please try again in a moment.`
+            : `Failed to parse server response (${res.status} ${res.statusText || ''})`
+        );
+      }
+
       const extractedWorkspace = data.workspace || data.brandProfile;
 
       if (data.success && extractedWorkspace) {
@@ -162,7 +172,7 @@ export const ScraperOverlayModal = () => {
       }
     } catch (err) {
       console.error('Unified extraction error:', err);
-      alert('An error occurred while extracting Brand DNA. Please try again.');
+      alert(err.message || 'An error occurred while extracting Brand DNA. Please try again.');
     } finally {
       setLoading(false);
     }
