@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowRight,
   Sparkles,
-  ShieldCheck,
   Search,
   Image as ImageIcon,
-  TrendingUp,
   CalendarDays,
   PenLine,
   Target,
@@ -48,165 +46,6 @@ const usePrefersReducedMotion = () => {
   }, []);
   return reduced;
 };
-
-/* ---------- Floating feature cards (each animates what the module does) ---------- */
-
-const FloatCard = ({ className = '', delay = 0, floatDelay = 0, children }) => (
-  <div
-    className={`hidden xl:block absolute w-[210px] ${className}`}
-    style={{ animation: `heroCardIn 0.8s cubic-bezier(0.22,1,0.36,1) ${delay}ms both` }}
-  >
-    <div
-      className="hero-float rounded-2xl bg-slate-900/55 border border-white/15 backdrop-blur-xl p-3.5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.7)] hover:border-white/30 hover:bg-slate-900/70 transition-colors pointer-events-auto"
-      style={{ animationDelay: `${floatDelay}s` }}
-    >
-      {children}
-    </div>
-  </div>
-);
-
-const CardHeader = ({ icon: Icon, label, tone }) => (
-  <div className="flex items-center gap-2 mb-2.5">
-    <span className={`w-7 h-7 rounded-lg flex items-center justify-center ${tone}`}>
-      <Icon className="w-4 h-4" />
-    </span>
-    <span className="text-[11px] font-bold text-white/85 tracking-wide">{label}</span>
-  </div>
-);
-
-const BrandDnaCard = () => (
-  <>
-    <CardHeader icon={ShieldCheck} label="Brand DNA" tone="bg-indigo-500/25 text-indigo-300" />
-    <div className="flex gap-1.5 mb-2">
-      {['bg-indigo-500', 'bg-fuchsia-500', 'bg-amber-400', 'bg-slate-100'].map((c, i) => (
-        <span
-          key={c}
-          className={`hero-swatch w-6 h-6 rounded-full ${c} ring-2 ring-white/10`}
-          style={{ animationDelay: `${i * 0.35}s` }}
-        />
-      ))}
-    </div>
-    <p className="text-[10px] text-emerald-300 font-semibold flex items-center gap-1">
-      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Tone, colors &amp; fonts locked
-    </p>
-  </>
-);
-
-const SeoCard = () => {
-  const [score, setScore] = useState(0);
-  useEffect(() => {
-    let v = 0;
-    let t;
-    const tick = () => {
-      v += 2;
-      if (v > 94) {
-        t = setTimeout(() => { v = 0; setScore(0); tick(); }, 2500);
-        return;
-      }
-      setScore(v);
-      t = setTimeout(tick, 30);
-    };
-    tick();
-    return () => clearTimeout(t);
-  }, []);
-  const r = 18;
-  const c = 2 * Math.PI * r;
-  return (
-    <>
-      <CardHeader icon={Search} label="SEO Intelligence" tone="bg-sky-500/25 text-sky-300" />
-      <div className="flex items-center gap-3">
-        <svg width="48" height="48" className="-rotate-90">
-          <circle cx="24" cy="24" r={r} stroke="rgba(255,255,255,0.1)" strokeWidth="5" fill="none" />
-          <circle
-            cx="24" cy="24" r={r} stroke="#38bdf8" strokeWidth="5" fill="none" strokeLinecap="round"
-            strokeDasharray={c} strokeDashoffset={c - (score / 100) * c}
-          />
-        </svg>
-        <div>
-          <p className="text-xl font-black text-white leading-none">{score}</p>
-          <p className="text-[10px] text-white/60 mt-1">Keyword score</p>
-        </div>
-      </div>
-    </>
-  );
-};
-
-const CreativeCard = () => (
-  <>
-    <CardHeader icon={ImageIcon} label="Creative Studio" tone="bg-fuchsia-500/25 text-fuchsia-300" />
-    <div className="relative h-20 rounded-lg overflow-hidden">
-      <img src="/hero-bg/dm-social.jpg" alt="" className="w-full h-full object-cover hero-reveal" />
-      <div className="absolute inset-0 pipeline-shimmer" />
-      <span className="absolute bottom-1.5 right-1.5 text-[9px] font-black px-1.5 py-0.5 rounded bg-white/90 text-slate-900">8K</span>
-    </div>
-    <p className="text-[10px] text-white/60 mt-2">Ad creative rendering…</p>
-  </>
-);
-
-const CampaignCard = () => (
-  <>
-    <CardHeader icon={TrendingUp} label="Campaigns" tone="bg-amber-500/25 text-amber-300" />
-    <div className="flex items-end gap-1.5 h-14">
-      {[35, 55, 45, 70, 60, 90].map((h, i) => (
-        <span
-          key={i}
-          className="hero-bar flex-1 rounded-t bg-gradient-to-t from-amber-500/60 to-amber-300"
-          style={{ height: `${h}%`, animationDelay: `${i * 0.12}s` }}
-        />
-      ))}
-    </div>
-    <p className="text-[10px] text-white/60 mt-2">Multi-channel plan in motion</p>
-  </>
-);
-
-const CAPTION = 'Fresh drop ✨ Glow like never before. Shop the new serum today!';
-const ContentCard = ({ reduced }) => {
-  const [n, setN] = useState(reduced ? CAPTION.length : 0);
-  useEffect(() => {
-    if (reduced) return;
-    let i = 0;
-    let t;
-    const tick = () => {
-      i += 1;
-      if (i > CAPTION.length) {
-        t = setTimeout(() => { i = 0; setN(0); tick(); }, 2200);
-        return;
-      }
-      setN(i);
-      t = setTimeout(tick, 45);
-    };
-    tick();
-    return () => clearTimeout(t);
-  }, [reduced]);
-  return (
-    <>
-      <CardHeader icon={PenLine} label="Content Studio" tone="bg-rose-500/25 text-rose-300" />
-      <p className="text-[11px] text-white/85 leading-snug min-h-[44px]">
-        {CAPTION.slice(0, n)}
-        <span className="inline-block w-[2px] h-3 bg-rose-300 align-middle ml-0.5 animate-pulse" />
-      </p>
-    </>
-  );
-};
-
-const CalendarCard = () => (
-  <>
-    <CardHeader icon={CalendarDays} label="Content Calendar" tone="bg-violet-500/25 text-violet-300" />
-    <div className="grid grid-cols-7 gap-1">
-      {Array.from({ length: 21 }).map((_, i) => {
-        const filled = [1, 3, 5, 8, 10, 12, 15, 17, 19].includes(i);
-        return (
-          <span
-            key={i}
-            className={`h-3.5 rounded-sm ${filled ? 'hero-cell bg-violet-400' : 'bg-white/10'}`}
-            style={filled ? { animationDelay: `${i * 0.12}s` } : undefined}
-          />
-        );
-      })}
-    </div>
-    <p className="text-[10px] text-white/60 mt-2">30-day plan scheduled</p>
-  </>
-);
 
 /* ---------- Live brief composer: type one brief -> get every asset ---------- */
 
@@ -316,16 +155,6 @@ export const Hero = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(2,6,23,0.55)_75%)]" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent" />
       </CinematicBackground>
-
-      {/* Floating feature cards */}
-      <div className="absolute inset-0 z-[5] pointer-events-none max-w-[1440px] mx-auto">
-        <FloatCard className="left-8 2xl:left-16 top-[12%]" delay={500} floatDelay={0}><BrandDnaCard /></FloatCard>
-        <FloatCard className="left-14 2xl:left-28 top-[42%]" delay={700} floatDelay={1.2}><ContentCard reduced={reduced} /></FloatCard>
-        <FloatCard className="left-8 2xl:left-16 bottom-[10%]" delay={900} floatDelay={2.1}><CalendarCard /></FloatCard>
-        <FloatCard className="right-8 2xl:right-16 top-[12%]" delay={600} floatDelay={0.6}><CreativeCard /></FloatCard>
-        <FloatCard className="right-14 2xl:right-28 top-[42%]" delay={800} floatDelay={1.6}><SeoCard /></FloatCard>
-        <FloatCard className="right-8 2xl:right-16 bottom-[10%]" delay={1000} floatDelay={2.4}><CampaignCard /></FloatCard>
-      </div>
 
       <div className="relative z-10 w-full max-w-3xl mx-auto px-4 sm:px-6 py-20 text-center flex flex-col items-center">
 
