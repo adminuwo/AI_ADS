@@ -51,7 +51,8 @@ import {
   Sliders,
   CheckCircle2,
   Sun,
-  Moon
+  Moon,
+  Cookie
 } from 'lucide-react';
 
 // ──────────────────────────────────────────────
@@ -844,6 +845,7 @@ export const SettingsModal = () => {
         { id: 'feedback', label: t('sendProductFeedback', 'Send Product Feedback'), icon: MessageSquare, color: 'from-indigo-500 to-violet-600' },
         { id: 'terms', label: t('termsOfService', 'Terms of Service'), icon: FileText, color: 'from-slate-400 to-slate-600' },
         { id: 'privacy', label: t('privacyPolicy', 'Privacy Policy'), icon: Shield, color: 'from-emerald-400 to-emerald-600' },
+        { id: 'cookies', label: t('cookiePolicy', 'Cookie Policy'), icon: Cookie, color: 'from-amber-400 to-amber-600' },
       ]
     }
   ];
@@ -2490,6 +2492,85 @@ export const SettingsModal = () => {
               </div>
             </div>
 
+          </div>
+        );
+      }
+
+      // ── COOKIE POLICY ──────────────────────────────
+      case 'cookies': {
+        return (
+          <div className="space-y-6 pb-6">
+            {/* Main Header Banner */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-brand-500/5 to-indigo-500/10 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/25">
+                  <Cookie className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                    AI Ads™ Cookie Policy
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+                    Updated October 2026 • Unified Web Options &amp; Services Private Limited
+                  </p>
+                </div>
+              </div>
+
+              <button 
+                type="button"
+                onClick={() => window.print()}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 text-amber-600 dark:text-amber-400 font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-2xs self-stretch sm:self-auto justify-center"
+                title="Print or Save Cookie Policy as PDF"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Print Policy</span>
+              </button>
+            </div>
+
+            {/* Quick Summary Pill */}
+            <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-500/30 text-xs text-amber-900 dark:text-amber-300 leading-relaxed">
+              AI ADS™ utilizes cookies and local browser storage strictly to maintain secure login sessions, remember active Brand DNA workspaces, enforce UI preferences, and diagnose performance. We do not sell user data.
+            </div>
+
+            {/* Section 1 */}
+            <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                1. Strictly Necessary &amp; Security Storage
+              </h3>
+              <p>
+                Essential cookies and session tokens (<code>aiads_auth_token</code>, <code>aiads_session</code>) authenticate your API requests, prevent cross-site request forgery, and isolate multi-tenant brand vaults. These cannot be disabled as the platform cannot function without them.
+              </p>
+            </div>
+
+            {/* Section 2 */}
+            <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                2. Functional Workspace Cookies
+              </h3>
+              <p>
+                Functional storage (<code>aiads_theme</code>, <code>aiads_active_brand</code>, <code>aiads_sidebar_collapsed</code>) remembers your dark/light mode preference, open Brand DNA tabs, and preferred UI layout across sessions.
+              </p>
+            </div>
+
+            {/* Section 3 */}
+            <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                3. Performance &amp; Diagnostic Telemetry
+              </h3>
+              <p>
+                Anonymous telemetry logs API response times, 8K creative render queue durations, and client-side error traces to ensure high platform uptime and reliability.
+              </p>
+            </div>
+
+            {/* Section 4 */}
+            <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/80 space-y-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                4. Data Controller &amp; Inquiries
+              </h3>
+              <p>
+                UNIFIED WEB OPTIONS &amp; SERVICES PRIVATE LIMITED, India. For cookie preference or data protection inquiries, email us at <strong className="text-indigo-600 dark:text-indigo-400">privacy@aiads.io</strong>.
+              </p>
+            </div>
           </div>
         );
       }

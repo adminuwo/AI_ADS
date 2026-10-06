@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { Sparkles, Menu, X, ArrowRight, Shield, Sun, Moon } from 'lucide-react';
+import { Sparkles, Menu, X, ArrowRight, Sun, Moon } from 'lucide-react';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 
-export const Navbar = () => {
+export const Navbar = ({ currentTab = 'home', onSelectTab }) => {
   const { setActiveModule, user, theme, toggleTheme } = useWorkspace();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleNavClick = (targetId) => {
+  const handleTabClick = (tabId) => {
     setIsMobileMenuOpen(false);
-    const element = document.getElementById(targetId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    if (onSelectTab) {
+      onSelectTab(tabId);
+    } else {
+      const element = document.getElementById(tabId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -23,13 +27,22 @@ export const Navbar = () => {
     }
   };
 
+  const navLinks = [
+    { id: 'home', label: 'Home' },
+    { id: 'features', label: 'Features' },
+    { id: 'how-it-works', label: 'How it Works' },
+    { id: 'pricing', label: 'Pricing' },
+    { id: 'faq', label: 'FAQ' }
+  ];
+
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800/80 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        
         {/* Logo */}
         <div 
           className="flex items-center gap-3 cursor-pointer group"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onClick={() => handleTabClick('home')}
         >
           <img 
             src="/logo_icon_only.png?v=10" 
@@ -44,32 +57,27 @@ export const Navbar = () => {
           </div>
         </div>
 
-        {/* Desktop Nav Links */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-700 dark:text-slate-300">
-          <button 
-            onClick={() => handleNavClick('features')} 
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            Features
-          </button>
-          <button 
-            onClick={() => handleNavClick('how-it-works')} 
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            How it Works
-          </button>
-          <button 
-            onClick={() => handleNavClick('pricing')} 
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            Pricing
-          </button>
-          <button 
-            onClick={() => handleNavClick('faq')} 
-            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            FAQ
-          </button>
+        {/* Desktop Nav Links (Multi-Page Tabs) */}
+        <nav className="hidden md:flex items-center gap-7 text-sm font-semibold">
+          {navLinks.map((link) => {
+            const isActive = currentTab === link.id;
+            return (
+              <button
+                key={link.id}
+                onClick={() => handleTabClick(link.id)}
+                className={`transition-all duration-200 cursor-pointer relative py-1 ${
+                  isActive
+                    ? 'text-indigo-600 dark:text-indigo-400 font-extrabold'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white'
+                }`}
+              >
+                <span>{link.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full shadow-sm shadow-indigo-500/50" />
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         {/* Action Buttons */}
@@ -122,30 +130,23 @@ export const Navbar = () => {
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl px-6 py-6 space-y-4 animate-in fade-in slide-in-from-top-2">
-          <button
-            onClick={() => handleNavClick('features')}
-            className="block w-full text-left py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white"
-          >
-            Features
-          </button>
-          <button
-            onClick={() => handleNavClick('how-it-works')}
-            className="block w-full text-left py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white"
-          >
-            How it Works
-          </button>
-          <button
-            onClick={() => handleNavClick('pricing')}
-            className="block w-full text-left py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white"
-          >
-            Pricing
-          </button>
-          <button
-            onClick={() => handleNavClick('faq')}
-            className="block w-full text-left py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white"
-          >
-            FAQ
-          </button>
+          {navLinks.map((link) => {
+            const isActive = currentTab === link.id;
+            return (
+              <button
+                key={link.id}
+                onClick={() => handleTabClick(link.id)}
+                className={`block w-full text-left py-2 text-sm font-bold transition-colors ${
+                  isActive
+                    ? 'text-indigo-600 dark:text-indigo-400 pl-2 border-l-2 border-indigo-600'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white'
+                }`}
+              >
+                {link.label}
+              </button>
+            );
+          })}
+
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
             <button
               onClick={toggleTheme}
@@ -182,3 +183,5 @@ export const Navbar = () => {
     </header>
   );
 };
+
+export default Navbar;

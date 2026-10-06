@@ -318,4 +318,143 @@
   animation-play-state: paused !important;
 }
 
+/* 🎬 Cinematic background — slow Ken Burns zoom/pan (video-like motion) */
+@keyframes cinematicKenBurnsA {
+  0%   { transform: scale(1.05) translate3d(0, 0, 0); }
+  100% { transform: scale(1.18) translate3d(-2%, -1.5%, 0); }
+}
 
+@keyframes cinematicKenBurnsB {
+  0%   { transform: scale(1.18) translate3d(2%, 1%, 0); }
+  100% { transform: scale(1.05) translate3d(0, 0, 0); }
+}
+
+.cinematic-kenburns-a {
+  animation: cinematicKenBurnsA 7s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+.cinematic-kenburns-b {
+  animation: cinematicKenBurnsB 7s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-kenburns-a,
+  .cinematic-kenburns-b {
+    animation: none;
+  }
+}
+
+/* ===== Pipeline Spotlight (interactive agent flow) ===== */
+@keyframes pipelinePop {
+  from { opacity: 0; transform: translateY(6px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes pipelineScan {
+  0%   { top: 0%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+@keyframes pipelineShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pipelineStamp {
+  0%   { opacity: 0; transform: scale(1.8) rotate(-8deg); }
+  60%  { opacity: 1; transform: scale(0.92) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes pipelineTimer {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+@keyframes pipelinePanel {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pipeline-pop { animation: pipelinePop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.pipeline-scan { top: 0; animation: pipelineScan 1.8s ease-in-out infinite; }
+.pipeline-shimmer {
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.18) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: pipelineShimmer 1.4s linear infinite;
+}
+.pipeline-stamp { animation: pipelineStamp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.pipeline-timer { width: 0; animation: pipelineTimer 4s linear forwards; }
+.pipeline-panel { animation: pipelinePanel 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pipeline-pop,
+  .pipeline-scan,
+  .pipeline-shimmer,
+  .pipeline-stamp,
+  .pipeline-panel {
+    animation: none;
+  }
+  .pipeline-timer { animation: none; width: 100%; }
+}
+
+/* ===== Hero floating feature cards ===== */
+@keyframes heroCardIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes heroSwatch {
+  0%, 15%   { transform: scale(0.4); opacity: 0.2; }
+  30%, 85%  { transform: scale(1); opacity: 1; }
+  100%      { transform: scale(0.4); opacity: 0.2; }
+}
+@keyframes heroBar {
+  0%        { transform: scaleY(0.15); }
+  40%, 85%  { transform: scaleY(1); }
+  100%      { transform: scaleY(0.15); }
+}
+@keyframes heroCell {
+  0%, 10%   { opacity: 0.1; transform: scale(0.6); }
+  25%, 85%  { opacity: 1; transform: scale(1); }
+  100%      { opacity: 0.1; transform: scale(0.6); }
+}
+@keyframes heroReveal {
+  0%        { filter: blur(10px) saturate(0.3); transform: scale(1.15); }
+  45%, 90%  { filter: blur(0) saturate(1); transform: scale(1); }
+  100%      { filter: blur(10px) saturate(0.3); transform: scale(1.15); }
+}
+@keyframes heroWord {
+  from { opacity: 0; transform: translateY(60%); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.hero-float  { animation: heroFloat 6s ease-in-out infinite; }
+.hero-swatch { animation: heroSwatch 4s ease-in-out infinite both; }
+.hero-bar    { transform-origin: bottom; animation: heroBar 3.6s ease-in-out infinite both; }
+.hero-cell   { animation: heroCell 4.5s ease-in-out infinite both; }
+.hero-reveal { animation: heroReveal 5s ease-in-out infinite; }
+.hero-word   { animation: heroWord 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-float, .hero-swatch, .hero-bar, .hero-cell, .hero-reveal, .hero-word {
+    animation: none;
+  }
+}
+
+
+
+/* ===== ProblemSolution chaos jitter (uses individual 'translate' so it composes with Tailwind transforms) ===== */
+@keyframes psJitter {
+  0%, 100% { translate: 0 0; }
+  25%      { translate: 2px -3px; }
+  50%      { translate: -2px 2px; }
+  75%      { translate: 3px 1px; }
+}
+.ps-jitter { animation: psJitter 1.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ps-jitter { animation: none; }
+}
