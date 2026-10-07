@@ -378,107 +378,139 @@ function classifyBrandCategory(domainName, brandName, headings = [], metaDescrip
 }
 
 /**
- * Field 4: Tagline & Slogan Classifier
+ * Strict Tagline / Slogan Validator & Filter Rule
+ * - Exact official tagline/slogan from provided website.
+ * - Searches homepage, hero/header, About/Brand pages, metadata, and structured data.
+ * - NEVER use company/legal name, product description, mission, vision, or generic marketing text.
+ * - If not explicitly supported, returns null / "Not Found" instead of guessing.
+ * - Stores source URL and evidence for verification.
+ */
+function isValidOfficialTagline(str, brandName = '', domainName = '') {
+  if (!str || typeof str !== 'string') return false;
+  const trimmed = str.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+  if (trimmed.length < 2 || trimmed.length > 85) return false;
+
+  const words = trimmed.split(/\s+/);
+  if (words.length > 12) return false;
+
+  const lower = trimmed.toLowerCase();
+  const cleanBrand = (brandName || '').toLowerCase().trim();
+  const cleanDomain = (domainName || '').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].toLowerCase().trim();
+  const cleanDomainNoTld = cleanDomain.split('.')[0] || '';
+
+  // 1. NEVER use company or legal name
+  const strippedCand = lower.replace(/[-_\s.,']/g, '');
+  const strippedBrand = cleanBrand.replace(/[-_\s.,']/g, '');
+  const strippedDomainNoTld = cleanDomainNoTld.replace(/[-_\s.,']/g, '');
+
+  if (strippedCand === strippedBrand || strippedCand === strippedDomainNoTld || strippedCand === cleanDomain.replace(/[-_\s.,']/g, '')) {
+    return false;
+  }
+
+  // Legal corporate suffixes (e.g. "Insight Cosmetics Pvt Ltd", "Nike, Inc.")
+  if (/\b(pvt\.?\s*ltd\.?|private\s+limited|inc\.?|llc|llp|corp\.?|corporation|ltd\.?|limited|gmbh|co\.?|holdings?|enterprises?)\b/i.test(lower)) {
+    return false;
+  }
+
+  // Generic website greeting / self-announcement
+  if (/^(welcome\s+to|official\s+website\s+of|about\s+us|home\s+page|homepage|contact\s+us|customer\s+care)\b/i.test(lower)) {
+    return false;
+  }
+
+  // 2. NEVER use product descriptions, catalog categories, or e-commerce UI
+  if (/\b(bestseller|bestsellers|best\s+sellers?|new\s+arrivals?|trending\s+now|trending|shop\s+now|shop\s+all|view\s+all|all\s+products|explore\s+all|add\s+to\s+cart|buy\s+now|checkout|my\s+cart)\b/i.test(lower)) {
+    return false;
+  }
+
+  // Price, discount, promos
+  if (/[₹$€£]\s*\d+|\b\d+%\s*off\b|\bflat\s+\d+%\b|\bfree\s+shipping\b|\bbuy\s+\d+\s+get\s+\d+\b|\buse\s+code\b|\bcoupon\b|\bdiscount\b|\bsale\s+is\s+live\b/i.test(lower)) {
+    return false;
+  }
+
+  // Generic product lists or specifications
+  if (/\b(pack\s+of\s+\d+|\d+\s*ml|\d+\s*gm|\d+\s*g|\d+\s*kg|\d+\s*oz|spf\s*\d+|100%\s*cotton)\b/i.test(lower)) {
+    return false;
+  }
+
+  // Pure category names
+  if (/^(bath\s*&\s*body|sun\s*protection|make\s*up|makeup|skincare|haircare|fragrance|eyeliner|lipstick|lipsticks|foundation|soaps?|shampoo|conditioner|clothing|shoes|sneakers|apparel|accessories|electronics|software|hardware|solutions|services|products)$/i.test(lower)) {
+    return false;
+  }
+
+  // 3. NEVER use mission, vision, or paragraph copy
+  if (/\b(our\s+mission|the\s+mission\s+of|we\s+aim\s+to|we\s+strive\s+to|our\s+vision|vision\s+is\s+to|we\s+are\s+dedicated\s+to|committed\s+to|founded\s+in|since\s+(?:18|19|20)\d{2})\b/i.test(lower)) {
+    return false;
+  }
+
+  // Web policy / utility text
+  if (/\b(privacy\s+policy|terms\s+(?:and|&)\s+conditions|terms\s+of\s+service|cookie\s+policy|all\s+rights\s+reserved|copyright\s+\d{4}|powered\s+by)\b/i.test(lower)) {
+    return false;
+  }
+
+  // Domain parking / sale notices
+  if (/\b(domain\s+for\s+sale|buy\s+this\s+domain|premium\s+domain|godaddy|sedo|dan\.com)\b/i.test(lower)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Field 4: Tagline & Slogan Classifier with Strict Validation & Provenance
  */
 function validateAndClassifyTagline(scrapedMetadata = {}, headings = [], brandName = '', domainName = '') {
   const rawUrl = scrapedMetadata.cleanUrl || `https://${domainName}`;
 
-  // Priority 1: JSON-LD Organization.slogan
-  if (scrapedMetadata.schemaSlogan && typeof scrapedMetadata.schemaSlogan === 'string' && scrapedMetadata.schemaSlogan.trim().length > 2) {
-    const candidate = scrapedMetadata.schemaSlogan.trim();
-    return {
-      value: candidate,
-      sourceType: 'WEBSITE_SCHEMA',
-      sourceUrl: rawUrl,
-      evidence: `JSON-LD Organization.slogan: "${candidate}"`,
-      method: 'SCHEMA_ORGANIZATION_SLOGAN',
-      confidence: 0.95
-    };
+  // Priority 1: Scraper verified tagline
+  if (scrapedMetadata.extractedTagline && scrapedMetadata.extractedTagline.value) {
+    const candidate = scrapedMetadata.extractedTagline.value;
+    if (isValidOfficialTagline(candidate, brandName, domainName)) {
+      return scrapedMetadata.extractedTagline;
+    }
   }
 
-  // Priority 2: Hero Banner Tagline
-  if (scrapedMetadata.heroBannerTagline && typeof scrapedMetadata.heroBannerTagline === 'string' && scrapedMetadata.heroBannerTagline.trim().length > 2) {
-    const candidate = scrapedMetadata.heroBannerTagline.trim();
-    return {
-      value: candidate,
-      sourceType: 'WEBSITE_DOM',
-      sourceUrl: rawUrl,
-      evidence: `Hero Banner Tagline: "${candidate}"`,
-      method: 'HERO_BANNER_TAGLINE',
-      confidence: 0.88
-    };
+  // Priority 2: JSON-LD Organization.slogan
+  if (scrapedMetadata.schemaSlogan && typeof scrapedMetadata.schemaSlogan === 'string') {
+    const candidate = scrapedMetadata.schemaSlogan.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+    if (isValidOfficialTagline(candidate, brandName, domainName)) {
+      return {
+        value: candidate,
+        sourceType: 'WEBSITE_SCHEMA',
+        sourceUrl: rawUrl,
+        evidence: `JSON-LD Schema slogan: "${candidate}"`,
+        method: 'SCHEMA_ORGANIZATION_SLOGAN',
+        confidence: 0.98,
+        lastVerified: new Date().toISOString()
+      };
+    }
   }
 
-  // Defer un-schematized tagline determination to Multimodal AI
+  // Priority 3: Hero Banner Tagline (Only if strictly valid)
+  if (scrapedMetadata.heroBannerTagline && typeof scrapedMetadata.heroBannerTagline === 'string') {
+    const candidate = scrapedMetadata.heroBannerTagline.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+    if (isValidOfficialTagline(candidate, brandName, domainName)) {
+      return {
+        value: candidate,
+        sourceType: 'WEBSITE_DOM',
+        sourceUrl: rawUrl,
+        evidence: `Hero Banner Tagline: "${candidate}"`,
+        method: 'HERO_BANNER_TAGLINE',
+        confidence: 0.88,
+        lastVerified: new Date().toISOString()
+      };
+    }
+  }
+
+  // If no reliable tagline is explicitly supported by the website, return null / UNKNOWN instead of guessing
   return {
     value: null,
     sourceType: 'UNKNOWN',
     sourceUrl: rawUrl,
-    evidence: 'No JSON-LD schema or hero banner tagline found',
-    method: 'DEFER_TO_MULTIMODAL_AI',
-    confidence: 0
+    evidence: 'No reliable tagline explicitly supported by website',
+    method: 'NO_OFFICIAL_TAGLINE_FOUND',
+    confidence: 0,
+    lastVerified: new Date().toISOString()
   };
-}
-
-function isNegativeTaglineNoise(str, cleanBrand, cleanDomain) {
-  if (!str || str.length < 3) return true;
-  if (str.length > 80) return true;
-  const words = str.trim().split(/\s+/);
-  if (words.length > 12) return true;
-
-  const lower = str.toLowerCase();
-
-  // Parked Domains & Domain Sale Messages
-  if (/premium domain|domain for sale|buy this domain|domain is available|acquisition inquiry|sedo|godaddy|dan\.com|afternic|domain name|inquire now|for sale|this domain|parked domain/i.test(lower)) {
-    return true;
-  }
-
-  // Hardware / Product Model Headlines & Features
-  if (/\b(laptop|desktop|printer|tablet|smartphone|pc|chip|battery|ink|toner|gb|tb|hz|usb|series|gen|model|intel|amd|snapdragon|nvidia|omnipad|omnibook|book|macbook|ipad|iphone|galaxy|poly|headset|earbuds|mouse|keyboard|monitor|display|charger|cable|accessory|accessories|communication)\b/i.test(lower)) {
-    return true;
-  }
-  if (/\b(2-in-1|4k|5g|wifi|oled|inch|intel core|ryzen|geforce|snapdragon)\b/i.test(lower)) {
-    return true;
-  }
-
-  // Navigation / E-Commerce Category Titles
-  if (/^\s*(bath & body|sun protection|make up|skincare|makeup|new arrivals|best sellers|cart|checkout|login|sign in|home|shop all|all products|category|contact us|about us|privacy policy|terms of service)\s*$/i.test(lower)) {
-    return true;
-  }
-
-  // Brand / Domain Repetition or Generic Page Titles
-  const strippedCandidate = lower.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\.(com|in|org|net|io|ai)$/i, '').replace(/[-_\s]/g, '');
-  const strippedBrand = (cleanBrand || '').replace(/[-_\s]/g, '');
-  const strippedDomain = (cleanDomain || '').replace(/[-_\s]/g, '');
-
-  if (strippedCandidate === 'exampledomain' || strippedCandidate === strippedBrand || strippedCandidate === strippedDomain) {
-    return true;
-  }
-  if (lower === 'example domain' || lower === 'home page' || lower === 'index' || lower === 'welcome') {
-    return true;
-  }
-
-  return false;
-}
-
-function isPositiveSemanticSlogan(str) {
-  if (!str || str.length < 3) return false;
-  const lower = str.toLowerCase();
-
-  if (/^([a-z0-9]+\.\s*){2,4}[a-z0-9]+\.?$/i.test(str.trim()) || /^([a-z0-9]+\s*\|\s*){1,3}[a-z0-9]+$/i.test(str.trim())) {
-    return true;
-  }
-
-  const sloganVerbs = /\b(reinvent|reinventing|empower|empowering|inspire|inspiring|think|deliver|delivering|create|creating|transform|transforming|elevate|elevating|reimagine|reimagining|just do it|make|connecting|connect|enable|enabling|built to last|built for the future)\b/i;
-  if (sloganVerbs.test(lower)) {
-    return true;
-  }
-
-  if (/\b(clean|kind|effective|efficacy|inclusivity|sustainability|quality|trusted|built to last|precision|excellence)\b/i.test(lower) && str.split(/\s+/).length <= 6) {
-    return true;
-  }
-
-  return false;
 }
 
 module.exports = {
@@ -488,6 +520,7 @@ module.exports = {
   resolveHeadquartersAndLocations,
   classifyBusinessTypeWithConsensus,
   validateAndClassifyTagline,
+  isValidOfficialTagline,
   resolveBrandName,
   resolveContactInformation
 };

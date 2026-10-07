@@ -3,7 +3,8 @@ const {
   classifyPrimaryAndSecondaryIndustry,
   classifyBusinessTypeWithConsensus,
   resolveHeadquartersAndLocations,
-  validateAndClassifyTagline
+  validateAndClassifyTagline,
+  isValidOfficialTagline
 } = require('../workspace/brandProcessor.service');
 
 async function runPositioningAgent(crawlResult) {
@@ -50,7 +51,11 @@ CRITICAL INSTRUCTIONS:
 2. "secondaryIndustry": Optional secondary industry or null.
 3. "businessType": Select the most accurate commercial model (e.g., "Corporate & Industrial Manufacturer", "B2C Consumer Platform", "D2C E-Commerce Brand", "B2B Enterprise & SaaS Platform", "Healthcare & Medical Provider").
 4. "headquarters": Physical city, state/province, and country address found in page text/contact/footer screenshots (e.g., "Mumbai, Maharashtra, India", "Palo Alto, California, USA", "Ventura, California, USA"). If no specific location is found, return null.
-5. "tagline": EXACT verbatim slogan or tagline sentence/phrase directly written on the website homepage, hero banner, header, or meta description (e.g., 'Brighter Every Day', 'Har Ghar Kuch Kehta Hai', 'If you desire, we deliver'). Use the EXACT words and sentence given on the site verbatim without altering, paraphrasing, or rewriting a single word. If no explicit slogan exists, return the exact main H1 heading phrase from the site verbatim.
+5. "tagline": EXACT official tagline or slogan explicitly stated on the website (e.g., in hero/header, About/Brand pages, metadata, or JSON-LD schema).
+   - Prefer phrases explicitly identified as "tagline" or "slogan", then prominent branding phrases near the brand name.
+   - Return the EXACT wording as it appears on the website. Do NOT rewrite, summarize, translate, or generate.
+   - NEVER use the company/legal name, product description, mission, vision, or generic marketing text (e.g., "Bestsellers", "50% off", "Shop Now", or product titles).
+   - If no reliable tagline is explicitly supported by the website, return null. NEVER guess.
 6. "missionStatement": Extract explicit company mission OR synthesize an implicit brand purpose statement grounded in main products/services (e.g., "To deliver innovative, accessible consumer solutions and exceptional customer experiences").
 7. "vision": Extract explicit long-term vision OR synthesize an implicit brand vision statement grounded in industry leadership and customer impact.
 
@@ -60,7 +65,7 @@ Return ONLY a valid JSON object:
   "secondaryIndustry": "String or null",
   "businessType": "String",
   "headquarters": "String or null",
-  "tagline": "String",
+  "tagline": "String or null",
   "missionStatement": "String",
   "vision": "String"
 }`;
@@ -121,21 +126,38 @@ Return ONLY a valid JSON object:
         };
       }
 
-      // 4. Tagline (Prioritize EXACT verbatim website sentence)
-      const exactVerbatimTagline = scrapedMetadata.schemaSlogan || scrapedMetadata.heroBannerTagline || (scrapedMetadata.headings && scrapedMetadata.headings[0]);
-      const finalTaglineValue = (exactVerbatimTagline && exactVerbatimTagline.trim().length > 2)
-        ? exactVerbatimTagline.trim()
-        : (payload.tagline && typeof payload.tagline === 'string' ? payload.tagline.trim() : null);
-
-      if (finalTaglineValue) {
-        taglineObj = {
-          value: finalTaglineValue,
-          sourceType: exactVerbatimTagline ? 'OFFICIAL_WEBSITE' : (hasVisual ? 'WEBSITE_DOM+WEBSITE_SCREENSHOT' : 'EXACT_WEBSITE_TEXT'),
-          sourceUrl: rawUrl,
-          evidence: `Exact verbatim tagline from website copy: "${finalTaglineValue}"`,
-          method: 'VERBATIM_WEBSITE_TAGLINE',
-          confidence: 0.95
-        };
+      // 4. Tagline (Prioritize verified official tagline or schema slogan; never guess)
+      if (!taglineObj.value || !isValidOfficialTagline(taglineObj.value, brandName, domainName)) {
+        if (scrapedMetadata.extractedTagline?.value && isValidOfficialTagline(scrapedMetadata.extractedTagline.value, brandName, domainName)) {
+          taglineObj = scrapedMetadata.extractedTagline;
+        } else if (scrapedMetadata.schemaSlogan && isValidOfficialTagline(scrapedMetadata.schemaSlogan, brandName, domainName)) {
+          taglineObj = {
+            value: scrapedMetadata.schemaSlogan.trim(),
+            sourceType: 'WEBSITE_SCHEMA',
+            sourceUrl: rawUrl,
+            evidence: `JSON-LD Schema slogan: "${scrapedMetadata.schemaSlogan.trim()}"`,
+            method: 'SCHEMA_ORGANIZATION_SLOGAN',
+            confidence: 0.98
+          };
+        } else if (payload.tagline && typeof payload.tagline === 'string') {
+          const aiCand = payload.tagline.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+          if (isValidOfficialTagline(aiCand, brandName, domainName)) {
+            const lowerCand = aiCand.toLowerCase();
+            const appearsInCopy = combinedText.includes(lowerCand) ||
+                                  (scrapedMetadata.deepContextText || '').toLowerCase().includes(lowerCand) ||
+                                  (scrapedMetadata.metaDescription || '').toLowerCase().includes(lowerCand);
+            if (appearsInCopy) {
+              taglineObj = {
+                value: aiCand,
+                sourceType: hasVisual ? 'WEBSITE_DOM+WEBSITE_SCREENSHOT' : 'EXACT_WEBSITE_TEXT',
+                sourceUrl: rawUrl,
+                evidence: `Exact verbatim tagline verified in website text: "${aiCand}"`,
+                method: 'VERBATIM_WEBSITE_TAGLINE',
+                confidence: 0.92
+              };
+            }
+          }
+        }
       }
 
       // 5. Mission Statement
@@ -169,13 +191,15 @@ Return ONLY a valid JSON object:
   // Final Safety Fallbacks: Guarantee exact verbatim or grounded values
   const indName = industryResult.primaryIndustry.value || 'Commercial Operations';
   
-  if (!taglineObj.value) {
-    const fallbackExactHeading = (scrapedMetadata.headings && scrapedMetadata.headings[0]) || scrapedMetadata.metaDescription || `Official ${brandName} Platform`;
+  // Final verification: If tagline does not pass strict rule, return null / UNKNOWN (NEVER guess or fallback to headings!)
+  if (!taglineObj.value || !isValidOfficialTagline(taglineObj.value, brandName, domainName)) {
     taglineObj = {
-      value: fallbackExactHeading.trim(),
-      sourceType: 'EXACT_WEBSITE_TEXT',
+      value: null,
+      sourceType: 'UNKNOWN',
       sourceUrl: rawUrl,
-      evidence: `Extracted exact verbatim heading from website homepage: "${fallbackExactHeading.trim()}"`,
+      evidence: 'No reliable tagline explicitly supported by website',
+      method: 'NO_OFFICIAL_TAGLINE_FOUND',
+      confidence: 0
     };
   }
 

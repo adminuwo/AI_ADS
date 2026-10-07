@@ -34,6 +34,14 @@ try {
   puppeteer = require('puppeteer');
 } catch (e) {}
 
+let isValidOfficialTagline = () => true;
+try {
+  const proc = require('./brandProcessor.service');
+  if (proc && proc.isValidOfficialTagline) {
+    isValidOfficialTagline = proc.isValidOfficialTagline;
+  }
+} catch (e) {}
+
 async function fetchWebsiteHtmlWithResilience(cleanUrl, brandName, domainName) {
   let html = '';
   let $ = null;
@@ -406,20 +414,35 @@ function extractSchemaJsonLd($) {
 
   if (!$) return { schemaLogo, schemaName, schemaSlogan, schemaIndustry, schemaAddress, schemaFoundingDate, schemaSameAs };
 
+  function flattenSchemaItems(json) {
+    if (!json || typeof json !== 'object') return [];
+    if (Array.isArray(json)) {
+      return json.flatMap(flattenSchemaItems);
+    }
+    const items = [json];
+    if (Array.isArray(json['@graph'])) {
+      items.push(...flattenSchemaItems(json['@graph']));
+    }
+    return items;
+  }
+
   $('script[type="application/ld+json"]').each((i, el) => {
     try {
       const json = JSON.parse($(el).html() || '{}');
-      const items = Array.isArray(json) ? json : [json];
+      const items = flattenSchemaItems(json);
       items.forEach(item => {
-        if (item['@type'] === 'Organization' || item['@type'] === 'Corporation' || item['@type'] === 'Brand' || item['@type'] === 'WebSite') {
-          if (item.logo) {
+        if (!item || typeof item !== 'object') return;
+        const type = item['@type'];
+        const isOrgOrBrand = type === 'Organization' || type === 'Corporation' || type === 'Brand' || type === 'WebSite' || (Array.isArray(type) && type.some(t => ['Organization', 'Corporation', 'Brand', 'WebSite'].includes(t)));
+        if (isOrgOrBrand) {
+          if (!schemaLogo && item.logo) {
             schemaLogo = typeof item.logo === 'string' ? item.logo : (item.logo.url || '');
           }
-          if (item.name) schemaName = item.name;
-          if (item.slogan) schemaSlogan = item.slogan;
-          if (item.industry || item.category) schemaIndustry = item.industry || item.category;
-          if (item.foundingDate || item.foundingYear) schemaFoundingDate = String(item.foundingDate || item.foundingYear);
-          if (item.address) {
+          if (!schemaName && item.name) schemaName = item.name;
+          if (!schemaSlogan && item.slogan) schemaSlogan = item.slogan;
+          if (!schemaIndustry && (item.industry || item.category)) schemaIndustry = item.industry || item.category;
+          if (!schemaFoundingDate && (item.foundingDate || item.foundingYear)) schemaFoundingDate = String(item.foundingDate || item.foundingYear);
+          if (!schemaAddress && item.address) {
             const addr = item.address;
             if (typeof addr === 'string') schemaAddress = addr;
             else if (typeof addr === 'object') {
@@ -431,13 +454,146 @@ function extractSchemaJsonLd($) {
               schemaAddress = parts.join(', ');
             }
           }
-          if (Array.isArray(item.sameAs)) schemaSameAs = item.sameAs;
+          if (Array.isArray(item.sameAs) && schemaSameAs.length === 0) schemaSameAs = item.sameAs;
         }
       });
     } catch (e) {}
   });
 
   return { schemaLogo, schemaName, schemaSlogan, schemaIndustry, schemaAddress, schemaFoundingDate, schemaSameAs };
+}
+
+/**
+ * Extracts EXACT official tagline/slogan from DOM, metadata, and page text.
+ * Strictly verifies against isValidOfficialTagline to prevent product descriptions or legal names.
+ */
+function extractOfficialTaglineFromDOM($, cleanUrl, brandName = '', domainName = '', schemaSlogan = '', aboutPageText = '') {
+  const rawUrl = cleanUrl || (domainName ? `https://${domainName}` : '');
+
+  // 1. Priority 1: JSON-LD Schema Slogan
+  if (schemaSlogan && typeof schemaSlogan === 'string') {
+    const cleanSlogan = schemaSlogan.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+    if (isValidOfficialTagline(cleanSlogan, brandName, domainName)) {
+      return {
+        value: cleanSlogan,
+        sourceType: 'WEBSITE_SCHEMA',
+        sourceUrl: rawUrl,
+        evidence: `JSON-LD Schema slogan: "${cleanSlogan}"`,
+        confidence: 0.98
+      };
+    }
+  }
+
+  if (!$) {
+    return {
+      value: null,
+      sourceType: 'UNKNOWN',
+      sourceUrl: rawUrl,
+      evidence: 'No reliable tagline explicitly supported by website',
+      confidence: 0
+    };
+  }
+
+  // 2. Priority 2: Dedicated Metadata tags
+  const metaTagline = $('meta[name="tagline" i]').attr('content') ||
+                      $('meta[property="tagline" i]').attr('content') ||
+                      $('meta[name="slogan" i]').attr('content') ||
+                      $('meta[property="slogan" i]').attr('content');
+  if (metaTagline && typeof metaTagline === 'string') {
+    const cleanMeta = metaTagline.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+    if (isValidOfficialTagline(cleanMeta, brandName, domainName)) {
+      return {
+        value: cleanMeta,
+        sourceType: 'WEBSITE_META',
+        sourceUrl: rawUrl,
+        evidence: `Meta tag tagline/slogan: "${cleanMeta}"`,
+        confidence: 0.95
+      };
+    }
+  }
+
+  // 3. Priority 3: Explicit DOM classes dedicated to tagline / slogan
+  const explicitSelectors = [
+    '[itemprop="slogan"]',
+    '.tagline',
+    '#tagline',
+    '.slogan',
+    '#slogan',
+    '.brand-slogan',
+    '.site-slogan',
+    '.logo-tagline',
+    '.header-tagline',
+    '.hero-tagline',
+    'header .tagline',
+    'header .slogan'
+  ];
+
+  for (const selector of explicitSelectors) {
+    const el = $(selector).first();
+    if (el.length > 0) {
+      const text = el.text().trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+      if (isValidOfficialTagline(text, brandName, domainName)) {
+        return {
+          value: text,
+          sourceType: 'WEBSITE_DOM',
+          sourceUrl: rawUrl,
+          evidence: `Explicit DOM element (${selector}): "${text}"`,
+          confidence: 0.92
+        };
+      }
+    }
+  }
+
+  // 4. Priority 4: Header / Logo Alt Text Lockup (e.g. alt="Brand - Slogan")
+  const logoElements = $('header img[alt*="logo" i], nav img[alt*="logo" i], img[class*="logo" i], img[id*="logo" i], header a img, nav a img');
+  for (let i = 0; i < Math.min(logoElements.length, 5); i++) {
+    const altText = $(logoElements[i]).attr('alt') || $(logoElements[i]).attr('title') || '';
+    if (altText && (altText.includes('-') || altText.includes('|') || altText.includes('–') || altText.includes(':'))) {
+      const parts = altText.split(/[-|–:]/).map(p => p.trim()).filter(Boolean);
+      for (const part of parts) {
+        const cleanPart = part.replace(/^["“'«]+|["”'»]+$/g, '').trim();
+        if (isValidOfficialTagline(cleanPart, brandName, domainName)) {
+          return {
+            value: cleanPart,
+            sourceType: 'WEBSITE_DOM',
+            sourceUrl: rawUrl,
+            evidence: `Header logo lockup alt text ("${altText}"): "${cleanPart}"`,
+            confidence: 0.90
+          };
+        }
+      }
+    }
+  }
+
+  // 5. Priority 5: Explicit text statements in page text ("Our Tagline is...", "Our Slogan is...")
+  const combinedScraped = ($('body').text() || '') + ' ' + (aboutPageText || '');
+  const statementMatches = [
+    /(?:our\s+tagline|our\s+slogan|official\s+slogan|official\s+tagline|brand\s+slogan|brand\s+tagline)\s+(?:is|:)\s*["“']?([^"”'\n\r.]{3,80})["”']?/i,
+    /(?:tagline|slogan)\s*:\s*["“']?([^"”'\n\r.]{3,80})["”']?/i
+  ];
+  for (const regex of statementMatches) {
+    const match = combinedScraped.match(regex);
+    if (match && match[1]) {
+      const cand = match[1].trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+      if (isValidOfficialTagline(cand, brandName, domainName)) {
+        return {
+          value: cand,
+          sourceType: 'WEBSITE_DOM',
+          sourceUrl: rawUrl,
+          evidence: `Explicit brand statement in page text: "${cand}"`,
+          confidence: 0.92
+        };
+      }
+    }
+  }
+
+  return {
+    value: null,
+    sourceType: 'UNKNOWN',
+    sourceUrl: rawUrl,
+    evidence: 'No reliable tagline explicitly supported by website',
+    confidence: 0
+  };
 }
 
 async function extractOfficialLogoColors(cleanUrl, brandName = '', logoUrl = '') {
@@ -990,8 +1146,10 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
     }
 
     logoText = $('header .logo-text, .brand-logo span, a[class*="logo"] span, #logo span, .logo-tagline').first().text().trim();
-    heroBannerTagline = $('.hero h1, .hero p, .banner h1, .banner p, section[class*="hero"] p, section[class*="hero"] h2').first().text().trim();
-    footerTagline = $('footer .tagline, footer p, footer .copyright').first().text().trim();
+    const rawHeroTagline = $('.hero .tagline, .hero .slogan, .banner .tagline, .banner .slogan, [class*="hero-tagline"], [class*="hero-subtitle"]').first().text().trim();
+    heroBannerTagline = (rawHeroTagline && isValidOfficialTagline(rawHeroTagline, schemaName || brandName, domainName)) ? rawHeroTagline : '';
+    const rawFooterTagline = $('footer .tagline, footer .slogan').first().text().trim();
+    footerTagline = (rawFooterTagline && isValidOfficialTagline(rawFooterTagline, schemaName || brandName, domainName)) ? rawFooterTagline : '';
   }
 
   // Validate parsedLogo to ensure it is a valid image URL
@@ -1164,6 +1322,8 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
   console.log(`🎨 [SCRAPER] Step 3: Extracted Logo & Color Palette (${brandColors.join(', ')})`);
   console.log(`🔍 [SCRAPER] Step 4: JSON-LD Schema & DOM Signals Parsed (Brand: "${schemaName || brandName}", Schema Slogan: "${schemaSlogan || 'N/A'}")`);
 
+  const extractedTagline = extractOfficialTaglineFromDOM($, cleanUrl, schemaName || brandName, domainName, schemaSlogan, aboutPageText);
+
   return {
     cleanUrl,
     domainName,
@@ -1171,6 +1331,7 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
     schemaName,
     ogSiteName,
     schemaSlogan,
+    extractedTagline,
     schemaIndustry,
     schemaAddress,
     schemaFoundingDate,
