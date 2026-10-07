@@ -26,11 +26,11 @@ const OLD_TILES = [
 ];
 
 const BrandVisual = ({ ai }) => (
-  <div className="relative h-28 flex items-center justify-center gap-2.5">
+  <div className="relative h-24 flex items-center justify-center gap-2">
     {OLD_TILES.map((t, i) => (
       <div
         key={i}
-        className={`relative w-14 h-16 rounded-lg flex flex-col items-center justify-end pb-1.5 shadow-md transition-all duration-700 ease-out ${
+        className={`relative w-12 h-14 rounded-lg flex flex-col items-center justify-end pb-1 shadow-sm transition-all duration-700 ease-out ${
           ai
             ? 'bg-gradient-to-br from-indigo-500 to-fuchsia-500 rotate-0 translate-y-0'
             : `${t.bg} ${t.rot} ${i % 2 ? 'translate-y-2' : '-translate-y-1'} ps-jitter`
@@ -65,7 +65,7 @@ const SpeedVisual = ({ ai }) => {
   }, [ai]);
 
   return (
-    <div className="h-28 flex flex-col justify-center gap-2.5 px-1">
+    <div className="h-24 flex flex-col justify-center gap-2 px-1">
       <div className="grid grid-cols-10 gap-1">
         {Array.from({ length: 30 }).map((_, i) => {
           const filled = ai ? true : i < Math.floor(day / 3);
@@ -106,7 +106,7 @@ const TOOLS = [
 ];
 
 const ToolsVisual = ({ ai }) => (
-  <div className="relative h-28">
+  <div className="relative h-24">
     {/* Unified hub */}
     <div
       className={`absolute inset-x-6 top-1/2 -translate-y-1/2 h-14 rounded-xl border-2 border-dashed transition-all duration-700 flex items-end justify-center pb-1 ${
@@ -141,10 +141,9 @@ const PAIRS = [
     id: 'brand',
     num: '01',
     targetModule: 'brands',
-    painTitle: 'Inconsistent brand voice',
-    painDesc: 'Freelancers & basic AI tools lose context, causing off-brand visuals and tone drift.',
-    solutionTitle: 'Brand DNA Memory keeps every post on-brand',
-    solutionDesc: 'Auto-ingests logos, color hex codes, personas, and claim rules into permanent AI memory.',
+    title: 'Brand Consistency',
+    painText: 'Off-brand tone & visual drift',
+    solutionText: '100% locked colors, fonts & voice',
     metricOld: 'Random styles',
     metricNew: '100% on-brand',
     icon: ShieldCheck,
@@ -154,10 +153,9 @@ const PAIRS = [
     id: 'velocity',
     num: '02',
     targetModule: 'strategy',
-    painTitle: 'Slow content production',
-    painDesc: 'Planning 30 days of posts takes weeks of manual brief writing and designer delays.',
-    solutionTitle: '30-day strategy & 8K ad visuals in seconds',
-    solutionDesc: 'Generates non-repeating daily directives, photorealistic 8K ad renders, and copy in 1 click.',
+    title: 'Content Velocity',
+    painText: 'Weeks of manual writing & delays',
+    solutionText: '30-day strategy & 8K visuals in seconds',
     metricOld: 'Weeks',
     metricNew: 'Seconds',
     icon: Zap,
@@ -167,10 +165,9 @@ const PAIRS = [
     id: 'workspace',
     num: '03',
     targetModule: 'assetLibrary',
-    painTitle: 'Scattered tools & lost assets',
-    painDesc: 'Managing content across split sheets, disconnected folders, and email chains causes lost files.',
-    solutionTitle: 'One unified platform with central Asset Library',
-    solutionDesc: 'Store, tag, organize and access all brand creatives, campaigns, and ad copy in one searchable AI hub.',
+    title: 'Unified Workspace',
+    painText: 'Assets lost across 10+ disjointed tools',
+    solutionText: '1 central AI hub & shared Asset Library',
     metricOld: '10 tools',
     metricNew: '1 workspace',
     icon: Layers,
@@ -195,7 +192,7 @@ const PainCard = ({ pair, index, mode, tick, onOpen }) => {
   const ref = useRef(null);
   const [hovered, setHovered] = useState(false);
 
-  // compare mode: auto-alternate (staggered per card); hover forces AI view
+  // compare mode: auto-alternate visual; hover forces AI view
   const ai = mode === 'aiads' ? true : mode === 'old' ? false : hovered || (tick + index) % 2 === 1;
 
   const handleMove = (e) => {
@@ -215,21 +212,21 @@ const PainCard = ({ pair, index, mode, tick, onOpen }) => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => onOpen(pair.targetModule)}
-      className="pipeline-pop group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/90 p-4 lg:p-5 flex flex-col gap-3 shadow-md hover:shadow-2xl hover:-translate-y-1.5 hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all duration-300 cursor-pointer"
+      className="pipeline-pop group relative overflow-hidden rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/90 p-3 sm:p-3.5 flex flex-col gap-2.5 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all duration-300 cursor-pointer"
       style={{ animationDelay: `${index * 120}ms` }}
     >
       {/* Mouse-follow spotlight */}
       <div
         className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ background: 'radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(99,102,241,0.12), transparent 70%)' }}
+        style={{ background: 'radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(99,102,241,0.12), transparent 70%)' }}
       />
 
       {/* Header */}
       <div className="relative flex items-center justify-between">
-        <span className="text-xl font-black font-mono text-indigo-500/80 dark:text-indigo-400/80">{pair.num}</span>
-        <div className="flex items-center gap-2">
+        <span className="text-base font-black font-mono text-indigo-500/80 dark:text-indigo-400/80">{pair.num}</span>
+        <div className="flex items-center gap-1.5">
           <span
-            className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-all duration-500 ${
+            className={`text-[9.5px] font-black px-2 py-0.5 rounded-full transition-all duration-500 ${
               ai
                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
                 : 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300'
@@ -237,15 +234,15 @@ const PainCard = ({ pair, index, mode, tick, onOpen }) => {
           >
             {ai ? pair.metricNew : pair.metricOld}
           </span>
-          <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200/60 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:rotate-12 group-hover:scale-110 transition-transform">
-            <IconComp className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200/60 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:rotate-12 group-hover:scale-110 transition-transform">
+            <IconComp className="w-3.5 h-3.5" />
           </div>
         </div>
       </div>
 
       {/* Live visual */}
       <div
-        className={`relative rounded-xl border p-2 transition-colors duration-700 ${
+        className={`relative rounded-lg border p-1.5 transition-colors duration-700 ${
           ai
             ? 'bg-emerald-50/60 border-emerald-200/70 dark:bg-emerald-500/5 dark:border-emerald-500/20'
             : 'bg-rose-50/60 border-rose-200/70 dark:bg-rose-500/5 dark:border-rose-500/20'
@@ -254,38 +251,39 @@ const PainCard = ({ pair, index, mode, tick, onOpen }) => {
         <Visual ai={ai} />
       </div>
 
-      {/* Text: swaps between pain & solution */}
-      <div className="relative min-h-[92px]">
-        <div
-          className={`absolute inset-0 space-y-1 transition-all duration-500 ${
-            ai ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'
-          }`}
-        >
-          <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-black text-[10.5px]">
-            <XCircle className="w-3.5 h-3.5 shrink-0" />
-            <span>THE OLD FRAGMENTED WAY</span>
-          </div>
-          <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">{pair.painTitle}</h4>
-          <p className="text-[11.5px] text-slate-600 dark:text-slate-400 leading-snug">{pair.painDesc}</p>
-        </div>
-        <div
-          className={`absolute inset-0 space-y-1 transition-all duration-500 ${
-            ai ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
-          }`}
-        >
-          <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-black text-[10.5px]">
-            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-            <span>WITH AI ADS™ AUTOMATION</span>
-          </div>
-          <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">{pair.solutionTitle}</h4>
-          <p className="text-[11.5px] text-slate-700 dark:text-slate-300 leading-snug">{pair.solutionDesc}</p>
+      {/* Text: Concise comparison without text overlap */}
+      <div className="relative space-y-1.5 py-0.5 min-h-[48px] flex flex-col justify-center">
+        <h4 className="text-[13px] font-bold text-slate-900 dark:text-white tracking-tight">
+          {pair.title}
+        </h4>
+        
+        <div className="space-y-1 text-[11px]">
+          {/* Old way */}
+          {(mode === 'compare' || mode === 'old') && (
+            <div className={`flex items-start gap-1.5 transition-opacity duration-300 ${
+              mode === 'compare' && ai ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-rose-600 dark:text-rose-400 font-medium'
+            }`}>
+              <XCircle className="w-3 h-3 shrink-0 mt-0.5 text-rose-500" />
+              <span className="leading-snug">{pair.painText}</span>
+            </div>
+          )}
+
+          {/* AI Ads way */}
+          {(mode === 'compare' || mode === 'aiads') && (
+            <div className={`flex items-start gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400 transition-opacity duration-300 ${
+              mode === 'compare' && !ai ? 'opacity-70' : 'opacity-100'
+            }`}>
+              <CheckCircle2 className="w-3 h-3 shrink-0 mt-0.5 text-emerald-500" />
+              <span className="leading-snug">{pair.solutionText}</span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Footer */}
-      <div className="relative pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400">
-        <span>{mode === 'compare' ? 'Hover to see the fix' : 'See How It Works'}</span>
-        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+      <div className="relative pt-1.5 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[10.5px] font-extrabold text-indigo-600 dark:text-indigo-400">
+        <span>Explore Module</span>
+        <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
       </div>
     </div>
   );
@@ -308,28 +306,24 @@ export const ProblemSolution = () => {
   const tabIndex = TABS.findIndex((t) => t.id === activeTab);
 
   return (
-    <section className="py-10 lg:py-14 bg-slate-50/90 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300 relative overflow-hidden">
+    <section className="py-3.5 sm:py-5 bg-slate-50/90 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300 relative overflow-hidden">
 
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[340px] bg-indigo-500/5 dark:bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-7 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-3 relative z-10">
 
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-2.5">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/60 text-[11px] font-extrabold text-indigo-700 dark:text-indigo-300 shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
-            <span>THE MARKETING CHALLENGE &amp; SOLUTION</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
+        <div className="text-center max-w-2xl mx-auto space-y-1">
+          <h2 className="text-2xl sm:text-3xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
             Marketing Shouldn't Mean Juggling Ten Tools
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xs sm:text-[13px] text-slate-600 dark:text-slate-400 max-w-xl mx-auto leading-normal">
             Long production cycles, scattered tools, and brand drift slow you down. See how AI Ads™ replaces the chaos.
           </p>
 
           {/* Segmented toggle with sliding indicator */}
-          <div className="pt-2 flex items-center justify-center">
+          <div className="pt-0.5 flex items-center justify-center">
             <div className="relative inline-grid grid-cols-3 p-1 rounded-xl bg-slate-200/80 dark:bg-slate-900 border border-slate-300/80 dark:border-slate-800 shadow-inner">
               <span
                 className={`absolute top-1 bottom-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-lg shadow-sm transition-all duration-300 ease-out ${TAB_INDICATOR[activeTab]}`}
@@ -353,7 +347,7 @@ export const ProblemSolution = () => {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-3.5 max-w-4xl mx-auto">
           {PAIRS.map((pair, i) => (
             <PainCard
               key={pair.id}

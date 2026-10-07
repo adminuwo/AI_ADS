@@ -124,16 +124,22 @@ const getUserDetail = async (req, res) => {
 const updateUserQuotaAndPlan = async (req, res) => {
   try {
     const { credits, plan, role, isBlocked } = req.body;
-    const u = await User.findById(req.params.id);
-    if (!u) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
+    
+    const updateData = {};
+    if (credits !== undefined) updateData.credits = parseInt(credits, 10) || 0;
+    if (plan) updateData.plan = plan;
+    if (role) updateData.role = role;
+    if (typeof isBlocked === 'boolean') updateData.isBlocked = isBlocked;
 
-    if (credits !== undefined) u.credits = parseInt(credits, 10) || 0;
-    if (plan) u.plan = plan;
-    if (role) u.role = role;
-    if (typeof isBlocked === 'boolean') u.isBlocked = isBlocked;
-    await u.save();
+    const u = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateData },
+      { new: true, runValidators: false }
+    );
+
+    if (!u) {
+      return res.status(404).json({ success: false, error: 'User account not found' });
+    }
 
     return res.json({
       success: true,
@@ -635,6 +641,63 @@ const updateTicketStatus = async (req, res) => {
   }
 };
 
+// ─── GET /api/admin/role-plan-mappings ─────────────────────────────────────────
+const getRolePlanMappings = async (req, res) => {
+  try {
+    let setting = await SystemSetting.findOne({ key: 'role_plan_mappings' });
+    if (!setting) {
+      const defaultMappings = {
+        developer: 'starter',
+        admin: 'pro',
+        user: 'free',
+        AgencyAdmin: 'enterprise',
+        SuperAdmin: 'enterprise'
+      };
+      setting = await SystemSetting.create({ key: 'role_plan_mappings', value: defaultMappings });
+    }
+    return res.json({ success: true, data: setting.value });
+  } catch (err) {
+    console.error('[Admin] getRolePlanMappings error:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ─── PUT /api/admin/role-plan-assign ───────────────────────────────────────────
+const assignPlanToRole = async (req, res) => {
+  try {
+    const { role, plan } = req.body;
+    if (!role || !plan) {
+      return res.status(400).json({ success: false, error: 'Role and plan are required' });
+    }
+
+    let setting = await SystemSetting.findOne({ key: 'role_plan_mappings' });
+    if (!setting) {
+      setting = new SystemSetting({
+        key: 'role_plan_mappings',
+        value: { developer: 'starter', admin: 'pro', user: 'free', AgencyAdmin: 'enterprise', SuperAdmin: 'enterprise' }
+      });
+    }
+    setting.value = { ...setting.value, [role]: plan };
+    await setting.save();
+
+    const roleRegex = new RegExp(`^${role}$`, 'i');
+    const updateResult = await User.updateMany(
+      { role: { $regex: roleRegex } },
+      { $set: { plan: plan } }
+    );
+
+    return res.json({
+      success: true,
+      message: `Plan "${plan}" assigned to role "${role}" (${updateResult.modifiedCount} accounts updated)`,
+      modifiedCount: updateResult.modifiedCount,
+      rolePlanMappings: setting.value
+    });
+  } catch (err) {
+    console.error('[Admin] assignPlanToRole error:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 module.exports = {
   getAllUserStats,
   getUserDetail,
@@ -647,5 +710,8 @@ module.exports = {
   getToolLimits,
   updateToolLimits,
   getHelpDeskTickets,
-  updateTicketStatus
+  updateTicketStatus,
+  getRolePlanMappings,
+  assignPlanToRole
 };
+

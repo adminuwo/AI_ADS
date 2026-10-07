@@ -11,7 +11,7 @@ export const FinalCTA = () => {
   };
 
   return (
-    <section className="py-24 bg-slate-950 text-slate-100 border-b border-slate-800/60 relative overflow-hidden">
+    <section className="py-12 sm:py-16 bg-slate-950 text-slate-100 border-b border-slate-800/60 relative overflow-hidden">
       {/* Cinematic video-like background */}
       <CinematicBackground startIndex={2} interval={5500} overlayClassName="bg-slate-950/75">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-indigo-600/25 rounded-full blur-[140px]" />
@@ -19,12 +19,7 @@ export const FinalCTA = () => {
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-950 to-transparent" />
       </CinematicBackground>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-extrabold text-indigo-200 shadow-sm">
-          <Sparkles className="w-4 h-4 text-indigo-300" />
-          <span>READY TO SCALE CONTENT VELOCITY?</span>
-        </div>
-
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-5">
         <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black font-['Outfit'] tracking-tight text-white leading-tight drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]">
           Ready to run your marketing at the speed of AI?
         </h2>

@@ -26,15 +26,11 @@ export const TrustStrip = () => {
   const marqueeList = [...integrationPillars, ...integrationPillars, ...integrationPillars];
 
   return (
-    <section className="py-10 bg-slate-100/60 dark:bg-[#070b19] border-b border-slate-200/80 dark:border-slate-800/60 transition-colors duration-300 overflow-hidden relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <section className="py-6 sm:py-8 bg-slate-100/60 dark:bg-[#070b19] border-b border-slate-200/80 dark:border-slate-800/60 transition-colors duration-300 overflow-hidden relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
         
         {/* Centered Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-2 pb-1">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200/80 dark:border-indigo-800/60 text-[11px] font-extrabold text-indigo-700 dark:text-indigo-300 shadow-xs">
-            <Bot className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
-            <span>INTEGRATED CHANNEL ENGINE & INFRASTRUCTURE</span>
-          </div>
+        <div className="text-center max-w-3xl mx-auto space-y-1.5">
           <h3 className="text-2xl sm:text-3xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white">
             One AI Workspace. Every Channel & Output.
           </h3>
@@ -46,7 +42,7 @@ export const TrustStrip = () => {
       </div>
 
       {/* Infinite Marquee Ticker of Channel & AI Pillars */}
-      <div className="relative mt-4 w-full overflow-hidden pause-on-hover py-2">
+      <div className="relative mt-3 w-full overflow-hidden pause-on-hover py-1">
         {/* Left & Right Gradient Mask Shadows */}
         <div className="absolute top-0 bottom-0 left-0 w-24 sm:w-40 bg-gradient-to-r from-slate-100/90 via-slate-100/70 to-transparent dark:from-[#070b19] dark:via-[#070b19]/80 dark:to-transparent z-10 pointer-events-none" />
         <div className="absolute top-0 bottom-0 right-0 w-24 sm:w-40 bg-gradient-to-l from-slate-100/90 via-slate-100/70 to-transparent dark:from-[#070b19] dark:via-[#070b19]/80 dark:to-transparent z-10 pointer-events-none" />

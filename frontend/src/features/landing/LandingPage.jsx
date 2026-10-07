@@ -25,16 +25,17 @@ import { Pricing } from './components/Pricing';
 import { FAQ } from './components/FAQ';
 import { FinalCTA } from './components/FinalCTA';
 import { Footer } from './components/Footer';
+import { About } from './components/About';
 import { CookiePolicyModal } from '../../components/modals/CookiePolicyModal';
 import { CookieConsentBanner } from '../../components/modals/CookieConsentBanner';
 
-const VALID_TABS = ['home', 'features', 'how-it-works', 'pricing', 'faq'];
+const VALID_TABS = ['home', 'features', 'how-it-works', 'pricing', 'faq', 'about'];
 
 export const LandingPage = () => {
   const [currentTab, setCurrentTab] = useState('home');
   const [isCookieModalOpen, setIsCookieModalOpen] = useState(false);
 
-  // Handle URL hash routing (e.g. #pricing, #features, #how-it-works, #faq, #home)
+  // Handle URL hash routing (e.g. #pricing, #features, #how-it-works, #faq, #about, #home)
   useEffect(() => {
     const syncFromHash = () => {
       if (typeof window === 'undefined') return;
@@ -45,6 +46,7 @@ export const LandingPage = () => {
       if (rawHash === 'why-ai-ads' || rawHash === 'spotlight') matchedTab = 'features';
       if (rawHash === 'steps' || rawHash === 'workflow') matchedTab = 'how-it-works';
       if (rawHash === 'plans' || rawHash === 'billing') matchedTab = 'pricing';
+      if (rawHash === 'about' || rawHash === 'about-us' || rawHash === 'company') matchedTab = 'about';
       if (rawHash === '' || rawHash === 'hero') matchedTab = 'home';
 
       if (VALID_TABS.includes(matchedTab)) {
@@ -92,13 +94,9 @@ export const LandingPage = () => {
             <StatsBar />
 
             {/* 5. Quick Explore Hub: Discover Dedicated Sub-Pages */}
-            <section className="py-20 bg-white/70 dark:bg-slate-950/70 border-y border-slate-200/80 dark:border-slate-800/80 relative overflow-hidden backdrop-blur-md">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-                <div className="text-center max-w-2xl mx-auto space-y-3">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-500/30 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>EXPLORE THE PLATFORM</span>
-                  </div>
+            <section className="py-10 sm:py-14 bg-white/70 dark:bg-slate-950/70 border-y border-slate-200/80 dark:border-slate-800/80 relative overflow-hidden backdrop-blur-md">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+                <div className="text-center max-w-2xl mx-auto space-y-2">
                   <h2 className="text-2xl sm:text-4xl font-black font-['Outfit'] text-slate-900 dark:text-white">
                     Explore Deep Product Suites
                   </h2>
@@ -254,6 +252,13 @@ export const LandingPage = () => {
 
             {/* Final CTA */}
             <FinalCTA />
+          </div>
+        )}
+
+        {/* ────────────────── PAGE 6: ABOUT US (Corporate Profile & Ecosystem) ────────────────── */}
+        {currentTab === 'about' && (
+          <div className="animate-in fade-in duration-300">
+            <About onSelectTab={handleSelectTab} />
           </div>
         )}
 

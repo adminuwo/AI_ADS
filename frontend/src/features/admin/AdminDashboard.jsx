@@ -10,7 +10,7 @@ import {
   Sun, Moon, ArrowUpRight, IndianRupee, HelpCircle, Check, Filter,
   Mail, Bot, AlertTriangle, Cpu
 } from 'lucide-react';
-import { adminAPI } from '../../services/api';
+import { adminAPI, plansAPI } from '../../services/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
 
 // ─── DYNAMIC SVG LINE/AREA CHART COMPONENT ────────────────────────────────────
@@ -123,9 +123,10 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
   const [loading, setLoading] = useState(true);
   const [creditsInput, setCreditsInput] = useState(initialUser?.credits ?? 0);
   const [selectedPlan, setSelectedPlan] = useState(initialUser?.plan || 'free');
-  const [selectedRole, setSelectedRole] = useState(initialUser?.role || 'AgencyAdmin');
+  const [selectedRole, setSelectedRole] = useState(initialUser?.role || 'user');
   const [isBlocked, setIsBlocked] = useState(initialUser?.isBlocked || false);
   const [saveSuccess, setSaveSuccess] = useState('');
+  const [saveError, setSaveError] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -141,7 +142,7 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
           if (res.data.user) {
             setCreditsInput(res.data.user.credits ?? 0);
             setSelectedPlan(res.data.user.plan || 'free');
-            setSelectedRole(res.data.user.role || 'AgencyAdmin');
+            setSelectedRole(res.data.user.role || 'user');
             setIsBlocked(res.data.user.isBlocked || false);
           }
         }
@@ -151,8 +152,10 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
   }, [userId]);
 
   const handleSaveUserChanges = async () => {
-    if (!detail?.user) return;
+    if (!userId) return;
     setSaving(true);
+    setSaveSuccess('');
+    setSaveError('');
     try {
       const res = await adminAPI.updateUserQuota(userId, {
         credits: parseInt(creditsInput, 10) || 0,
@@ -164,7 +167,7 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
         setDetail(prev => ({
           ...prev,
           user: {
-            ...prev.user,
+            ...(prev?.user || {}),
             credits: parseInt(creditsInput, 10) || 0,
             plan: selectedPlan,
             role: selectedRole,
@@ -172,11 +175,14 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
           }
         }));
         setSaveSuccess('User profile, quota & access status updated in database!');
-        setTimeout(() => setSaveSuccess(''), 3500);
+        setTimeout(() => setSaveSuccess(''), 4500);
         if (onUserUpdated) onUserUpdated();
+      } else {
+        setSaveError(res?.error || 'Failed to update user profile.');
       }
     } catch (err) {
       console.error('Error saving user quota:', err);
+      setSaveError(err?.message || 'An error occurred while saving user profile.');
     } finally {
       setSaving(false);
     }
@@ -247,6 +253,13 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
               <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>{saveSuccess}</span>
+              </div>
+            )}
+
+            {saveError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{saveError}</span>
               </div>
             )}
 
@@ -334,34 +347,68 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
                 />
               </div>
 
-              {/* Select Plan & Role */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-extrabold text-slate-700 mb-1">Assign Subscription Plan</label>
-                  <select
-                    value={selectedPlan}
-                    onChange={(e) => setSelectedPlan(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 shadow-xs"
-                  >
-                    <option value="free">Free Tier</option>
-                    <option value="starter">Starter Plan</option>
-                    <option value="pro">Pro Plan</option>
-                    <option value="enterprise">Enterprise</option>
-                  </select>
+              {/* Dedicated Role Assignment Section (Admin / User / Developer) */}
+              <div className="p-4 rounded-2xl bg-white border border-indigo-200/80 space-y-2.5 shadow-xs font-sans">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-brand-600" />
+                    Role Assignment (Admin / User / Developer)
+                  </label>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
+                    Active: {selectedRole}
+                  </span>
                 </div>
+                <p className="text-[11px] text-slate-500 font-medium">Select the system access role for this user account:</p>
 
-                <div>
-                  <label className="block text-[11px] font-extrabold text-slate-700 mb-1">Assign Platform Role</label>
-                  <select
-                    value={selectedRole}
-                    onChange={(e) => setSelectedRole(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 shadow-xs"
-                  >
-                    <option value="AgencyAdmin">Agency Admin</option>
-                    <option value="User">Standard User</option>
-                    <option value="SuperAdmin">Super Admin</option>
-                  </select>
+                {/* Role Select Dropdown */}
+                <select
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-extrabold text-slate-900 focus:outline-none focus:border-brand-500 shadow-xs font-sans"
+                >
+                  <option value="admin">Admin — Full Platform & Management Control</option>
+                  <option value="user">User — Standard Creative & AI Platform Access</option>
+                  <option value="developer">Developer — API & Technical Integrations Access</option>
+                  <option value="AgencyAdmin">Agency Admin — Organization Owner</option>
+                  <option value="SuperAdmin">Super Admin — Root System Control</option>
+                </select>
+
+                {/* Quick Role Selection Buttons */}
+                <div className="flex items-center gap-2 pt-1">
+                  {[
+                    { key: 'admin', label: 'Admin', color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
+                    { key: 'user', label: 'User', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+                    { key: 'developer', label: 'Developer', color: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' }
+                  ].map((r) => (
+                    <button
+                      key={r.key}
+                      type="button"
+                      onClick={() => setSelectedRole(r.key)}
+                      className={`flex-1 py-1.5 rounded-lg border text-[11px] font-extrabold transition-all ${
+                        selectedRole.toLowerCase() === r.key
+                          ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+                          : `${r.color}`
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
                 </div>
+              </div>
+
+              {/* Dedicated Subscription Plan Assignment Section */}
+              <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2 shadow-xs">
+                <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">Assign Subscription Plan</label>
+                <select
+                  value={selectedPlan}
+                  onChange={(e) => setSelectedPlan(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 shadow-xs"
+                >
+                  <option value="free">Free Tier (₹0)</option>
+                  <option value="starter">Starter Plan (₹999)</option>
+                  <option value="pro">Pro Plan (₹2,499)</option>
+                  <option value="enterprise">Enterprise (₹7,579)</option>
+                </select>
               </div>
 
               {/* Account Block Status Toggle */}
@@ -557,6 +604,17 @@ export const AdminDashboardModule = () => {
   const [toolLimitsSaving, setToolLimitsSaving] = useState(false);
   const [toolLimitsSuccess, setToolLimitsSuccess] = useState('');
 
+  // Role to Plan Mapping State
+  const [rolePlanMappings, setRolePlanMappings] = useState({
+    developer: 'starter',
+    admin: 'pro',
+    user: 'free',
+    AgencyAdmin: 'enterprise',
+    SuperAdmin: 'enterprise'
+  });
+  const [rolePlanSavingRole, setRolePlanSavingRole] = useState(null);
+  const [rolePlanSuccessMsg, setRolePlanSuccessMsg] = useState('');
+
   // Dynamically compute authenticated admin user initials
   const adminInitials = useMemo(() => {
     try {
@@ -570,15 +628,134 @@ export const AdminDashboardModule = () => {
     return 'AD';
   }, []);
 
+  // ─── DEVELOPER CUSTOM PLAN MANAGEMENT STATE ──────────────────────────────
+  const currentUser = useMemo(() => {
+    try {
+      const stored = localStorage.getItem('aisa_user');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return null;
+  }, []);
+
+  const currentUserRole = (currentUser?.role || '').toLowerCase();
+  const isDeveloperUser = currentUserRole === 'developer';
+
+  const [developerPlans, setDeveloperPlans] = useState([]);
+  const [isDeveloperCustomActive, setIsDeveloperCustomActive] = useState(false);
+  const [devPlanSaving, setDevPlanSaving] = useState(false);
+  const [devPlanResetting, setDevPlanResetting] = useState(false);
+  const [devPlanSuccessMsg, setDevPlanSuccessMsg] = useState('');
+  const [devPlanErrorMsg, setDevPlanErrorMsg] = useState('');
+
+  const fetchDeveloperPlans = async () => {
+    try {
+      const plansRes = await plansAPI.getPlans().catch(() => null);
+      if (plansRes?.success && Array.isArray(plansRes.plans)) {
+        setDeveloperPlans(plansRes.plans);
+        setIsDeveloperCustomActive(!!plansRes.isDeveloperCustom);
+      }
+    } catch (err) {
+      console.error('Error fetching developer plans:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeveloperPlans();
+  }, []);
+
+  const handleUpdateDevPlanField = (index, field, value) => {
+    setDeveloperPlans(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const handleUpdateDevPlanFeature = (planIndex, featureIndex, value) => {
+    setDeveloperPlans(prev => {
+      const updated = [...prev];
+      const plan = { ...updated[planIndex] };
+      const feats = [...(plan.features || [])];
+      feats[featureIndex] = value;
+      plan.features = feats;
+      updated[planIndex] = plan;
+      return updated;
+    });
+  };
+
+  const handleAddDevPlanFeature = (planIndex) => {
+    setDeveloperPlans(prev => {
+      const updated = [...prev];
+      const plan = { ...updated[planIndex] };
+      const feats = [...(plan.features || []), 'New Custom Feature'];
+      plan.features = feats;
+      updated[planIndex] = plan;
+      return updated;
+    });
+  };
+
+  const handleRemoveDevPlanFeature = (planIndex, featureIndex) => {
+    setDeveloperPlans(prev => {
+      const updated = [...prev];
+      const plan = { ...updated[planIndex] };
+      const feats = (plan.features || []).filter((_, idx) => idx !== featureIndex);
+      plan.features = feats;
+      updated[planIndex] = plan;
+      return updated;
+    });
+  };
+
+  const handleSaveDeveloperCustomPlans = async () => {
+    setDevPlanSaving(true);
+    setDevPlanSuccessMsg('');
+    setDevPlanErrorMsg('');
+    try {
+      const res = await plansAPI.saveDeveloperCustomPlans(developerPlans);
+      if (res?.success) {
+        setIsDeveloperCustomActive(true);
+        setDevPlanSuccessMsg('Developer custom plans saved! These modified plans are strictly private & visible ONLY to your developer account.');
+        setTimeout(() => setDevPlanSuccessMsg(''), 6000);
+      } else {
+        setDevPlanErrorMsg(res?.error || 'Failed to save developer custom plans.');
+      }
+    } catch (err) {
+      setDevPlanErrorMsg(err?.message || 'Error saving developer custom plans.');
+    } finally {
+      setDevPlanSaving(false);
+    }
+  };
+
+  const handleResetDeveloperCustomPlans = async () => {
+    setDevPlanResetting(true);
+    setDevPlanSuccessMsg('');
+    setDevPlanErrorMsg('');
+    try {
+      const res = await plansAPI.resetDeveloperCustomPlans();
+      if (res?.success) {
+        setIsDeveloperCustomActive(false);
+        setDevPlanSuccessMsg('Reset to standard platform default plans.');
+        await fetchDeveloperPlans();
+        setTimeout(() => setDevPlanSuccessMsg(''), 5000);
+      } else {
+        setDevPlanErrorMsg(res?.error || 'Failed to reset custom plans.');
+      }
+    } catch (err) {
+      setDevPlanErrorMsg(err?.message || 'Error resetting custom plans.');
+    } finally {
+      setDevPlanResetting(false);
+    }
+  };
+
   const fetchData = async () => {
     try {
-      const [summaryRes, usersRes, chatRes, legalRes, limitsRes, ticketsRes] = await Promise.all([
+      const [summaryRes, usersRes, chatRes, legalRes, limitsRes, ticketsRes, mappingsRes] = await Promise.all([
         adminAPI.getDashboardSummary().catch(() => ({ success: false })),
         adminAPI.getAllUserStats().catch(() => ({ success: false })),
         adminAPI.getChatSessions().catch(() => ({ success: false })),
         adminAPI.getLegalPages().catch(() => ({ success: false })),
         adminAPI.getToolLimits().catch(() => ({ success: false })),
-        adminAPI.getHelpDeskTickets().catch(() => ({ success: false }))
+        adminAPI.getHelpDeskTickets().catch(() => ({ success: false })),
+        adminAPI.getRolePlanMappings().catch(() => ({ success: false }))
       ]);
 
       if (summaryRes?.success) setSummary(summaryRes.data);
@@ -587,11 +764,29 @@ export const AdminDashboardModule = () => {
       if (legalRes?.success) setLegalContent(legalRes.data);
       if (limitsRes?.success) setToolLimits(limitsRes.data);
       if (ticketsRes?.success) setHelpDeskTickets(ticketsRes.data);
+      if (mappingsRes?.success && mappingsRes.data) setRolePlanMappings(mappingsRes.data);
     } catch (err) {
       console.error('Admin dashboard fetch error:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const handleAssignPlanToRole = async (targetRole, targetPlan) => {
+    setRolePlanSavingRole(targetRole);
+    try {
+      const res = await adminAPI.assignPlanToRole(targetRole, targetPlan);
+      if (res?.success) {
+        setRolePlanMappings(prev => ({ ...prev, [targetRole]: targetPlan }));
+        setRolePlanSuccessMsg(res.message || `Plan assigned successfully to all ${targetRole} users!`);
+        setTimeout(() => setRolePlanSuccessMsg(''), 4000);
+        fetchData();
+      }
+    } catch (err) {
+      console.error('Error assigning plan to role:', err);
+    } finally {
+      setRolePlanSavingRole(null);
     }
   };
 
@@ -1589,35 +1784,317 @@ export const AdminDashboardModule = () => {
 
       {/* ── TAB 5: PLANS ── */}
       {activeTab === 'plans' && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-in fade-in">
-          {[
-            { key: 'free', title: 'Free Tier', price: '₹0 / mo', desc: 'Personal experimentation & trial access', color: 'border-slate-200' },
-            { key: 'starter', title: 'Starter Plan', price: '₹999 / mo', desc: 'Solopreneurs & early stage brands', color: 'border-blue-300' },
-            { key: 'pro', title: 'Pro Plan', price: '₹2,499 / mo', desc: 'Growing agencies & digital studios', color: 'border-brand-300' },
-            { key: 'enterprise', title: 'Enterprise', price: '₹7,579 / mo', desc: 'Dedicated corporate infrastructure', color: 'border-purple-300' }
-          ].map((plan, i) => {
-            const count = summary?.planDistribution?.[plan.key] ?? 0;
-            return (
-              <div key={i} className={`p-6 rounded-3xl bg-white border ${plan.color} shadow-sm space-y-4 flex flex-col justify-between`}>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-black text-slate-900">{plan.title}</h3>
-                    <span className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-extrabold uppercase">
-                      {count} {count === 1 ? 'User' : 'Users'}
+        <div className="space-y-6 animate-in fade-in">
+
+          {/* ── DEVELOPER ISOLATED CUSTOM PLAN EDITOR DESK ── */}
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 text-white shadow-xl space-y-6 font-sans relative overflow-hidden border border-indigo-700/50">
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+              <FileCode className="w-64 h-64 text-indigo-400" />
+            </div>
+
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-indigo-800/80 pb-5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-indigo-400" />
+                    Developer Isolated Scope
+                  </span>
+                  {isDeveloperCustomActive ? (
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[11px] font-extrabold uppercase flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      Private Custom Plans Active
                     </span>
-                  </div>
-                  <p className="text-2xl font-black text-brand-600 mt-2">{plan.price}</p>
-                  <p className="text-xs text-slate-500 font-medium mt-1">{plan.desc}</p>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 border border-slate-600/30 text-[11px] font-extrabold uppercase">
+                      Default Platform Plans
+                    </span>
+                  )}
                 </div>
+                <h3 className="text-xl font-black tracking-tight text-white mt-2 flex items-center gap-2">
+                  <Sliders className="w-6 h-6 text-indigo-400" />
+                  Developer Subscription Plan Customizer
+                </h3>
+                <p className="text-xs text-indigo-200/80 font-medium mt-1 max-w-2xl leading-relaxed">
+                  As a Developer account, you can customize subscription plan names, pricing, image credits, and features according to your specific needs. <strong className="text-white underline decoration-indigo-400">These changes apply strictly to your developer account and will NOT be visible to any other user or account on the platform.</strong>
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setActiveTab('users')}
-                  className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs transition-colors"
+                  onClick={handleResetDeveloperCustomPlans}
+                  disabled={devPlanResetting || !isDeveloperCustomActive}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-extrabold text-xs border border-slate-700 transition-all disabled:opacity-40 flex items-center gap-2"
                 >
-                  Manage Subscriber Accounts
+                  {devPlanResetting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                  Reset Defaults
+                </button>
+                <button
+                  onClick={handleSaveDeveloperCustomPlans}
+                  disabled={devPlanSaving}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-black text-xs shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  {devPlanSaving ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      Saving Private Scope...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-3.5 h-3.5" />
+                      Save My Custom Plans
+                    </>
+                  )}
                 </button>
               </div>
-            );
-          })}
+            </div>
+
+            {devPlanSuccessMsg && (
+              <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs font-extrabold flex items-center gap-2.5 animate-in fade-in">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span>{devPlanSuccessMsg}</span>
+              </div>
+            )}
+
+            {devPlanErrorMsg && (
+              <div className="p-4 rounded-2xl bg-rose-500/20 border border-rose-400/40 text-rose-200 text-xs font-extrabold flex items-center gap-2.5 animate-in fade-in">
+                <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
+                <span>{devPlanErrorMsg}</span>
+              </div>
+            )}
+
+            {/* Editable Plan Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {developerPlans.map((planItem, pIdx) => (
+                <div
+                  key={planItem.planId || pIdx}
+                  className="p-5 rounded-2xl bg-slate-950/70 border border-indigo-800/40 space-y-4 flex flex-col justify-between hover:border-indigo-500/60 transition-colors shadow-inner"
+                >
+                  <div className="space-y-3.5">
+                    <div className="flex items-center justify-between pb-2 border-b border-indigo-900/60">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400 font-extrabold">
+                        Plan #{pIdx + 1} — {planItem.planId}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-bold">
+                        Editable
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-300 mb-1">Plan Title</label>
+                      <input
+                        type="text"
+                        value={planItem.name || ''}
+                        onChange={(e) => handleUpdateDevPlanField(pIdx, 'name', e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-indigo-400"
+                        placeholder="e.g. Starter Suite"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-300 mb-1">Subtitle / Description</label>
+                      <input
+                        type="text"
+                        value={planItem.description || planItem.subtitle || ''}
+                        onChange={(e) => handleUpdateDevPlanField(pIdx, 'description', e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] font-medium text-slate-300 focus:outline-none focus:border-indigo-400"
+                        placeholder="Short plan summary"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-300 mb-1">Price (₹ INR)</label>
+                        <input
+                          type="number"
+                          value={planItem.priceINR ?? 0}
+                          onChange={(e) => handleUpdateDevPlanField(pIdx, 'priceINR', parseFloat(e.target.value) || 0)}
+                          className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-400 focus:outline-none focus:border-indigo-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-300 mb-1">Price ($ USD)</label>
+                        <input
+                          type="number"
+                          value={planItem.priceUSD ?? 0}
+                          onChange={(e) => handleUpdateDevPlanField(pIdx, 'priceUSD', parseFloat(e.target.value) || 0)}
+                          className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-400 focus:outline-none focus:border-indigo-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-300 mb-1">Visual Credits</label>
+                        <input
+                          type="number"
+                          value={planItem.imageCredits ?? 0}
+                          onChange={(e) => handleUpdateDevPlanField(pIdx, 'imageCredits', parseInt(e.target.value, 10) || 0)}
+                          className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs font-bold text-indigo-300 focus:outline-none focus:border-indigo-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-300 mb-1">Text Gens</label>
+                        <input
+                          type="text"
+                          value={planItem.textGenerations || ''}
+                          onChange={(e) => handleUpdateDevPlanField(pIdx, 'textGenerations', e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] font-bold text-indigo-300 focus:outline-none focus:border-indigo-400"
+                          placeholder="e.g. 1,000 Gens / mo"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-300">Feature Items ({planItem.features?.length || 0})</label>
+                        <button
+                          type="button"
+                          onClick={() => handleAddDevPlanFeature(pIdx)}
+                          className="text-[10px] font-bold text-indigo-400 hover:text-indigo-200 flex items-center gap-0.5"
+                        >
+                          <Plus className="w-3 h-3" /> Add Item
+                        </button>
+                      </div>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        {(planItem.features || []).map((featStr, fIdx) => (
+                          <div key={fIdx} className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              value={featStr}
+                              onChange={(e) => handleUpdateDevPlanFeature(pIdx, fIdx, e.target.value)}
+                              className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-200 focus:outline-none focus:border-indigo-400"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveDevPlanFeature(pIdx, fIdx)}
+                              className="p-1 rounded text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 transition-colors"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Subscription Tier Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { key: 'free', title: 'Free Tier', price: '₹0 / mo', desc: 'Personal experimentation & trial access', color: 'border-slate-200' },
+              { key: 'starter', title: 'Starter Plan', price: '₹999 / mo', desc: 'Solopreneurs & early stage brands', color: 'border-blue-300' },
+              { key: 'pro', title: 'Pro Plan', price: '₹2,499 / mo', desc: 'Growing agencies & digital studios', color: 'border-brand-300' },
+              { key: 'enterprise', title: 'Enterprise', price: '₹7,579 / mo', desc: 'Dedicated corporate infrastructure', color: 'border-purple-300' }
+            ].map((plan, i) => {
+              const count = summary?.planDistribution?.[plan.key] ?? 0;
+              return (
+                <div key={i} className={`p-6 rounded-3xl bg-white border ${plan.color} shadow-sm space-y-4 flex flex-col justify-between`}>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-black text-slate-900">{plan.title}</h3>
+                      <span className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-extrabold uppercase">
+                        {count} {count === 1 ? 'User' : 'Users'}
+                      </span>
+                    </div>
+                    <p className="text-2xl font-black text-brand-600 mt-2">{plan.price}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-1">{plan.desc}</p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('users')}
+                    className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs transition-colors"
+                  >
+                    Manage Subscriber Accounts
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Role-Based Subscription Plan Assignment Desk */}
+          <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-5 font-sans">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-amber-500" />
+                  Assign Subscription Plans by Platform Role
+                </h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Select a subscription plan for each role to assign it across accounts in database.
+                </p>
+              </div>
+              {rolePlanSuccessMsg && (
+                <div className="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>{rolePlanSuccessMsg}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { roleId: 'developer', title: 'Developer Role', desc: 'Technical developers & API integrators', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+                { roleId: 'admin', title: 'Admin Role', desc: 'Platform administrators & managers', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200' },
+                { roleId: 'user', title: 'User Role', desc: 'Standard platform end users', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+                { roleId: 'AgencyAdmin', title: 'Agency Admin Role', desc: 'Agency organization owners', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200' },
+                { roleId: 'SuperAdmin', title: 'Super Admin Role', desc: 'Root system administrators', badgeColor: 'bg-amber-50 text-amber-700 border-amber-200' },
+              ].map((rItem) => {
+                const currentPlan = rolePlanMappings[rItem.roleId] || 'free';
+                const userCountForRole = users.filter(u => (u.role || 'user').toLowerCase() === rItem.roleId.toLowerCase()).length;
+                const isSavingThis = rolePlanSavingRole === rItem.roleId;
+
+                return (
+                  <div key={rItem.roleId} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5 flex flex-col justify-between hover:border-brand-300 transition-colors">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold uppercase border ${rItem.badgeColor}`}>
+                          {rItem.title}
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-400 font-mono">
+                          {userCountForRole} {userCountForRole === 1 ? 'user' : 'users'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-2 leading-relaxed">{rItem.desc}</p>
+                    </div>
+
+                    <div className="space-y-2.5 pt-2 border-t border-slate-200/80">
+                      <label className="block text-[11px] font-black uppercase text-slate-600">Assign Subscription Plan</label>
+                      <select
+                        value={currentPlan}
+                        onChange={(e) => setRolePlanMappings(prev => ({ ...prev, [rItem.roleId]: e.target.value }))}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 shadow-xs"
+                      >
+                        <option value="free">Free Tier (₹0)</option>
+                        <option value="starter">Starter Plan (₹999)</option>
+                        <option value="pro">Pro Plan (₹2,499)</option>
+                        <option value="enterprise">Enterprise (₹7,579)</option>
+                      </select>
+
+                      <button
+                        onClick={() => handleAssignPlanToRole(rItem.roleId, rolePlanMappings[rItem.roleId] || 'free')}
+                        disabled={isSavingThis}
+                        className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                      >
+                        {isSavingThis ? (
+                          <>
+                            <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            Updating Accounts...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-3.5 h-3.5" />
+                            Assign Plan to All {rItem.title.split(' ')[0]} Users
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 

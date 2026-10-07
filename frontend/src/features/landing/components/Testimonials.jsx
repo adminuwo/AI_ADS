@@ -33,7 +33,7 @@ const TESTIMONIALS = [
     rating: 5,
     metricsPill: '+340% ROAS in 30 Days',
     metricHighlight: '4.6x Avg ROAS',
-    quote: 'AI ADS completely dissolved our creative bottleneck. Before, our design team took 4 to 5 days to turn around ad variations for 8 client accounts. With the Brand DNA engine, we generated 60+ compliant, high-converting creatives in under 25 minutes.',
+    quote: 'AI Ads completely dissolved our creative bottleneck. Before, our design team took 4 to 5 days to turn around ad variations for 8 client accounts. With the Brand DNA engine, we generated 60+ compliant, high-converting creatives in under 25 minutes.',
     highlightedPhrase: 'generated 60+ compliant creatives in under 25 minutes',
     caseDetails: {
       clientType: '8 Multi-Category Client Brands',
@@ -56,7 +56,7 @@ const TESTIMONIALS = [
     rating: 5,
     metricsPill: '5 Days → 20 Mins Workflow',
     metricHighlight: '85% Time Saved',
-    quote: 'The biggest fear with AI is brand drift—hallucinated colors, inconsistent logos, off-key copy. AI ADS is the first platform that strictly honors our typography, tone, and visual guidelines. We replaced our entire 3D photoshoot budget with 8K photoreal renders.',
+    quote: 'The biggest fear with AI is brand drift—hallucinated colors, inconsistent logos, off-key copy. AI Ads is the first platform that strictly honors our typography, tone, and visual guidelines. We replaced our entire 3D photoshoot budget with 8K photoreal renders.',
     highlightedPhrase: 'strictly honors our typography, tone, and visual guidelines',
     caseDetails: {
       clientType: 'Omnichannel D2C Skincare & Wellness',
@@ -102,7 +102,7 @@ const TESTIMONIALS = [
     rating: 5,
     metricsPill: '4.8x Higher CTR on Meta',
     metricHighlight: '120+ Assets / Mo',
-    quote: 'Our customer acquisition cost on Instagram dropped by 38% after deploying AI ADS dynamic ad variations. The product studio renders are so realistic that our audience thought we did a high-budget studio photoshoot in Paris.',
+    quote: 'Our customer acquisition cost on Instagram dropped by 38% after deploying AI Ads dynamic ad variations. The product studio renders are so realistic that our audience thought we did a high-budget studio photoshoot in Paris.',
     highlightedPhrase: 'customer acquisition cost dropped by 38%',
     caseDetails: {
       clientType: 'Premium Direct-to-Consumer Cosmetics',
@@ -125,7 +125,7 @@ const TESTIMONIALS = [
     rating: 5,
     metricsPill: '60+ Brand Assets / Hour',
     metricHighlight: '10x Creative Velocity',
-    quote: 'Our agency delivers high-tempo performance creative for tier-1 SaaS startups. AI ADS gave our art directors superpowers—they focus on high-level narrative while the engine handles resizing, translations, and multi-format variants in seconds.',
+    quote: 'Our agency delivers high-tempo performance creative for tier-1 SaaS startups. AI Ads gave our art directors superpowers—they focus on high-level narrative while the engine handles resizing, translations, and multi-format variants in seconds.',
     highlightedPhrase: 'art directors focus on high-level strategy while the engine handles variants',
     caseDetails: {
       clientType: 'Tier-1 SaaS & Enterprise Tech Studio',
@@ -148,7 +148,7 @@ const TESTIMONIALS = [
     rating: 5,
     metricsPill: '$2.4M Ad Spend Managed',
     metricHighlight: '99.4% Compliance',
-    quote: 'Managing 12 brand properties across 3 continents used to require endless approval chains and compliance reviews. AI ADS governance layer enforces rules automatically before anything goes live. It is our central operating system.',
+    quote: 'Managing 12 brand properties across 3 continents used to require endless approval chains and compliance reviews. AI Ads governance layer enforces rules automatically before anything goes live. It is our central operating system.',
     highlightedPhrase: 'enforces brand rules automatically before anything goes live',
     caseDetails: {
       clientType: 'Global Multi-Brand Enterprise Holdings',
@@ -223,20 +223,15 @@ export const Testimonials = () => {
   };
 
   return (
-    <section id="testimonials" className="py-24 relative overflow-hidden bg-slate-50/80 dark:bg-[#070913] text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300">
+    <section id="testimonials" className="pt-8 pb-14 sm:pt-10 sm:pb-16 relative overflow-hidden bg-slate-50/80 dark:bg-[#070913] text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300">
       {/* Ambient decorative glowing orbs */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute -bottom-20 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-8">
         
         {/* ──────── 1. Section Header ──────── */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 dark:bg-indigo-500/15 border border-indigo-500/25 text-xs font-black tracking-wide text-indigo-600 dark:text-indigo-400 shadow-sm backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
-            <span>PROVEN AGENCY IMPACT & PILOT STORIES</span>
-          </div>
-
+        <div className="text-center max-w-3xl mx-auto space-y-2">
           <h2 className="text-3xl sm:text-5xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-[1.15]">
             Loved by Modern Agencies &amp; <br />
             <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
@@ -245,7 +240,7 @@ export const Testimonials = () => {
           </h2>
 
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
-            See how performance marketers, creative studios, and D2C brands eliminate creative fatigue, cut turnaround times by 85%, and scale ROAS with AI ADS™.
+            See how performance marketers, creative studios, and D2C brands eliminate creative fatigue, cut turnaround times by 85%, and scale ROAS with AI Ads™.
           </p>
         </div>
 
@@ -478,11 +473,11 @@ export const Testimonials = () => {
                 </h4>
                 <div className="space-y-2 text-xs">
                   <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-800 dark:text-rose-300">
-                    <span className="font-extrabold uppercase mr-2">[Before AI ADS]:</span>
+                    <span className="font-extrabold uppercase mr-2">[Before AI Ads]:</span>
                     {activeModalCase.caseDetails.before}
                   </div>
                   <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300">
-                    <span className="font-extrabold uppercase mr-2">[After AI ADS]:</span>
+                    <span className="font-extrabold uppercase mr-2">[After AI Ads]:</span>
                     {activeModalCase.caseDetails.after}
                   </div>
                 </div>

@@ -7,7 +7,10 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: {
       type: String,
-      required: function () { return !this.providerId; },
+      required: function () {
+        if (this.provider && this.provider !== 'local') return false;
+        return !this.providerId;
+      },
     },
     provider: { type: String, default: 'local' },
     providerId: { type: String, unique: true, sparse: true, select: false },
@@ -15,13 +18,14 @@ const userSchema = new mongoose.Schema(
     avatar: { type: String, default: '' },
     accentColor: { type: String, default: 'indigo' },
     appearance: { type: String, default: 'light' },
-    role: { type: String, enum: ['user', 'admin', 'AgencyAdmin'], default: 'AgencyAdmin' },
+    role: { type: String, enum: ['user', 'admin', 'developer', 'AgencyAdmin', 'SuperAdmin', 'Developer', 'Admin', 'User'], default: 'User' },
     isBlocked: { type: Boolean, default: false },
 
     // Credits & Subscription
     credits: { type: Number, default: 500 },
     plan: { type: String, enum: ['free', 'starter', 'pro', 'enterprise'], default: 'free' },
     workspacesCreatedCount: { type: Number, default: 0 },
+    customPlans: { type: Array, default: [] },
 
     // Settings
     settings: {

@@ -528,7 +528,7 @@ export const Features = () => {
   return (
     <section 
       id="features" 
-      className="py-20 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800/80 scroll-mt-20 transition-all duration-700 select-none"
+      className="pt-8 pb-14 sm:pt-10 sm:pb-16 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800/80 scroll-mt-6 transition-all duration-700 select-none"
     >
       {/* Dynamic Ambient Background Glow based on active card */}
       <div 
@@ -541,15 +541,10 @@ export const Features = () => {
       {/* Cinematic Top Spotlight Grid overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 relative z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-extrabold text-indigo-400 shadow-xl backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin-slow" />
-            <span>UNIFIED PLATFORM CAPABILITIES</span>
-          </div>
-          
+        <div className="text-center max-w-3xl mx-auto space-y-2.5">
           <h2 className="text-3xl sm:text-5xl font-black font-['Outfit'] tracking-tight text-white leading-tight">
             Features Built for Complete Marketing Execution
           </h2>
