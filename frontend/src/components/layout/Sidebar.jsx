@@ -141,14 +141,6 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
       iconBg: 'bg-orange-500/15 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400'
     },
     { 
-      id: 'approvals', 
-      label: t('approvals', 'Approvals Desk'), 
-      icon: CheckCircle2, 
-      color: '#EAB308', 
-      gradient: 'from-yellow-500 to-amber-600 shadow-yellow-500/30',
-      iconBg: 'bg-yellow-500/15 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400'
-    },
-    { 
       id: 'creative', 
       label: t('creative', 'Creative Studio'), 
       icon: Palette, 
@@ -326,7 +318,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
                 const isStarterUser = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
                 const isHighestPlan = userPlanNorm === 'enterprise' || userPlanNorm === 'unlimited';
-                const isModuleLocked = (!isHighestPlan && ['approvals', 'websiteBuilder', 'websitebuilder', 'builder'].includes(m.id));
+                const isModuleLocked = (!isHighestPlan && ['websiteBuilder', 'websitebuilder', 'builder'].includes(m.id));
 
                 return (
                   <button

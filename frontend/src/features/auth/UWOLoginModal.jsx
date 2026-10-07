@@ -18,6 +18,23 @@ import {
 } from 'lucide-react';
 import { getApis, getUnifiedApiBaseUrl } from '../../utils/uwoAuth';
 
+const safeExtractResponse = async (res) => {
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      return await res.json();
+    } catch (e) {
+      return {};
+    }
+  }
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return { detail: text || `HTTP ${res.status}: ${res.statusText}` };
+  }
+};
+
 export const UWOLoginModal = ({
   isOpen,
   onClose,
@@ -64,12 +81,13 @@ export const UWOLoginModal = ({
 
     // 1. Fetch Central /auth/me for highest-fidelity user details
     try {
-      const unifiedApiBase = getUnifiedApiBaseUrl();
-      const meRes = await fetch(`${unifiedApiBase}/auth/me`, {
+      const apis = getApis();
+      const meUrl = apis.unifiedAuth?.me || `${getUnifiedApiBaseUrl()}/unified-auth/me`;
+      const meRes = await fetch(meUrl, {
         headers: { Authorization: `Bearer ${loginData.access_token}` },
       });
       if (meRes.ok) {
-        const meData = await meRes.json();
+        const meData = await safeExtractResponse(meRes);
         uwoUser = {
           ...meData,
           name: meData.name || meData.full_name || uwoUser.name,
@@ -98,7 +116,7 @@ export const UWOLoginModal = ({
       });
 
       if (ssoRes.ok) {
-        const ssoData = await ssoRes.json();
+        const ssoData = await safeExtractResponse(ssoRes);
         if (ssoData.success && ssoData.token) {
           finalData = {
             token: ssoData.token,
@@ -161,7 +179,7 @@ export const UWOLoginModal = ({
           body: JSON.stringify({ name: name || email.split('@')[0], email, password }),
         });
 
-        const regData = await regRes.json();
+        const regData = await safeExtractResponse(regRes);
         if (!regRes.ok) {
           let errorText = 'Registration failed';
           if (typeof regData.detail === 'string') {
@@ -198,7 +216,7 @@ export const UWOLoginModal = ({
         body: JSON.stringify({ email, password }),
       });
 
-      const loginData = await loginRes.json();
+      const loginData = await safeExtractResponse(loginRes);
 
       if (!loginRes.ok) {
         let loginErr = 'Authentication failed';
@@ -252,12 +270,12 @@ export const UWOLoginModal = ({
           'X-Application-Key': apiKey,
           'X-App-Code': appCode,
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
 
-      const data = await res.json();
+      const data = await safeExtractResponse(res);
       if (!res.ok) {
-        throw new Error(data.detail || data.message || 'Failed to send reset code');
+        throw new Error(data.detail || data.message || `Failed to send reset code (${res.status})`);
       }
 
       setSuccessMsg(data.message || 'Verification code sent to your email address!');
@@ -304,15 +322,15 @@ export const UWOLoginModal = ({
           'X-App-Code': appCode,
         },
         body: JSON.stringify({
-          email,
+          email: email.trim().toLowerCase(),
           otp: otp.trim(),
           new_password: newPassword,
         }),
       });
 
-      const data = await res.json();
+      const data = await safeExtractResponse(res);
       if (!res.ok) {
-        throw new Error(data.detail || data.message || 'Failed to reset password');
+        throw new Error(data.detail || data.message || `Failed to reset password (${res.status})`);
       }
 
       setSuccessMsg('Password reset successfully! Signing in with your new credentials...');
@@ -325,10 +343,10 @@ export const UWOLoginModal = ({
           'X-Application-Key': apiKey,
           'X-App-Code': appCode,
         },
-        body: JSON.stringify({ email, password: newPassword }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password: newPassword }),
       });
 
-      const loginData = await loginRes.json();
+      const loginData = await safeExtractResponse(loginRes);
       if (loginRes.ok) {
         await completeSessionProvisioning(loginData, email, name);
       } else {
@@ -606,6 +624,19 @@ export const UWOLoginModal = ({
                 </>
               )}
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode('signin');
+                setError('');
+                setSuccessMsg('');
+              }}
+              className="w-full py-2 text-center text-xs font-bold text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Sign In</span>
+            </button>
           </form>
         )}
 
@@ -694,6 +725,19 @@ export const UWOLoginModal = ({
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode('signin');
+                setError('');
+                setSuccessMsg('');
+              }}
+              className="w-full py-2 text-center text-xs font-bold text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Sign In</span>
             </button>
           </form>
         )}

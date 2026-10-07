@@ -8,30 +8,20 @@ export const FAQ = () => {
 
   const faqs = [
     {
-      q: 'How do credits work?',
-      a: 'Credits are consumed when running AI operations like photorealistic 8K ad visual generation and strategy synthesis. Unused credits roll over automatically to your next billing cycle.'
-      // TODO: confirm exact credit deduction rate per sub-module engine in backend config
+      q: 'Does AI Ads™ stay on-brand?',
+      a: 'Yes. The Brand DNA Engine applies your voice, tone, and messaging rules to all content and visuals.'
     },
     {
-      q: 'What is Brand DNA and how is it captured?',
-      a: 'Brand DNA is single-source AI memory. Simply paste your website URL; our automated scraper ingests logos, primary/secondary hex color palettes, positioning statements, and verified claims.'
+      q: 'Do I need design or coding skills?',
+      a: 'No. Describe what you want, and the Creative Studio and Website Builder handle the rest.'
     },
     {
-      q: 'Can clients approve content before it is published?',
-      a: 'Yes. The built-in Approvals Desk governance queue lets agencies invite clients (using the Client Viewer role) to review, comment on, and approve posts before publishing.'
+      q: 'Who is it for?',
+      a: 'Marketing leaders and lean teams who want enterprise-level output without agency overhead.'
     },
     {
-      q: 'Which social platforms are supported?',
-      a: 'AI ADS™ supports post generation, carousels, slide decks, and scheduling across Instagram, LinkedIn, X (Twitter), Facebook, and long-form blog articles.'
-      // TODO: confirm direct OAuth auto-publishing API endpoints for Facebook vs LinkedIn
-    },
-    {
-      q: 'Is my data isolated between clients?',
-      a: 'Yes. AI ADS™ utilizes multi-tenant workspace architecture with cryptographically isolated brand memories, asset buckets, and RBAC permissions to guarantee zero cross-client data leak.'
-    },
-    {
-      q: 'Can I upgrade, downgrade or cancel anytime?',
-      a: 'Absolutely. You can manage your subscription, switch billing cycles (monthly vs. yearly), upgrade plans, or cancel anytime directly from your Settings & Billing panel.'
+      q: 'Where is my data stored?',
+      a: 'Assets are stored securely using Google Cloud Storage, with signed links for sharing.'
     }
   ];
 
@@ -112,3 +102,5 @@ export const FAQ = () => {
     </section>
   );
 };
+
+export default FAQ;

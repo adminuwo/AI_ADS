@@ -10,12 +10,12 @@ export const getUnifiedApiBaseUrl = () => {
 
   if (typeof window !== 'undefined' && window.location) {
     const currentHost = window.location.hostname;
-    // When running in production/staging (not localhost), use cloud run service if not set
+    // When running in production/staging (not localhost), use live domain if not set
     if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
       if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
         return envUrl.trim().replace(/\/+$/, '');
       }
-      return 'https://unified-dashboard-977864306871.asia-south1.run.app/api';
+      return 'https://uwo24.com/api';
     }
   }
 
@@ -23,7 +23,7 @@ export const getUnifiedApiBaseUrl = () => {
     return envUrl.trim().replace(/\/+$/, '');
   }
 
-  return 'https://unified-dashboard-977864306871.asia-south1.run.app/api';
+  return 'https://uwo24.com/api';
 };
 
 export const getBackendApiUrl = () => {
@@ -39,13 +39,17 @@ export const getApis = () => {
   const unifiedBase = getUnifiedApiBaseUrl();
   const apiBase = getBackendApiUrl();
 
+  // On uwo24.com live backend, Central Identity routes are mounted under /api/unified-auth
+  const isUwoLive = unifiedBase.includes('uwo24.com');
+  const authBase = isUwoLive ? `${unifiedBase}/unified-auth` : `${unifiedBase}/auth`;
+
   return {
     unifiedAuth: {
-      register: `${unifiedBase}/auth/register`,
-      login: `${unifiedBase}/auth/login`,
-      forgotPassword: `${unifiedBase}/auth/forgot-password`,
-      resetPassword: `${unifiedBase}/auth/reset-password`,
-      me: `${unifiedBase}/auth/me`,
+      register: `${authBase}/register`,
+      login: `${authBase}/login`,
+      forgotPassword: `${authBase}/forgot-password`,
+      resetPassword: `${authBase}/reset-password`,
+      me: `${authBase}/me`,
     },
     uwoLogin: `${apiBase}/auth/uwo-login`,
     baseUrl: apiBase,

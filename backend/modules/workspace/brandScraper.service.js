@@ -990,10 +990,19 @@ async function capturePageScreenshots(pagesList) {
     browser = await puppeteer.launch({
       headless: true,
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-extensions',
+        '--no-first-run',
+        '--disable-background-networking'
+      ]
     });
 
-    const capturedResults = await Promise.all(targetPages.map(async (pageItem) => {
+    const capturedResults = [];
+    for (const pageItem of targetPages) {
       const pageUrl = pageItem.url;
       console.log(`[SCREENSHOT] Ultra-fast capture: ${pageUrl}`);
       let pageInstance = null;
@@ -1032,7 +1041,7 @@ async function capturePageScreenshots(pagesList) {
           enrichedTextEvidence = liveRenderedText.slice(0, 1200);
         }
 
-        return {
+        capturedResults.push({
           ...pageItem,
           textEvidence: enrichedTextEvidence,
           screenshot: {
@@ -1042,10 +1051,10 @@ async function capturePageScreenshots(pagesList) {
             status: 'SUCCESS',
             error: null
           }
-        };
+        });
       } catch (err) {
         console.warn(`[SCREENSHOT] Fast capture note for ${pageUrl}: ${err.message}`);
-        return {
+        capturedResults.push({
           ...pageItem,
           screenshot: {
             base64: null,
@@ -1054,15 +1063,15 @@ async function capturePageScreenshots(pagesList) {
             status: 'FAILED',
             error: err.message
           }
-        };
+        });
       } finally {
         if (pageInstance) {
           try { await pageInstance.close(); } catch (e) {}
         }
       }
-    }));
+    }
 
-    console.log(`[SCREENSHOT] Ultra-fast captured ${successCount} / ${targetPages.length} pages in parallel`);
+    console.log(`[SCREENSHOT] Ultra-fast captured ${successCount} / ${targetPages.length} pages sequentially`);
     return [...capturedResults, ...remainingPages];
   } catch (browserErr) {
     console.error(`[SCREENSHOT] Browser launch failed: ${browserErr.message}`);

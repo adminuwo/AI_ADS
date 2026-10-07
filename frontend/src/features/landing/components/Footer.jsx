@@ -1,110 +1,133 @@
 import React from 'react';
-import { Sparkles, ShieldCheck, FileText } from 'lucide-react';
+import { 
+  ShieldAlert, 
+  ArrowUp, 
+  FileText,
+  Globe
+} from 'lucide-react';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 
-export const Footer = () => {
+export const Footer = ({ onSelectTab, onOpenCookiePolicy }) => {
   const { setActiveModule, setIsSettingsModalOpen, setActiveSettingsTab } = useWorkspace();
 
   const handleNavClick = (targetId) => {
-    const element = document.getElementById(targetId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    if (onSelectTab) {
+      onSelectTab(targetId);
+    } else {
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <footer className="bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 py-16 border-t border-slate-200 dark:border-slate-800/80 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <footer className="bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 pt-16 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden font-['Plus_Jakarta_Sans',sans-serif] transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 pb-14">
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        {/* ──────── TOP GRID: Brand + 3 Navigation Columns ──────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8">
           
-          {/* Brand Info Column */}
-          <div className="space-y-4 md:col-span-1">
-            <div className="flex items-center gap-2.5">
+          {/* Column 1: Brand Info & App Store Badges (5 cols) */}
+          <div className="lg:col-span-5 space-y-5">
+            {/* Logo */}
+            <div 
+              className="flex items-center gap-3 cursor-pointer group"
+              onClick={() => handleNavClick('home')}
+            >
               <img 
                 src="/logo_icon_only.png?v=10" 
                 alt="AI ADS™ Logo" 
-                className="w-8 h-8 object-contain drop-shadow-sm" 
+                className="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-105 transition-transform" 
               />
-              <span className="font-['Outfit'] font-black text-xl text-slate-900 dark:text-white tracking-tight">
-                AI ADS<sup className="text-[10px] text-amber-500 dark:text-amber-400 font-bold ml-0.5">TM</sup>
-              </span>
+              <div className="flex items-center font-black text-2xl tracking-tight leading-none text-slate-900 dark:text-white">
+                <span className="font-['Outfit']">AI</span>
+                <span className="font-['Outfit'] text-indigo-600 dark:text-amber-400 ml-1">ADS</span>
+                <sup className="text-xs font-bold text-amber-500 dark:text-amber-400 ml-0.5 select-none">TM</sup>
+              </div>
             </div>
-            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-              Autonomous Content Intelligence & 8K Creative Studio (v3.5.0 Enterprise). Governed AI content creation and multi-channel publishing.
+
+            {/* Tagline */}
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
+              India's first autonomous AI advertising &amp; creative platform for brands, growth marketers, and performance agencies.
             </p>
+
+            {/* Platform Badges: Web & Cloud Architecture */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-xs">
+                <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span>Web App &amp; Cloud Studio</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/30 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>v3.5 Enterprise Live</span>
+              </div>
+            </div>
           </div>
 
-          {/* Product Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Product</h4>
-            <ul className="space-y-2 text-xs">
+          {/* Column 2: Product (3 cols) */}
+          <div className="lg:col-span-3 space-y-4">
+            <h4 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide relative inline-block">
+              Product
+              <span className="absolute -bottom-1 left-0 w-4 h-0.5 bg-amber-500 rounded-full" />
+            </h4>
+            <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
               <li>
-                <button onClick={() => handleNavClick('features')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                <button onClick={() => handleNavClick('home')} className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium">
+                  Home
+                </button>
+              </li>
+              <li>
+                <button onClick={() => handleNavClick('features')} className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium">
                   Features
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNavClick('how-it-works')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                <button onClick={() => handleNavClick('how-it-works')} className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium">
                   How it Works
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNavClick('pricing')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                <button onClick={() => handleNavClick('pricing')} className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium">
                   Pricing
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNavClick('faq')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
-                  FAQ
+                <button onClick={() => setActiveModule('creative')} className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium">
+                  Creative Studio
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveModule('brandDna')} className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium">
+                  Brand DNA Engine
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setActiveModule('dashboard')} className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium">
+                  Dashboard
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Platform Documentation & Resources */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Resources</h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <a 
-                  href="/AI_ADS_Platform_Documentation.pdf" 
-                  download="AI_ADS_Platform_Documentation.pdf"
-                  className="hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1.5"
-                >
-                  <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                  <span>Documentation (PDF)</span>
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/AI_ADS_Platform_Documentation.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
-                  Platform Docs (HTML)
-                </a>
-              </li>
-              <li>
-                <button onClick={() => setActiveModule('login')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
-                  Dashboard Login
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal / Company Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Company</h4>
-            <ul className="space-y-2 text-xs">
+          {/* Column 3: Legal (2 cols) */}
+          <div className="lg:col-span-2 space-y-4">
+            <h4 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide relative inline-block">
+              Legal
+              <span className="absolute -bottom-1 left-0 w-4 h-0.5 bg-indigo-500 rounded-full" />
+            </h4>
+            <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
               <li>
                 <button 
                   onClick={() => {
                     if (setActiveSettingsTab) setActiveSettingsTab('privacy');
                     if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
                   }}
-                  className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left"
+                  className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium"
                 >
                   Privacy Policy
                 </button>
@@ -115,7 +138,7 @@ export const Footer = () => {
                     if (setActiveSettingsTab) setActiveSettingsTab('terms');
                     if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
                   }}
-                  className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left"
+                  className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium"
                 >
                   Terms of Service
                 </button>
@@ -123,10 +146,68 @@ export const Footer = () => {
               <li>
                 <button 
                   onClick={() => {
+                    if (onOpenCookiePolicy) {
+                      onOpenCookiePolicy();
+                    } else {
+                      if (setActiveSettingsTab) setActiveSettingsTab('cookies');
+                      if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
+                    }
+                  }}
+                  className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium"
+                >
+                  Cookie Policy
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavClick('faq')} 
+                  className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium"
+                >
+                  Disclaimer &amp; QA
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Company (2 cols) */}
+          <div className="lg:col-span-2 space-y-4">
+            <h4 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wide relative inline-block">
+              Company
+              <span className="absolute -bottom-1 left-0 w-4 h-0.5 bg-emerald-500 rounded-full" />
+            </h4>
+            <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
+              <li>
+                <button onClick={() => handleNavClick('home')} className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium">
+                  About Us
+                </button>
+              </li>
+              <li>
+                <a 
+                  href="/AI_ADS_Platform_Documentation.pdf" 
+                  download="AI_ADS_Platform_Documentation.pdf"
+                  className="hover:text-indigo-600 dark:hover:text-white transition-colors flex items-center gap-1.5 font-medium"
+                >
+                  <FileText className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Documentation (PDF)</span>
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="/AI_ADS_Platform_Documentation.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-indigo-600 dark:hover:text-white transition-colors font-medium"
+                >
+                  Platform Docs (HTML)
+                </a>
+              </li>
+              <li>
+                <button 
+                  onClick={() => {
                     if (setActiveSettingsTab) setActiveSettingsTab('help');
                     if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
                   }}
-                  className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left"
+                  className="hover:text-indigo-600 dark:hover:text-white transition-colors cursor-pointer text-left font-medium"
                 >
                   Contact Support
                 </button>
@@ -136,18 +217,56 @@ export const Footer = () => {
 
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-slate-200 dark:border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <p className="text-slate-500">
-            © 2026 AI ADS™ Inc. All rights reserved.
-          </p>
-          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-extrabold text-[11px]">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
-            <span>All Systems Operational</span>
+        {/* ──────── DISCLAIMER BOX (Clean White/Light Theme) ──────── */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-start gap-3.5 shadow-xs">
+          <div className="w-6 h-6 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+            <ShieldAlert className="w-4 h-4" />
+          </div>
+          <div className="space-y-1.5 text-left">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-black tracking-wide text-amber-700 dark:text-amber-400 uppercase font-mono">
+                AI ADS™ PLATFORM DISCLAIMER
+              </span>
+              <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono shadow-xs">
+                Content Intelligence &amp; Creative Governance
+              </span>
+            </div>
+            <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
+              AI ADS™ is an artificial intelligence-driven creative intelligence, visual rendering, and automated campaign optimization platform designed for brands, growth marketers, and performance agencies. Outputs generated by AI ADS™—including marketing strategy roadmaps, ad copy variations, 8K photorealistic product scenes, and landing page code—are provided as accelerated production tools. Users and marketing managers retain final editorial authority and responsibility to independently verify all creative assets, claims, and compliance guidelines before public ad spend deployment across Meta, Google, TikTok, or other advertising networks.
+            </p>
           </div>
         </div>
 
       </div>
+
+      {/* ──────── BOTTOM BAR (Cream Strip with Company & Scroll to Top) ──────── */}
+      <div className="bg-[#fbf7ee] dark:bg-slate-900 py-3.5 px-4 sm:px-6 lg:px-8 border-t border-amber-200/50 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          
+          {/* Left / Center: Brand pill + Company Name */}
+          <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-black tracking-wider">
+              AI <span className="text-amber-400">ADS</span>
+            </span>
+            <span className="font-semibold text-slate-800 dark:text-slate-300 text-[11px] sm:text-xs text-center sm:text-left">
+              &copy; 2026 by <strong className="font-bold text-slate-900 dark:text-white">UNIFIED WEB OPTIONS &amp; SERVICES PRIVATE LIMITED</strong>, India
+            </span>
+          </div>
+
+          {/* Right: Scroll to Top Circular Button */}
+          <button
+            onClick={scrollToTop}
+            className="w-8 h-8 rounded-full bg-[#e86014] hover:bg-[#d0500d] text-white flex items-center justify-center transition-all duration-200 shadow-md hover:scale-110 active:scale-95 cursor-pointer shrink-0"
+            title="Scroll to Top"
+            aria-label="Scroll to Top"
+          >
+            <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+          </button>
+
+        </div>
+      </div>
     </footer>
   );
 };
+
+export default Footer;

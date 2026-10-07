@@ -4,28 +4,28 @@ import { Calendar, Image as ImageIcon, Users, Layers } from 'lucide-react';
 export const StatsBar = () => {
   const stats = [
     {
-      fact: '30 Days',
-      label: 'of strategy in one click',
-      icon: Calendar,
-      color: 'text-indigo-400'
-    },
-    {
-      fact: '8K',
-      label: 'ad visual rendering',
-      icon: ImageIcon,
-      color: 'text-purple-400'
-    },
-    {
-      fact: '4 Roles',
-      label: 'granular team RBAC permissions',
-      icon: Users,
-      color: 'text-cyan-400'
-    },
-    {
-      fact: '12 Modules',
-      label: 'integrated in one governed platform',
+      fact: '9',
+      label: 'Integrated Modules',
       icon: Layers,
-      color: 'text-emerald-400'
+      color: 'text-indigo-500 dark:text-indigo-400'
+    },
+    {
+      fact: '30-Day',
+      label: 'Auto-Generated Roadmaps',
+      icon: Calendar,
+      color: 'text-purple-500 dark:text-purple-400'
+    },
+    {
+      fact: '4x',
+      label: 'Creative Variations',
+      icon: ImageIcon,
+      color: 'text-cyan-500 dark:text-cyan-400'
+    },
+    {
+      fact: '3',
+      label: 'Visual Formats (1:1, 16:9, 9:16)',
+      icon: Users,
+      color: 'text-emerald-500 dark:text-emerald-400'
     }
   ];
 

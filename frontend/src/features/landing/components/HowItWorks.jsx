@@ -1,5 +1,5 @@
 import React from 'react';
-import { Globe, Layers, Sparkles, Calendar, ArrowRight } from 'lucide-react';
+import { Layers, MoveRight, Rocket, UserCheck, Sparkles } from 'lucide-react';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 
 export const HowItWorks = () => {
@@ -8,109 +8,108 @@ export const HowItWorks = () => {
   const steps = [
     {
       num: '01',
-      title: 'Paste your website URL',
-      desc: 'Brand DNA captures your logo, colors, positioning and verified claims.',
-      detail: 'Locks guidelines into immutable single-source AI memory.',
-      icon: Globe,
-      color: 'from-indigo-500 to-violet-600'
+      title: 'Create Account & Connect Brand',
+      desc: 'Sign up in 30 seconds and enter your website URL or brand guidelines to initialize your Brand DNA memory.',
+      icon: UserCheck,
+      targetModule: 'brands',
+      gradient: 'from-amber-400 via-orange-500 to-amber-600 shadow-amber-500/30',
+      glowColor: 'bg-amber-500/20 dark:bg-amber-500/30',
+      hoverText: 'group-hover:text-amber-600 dark:group-hover:text-amber-400',
+      badgeBg: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+      arrowColor: 'text-amber-500'
     },
     {
       num: '02',
-      title: 'Get your 30-day strategy',
-      desc: '30 non-repeating daily post directives.',
-      detail: 'Tailored specifically across Instagram, LinkedIn, X, and Facebook.',
+      title: 'Select AI Tool or Strategy Goal',
+      desc: 'Choose from 30-day strategy roadmaps, SEO intelligence briefs, copy generators, or 8K visual ad studios.',
       icon: Layers,
-      color: 'from-purple-500 to-pink-600'
+      targetModule: 'strategy',
+      gradient: 'from-indigo-500 via-purple-600 to-pink-500 shadow-purple-500/30',
+      glowColor: 'bg-purple-500/20 dark:bg-purple-500/30',
+      hoverText: 'group-hover:text-purple-600 dark:group-hover:text-purple-400',
+      badgeBg: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+      arrowColor: 'text-purple-500'
     },
     {
       num: '03',
-      title: 'Generate creatives and content',
-      desc: '8K visuals, carousels, threads and ad copy.',
-      detail: 'Powered by 2-Agent Vision AI and automated logo watermarking.',
-      icon: Sparkles,
-      color: 'from-cyan-500 to-blue-600'
-    },
-    {
-      num: '04',
-      title: 'Approve, schedule and publish',
-      desc: 'across every channel from one calendar.',
-      detail: 'Human-in-the-loop review desk and smart peak-hour publisher.',
-      icon: Calendar,
-      color: 'from-emerald-500 to-teal-600'
+      title: 'Generate, Review & Launch',
+      desc: 'Auto-create platform-ready copy, photorealistic visual ads, and AI landing pages ready for instant campaign execution.',
+      icon: Rocket,
+      targetModule: 'campaigns',
+      gradient: 'from-emerald-400 via-teal-500 to-cyan-500 shadow-emerald-500/30',
+      glowColor: 'bg-emerald-500/20 dark:bg-emerald-500/30',
+      hoverText: 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400',
+      badgeBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+      arrowColor: 'text-emerald-500'
     }
   ];
 
   return (
-    <section id="how-it-works" className="py-20 bg-slate-100/60 dark:bg-slate-900/40 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 scroll-mt-20 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+    <section id="how-it-works" className="py-16 lg:py-20 bg-slate-50/90 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-b border-slate-200/80 dark:border-slate-800/60 scroll-mt-20 transition-colors duration-300 relative overflow-hidden">
+      
+      {/* Background ambient glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-indigo-500/5 dark:bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14 relative z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-100/80 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 text-xs font-extrabold text-indigo-800 dark:text-indigo-300 shadow-sm">
-            <span>AUTOMATED CONTENT WORKFLOW</span>
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/60 text-[11px] font-extrabold text-indigo-700 dark:text-indigo-300 shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
+            <span>3 SIMPLE STEPS TO LAUNCH</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
-            From Website URL to Omnichannel Campaign in 4 Simple Steps
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white">
+            How AI Ads™ Works
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
-            An end-to-end governed pipeline that turns brand identity into high-performing social campaigns.
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+            From brand identity ingestion to full campaign execution in three simple steps.
           </p>
         </div>
 
-        {/* 4 Steps Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* 3 Step Horizontal Process Flow with Animations & Brand Colors */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10 items-start max-w-5xl mx-auto">
           {steps.map((step, idx) => {
             const IconComp = step.icon;
             return (
               <div 
-                key={idx}
-                className="relative rounded-3xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 p-6 flex flex-col justify-between space-y-6 hover:border-indigo-400 dark:hover:border-indigo-500/40 transition-all duration-300 group shadow-md"
+                key={step.num} 
+                onClick={() => setActiveModule(step.targetModule)}
+                className="flex flex-col items-center text-center space-y-4 relative group cursor-pointer"
               >
-                <div className="space-y-4">
-                  {/* Step Header */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-black font-mono text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                      {step.num}
-                    </span>
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${step.color} p-0.5 shadow-md`}>
-                      <div className="w-full h-full bg-slate-950 rounded-[9px] flex items-center justify-center">
-                        <IconComp className="w-5 h-5 text-white" />
-                      </div>
-                    </div>
-                  </div>
+                {/* Outer Animated Glow Ring & Badge Container */}
+                <div className="relative">
+                  <div className={`absolute inset-0 rounded-full ${step.glowColor} blur-xl opacity-60 group-hover:opacity-100 group-hover:scale-125 transition-all duration-300`} />
+                  
+                  {/* Step Number Pill */}
+                  <span className={`absolute -top-2 -right-2 z-20 text-[10px] font-black font-mono px-2 py-0.5 rounded-full border shadow-xs ${step.badgeBg} group-hover:scale-110 transition-transform`}>
+                    {step.num}
+                  </span>
 
-                  {/* Step Text */}
-                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
+                  {/* Circular Gradient Icon Badge with Hover Float */}
+                  <div className={`w-20 h-20 rounded-full bg-gradient-to-tr ${step.gradient} flex items-center justify-center text-white shadow-xl relative z-10 group-hover:-translate-y-1.5 group-hover:scale-105 transition-all duration-300`}>
+                    <IconComp className="w-9 h-9 drop-shadow-sm group-hover:rotate-6 transition-transform" />
+                  </div>
+                </div>
+
+                {/* Step Content */}
+                <div className="space-y-2 max-w-xs pt-1">
+                  <h3 className={`text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight ${step.hoverText} transition-colors`}>
                     {step.title}
                   </h3>
-                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
                     {step.desc}
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-500 leading-relaxed pt-1">
-                    {step.detail}
                   </p>
                 </div>
 
-                {/* Connecting Arrow for Desktop */}
+                {/* Connecting Animated Arrow between steps for Desktop */}
                 {idx < steps.length - 1 && (
-                  <div className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-slate-300 dark:text-slate-700">
-                    <ArrowRight className="w-5 h-5" />
+                  <div className={`hidden md:flex absolute top-8 left-[calc(100%-1.25rem)] w-10 items-center justify-center ${step.arrowColor} z-20 pointer-events-none group-hover:translate-x-1.5 transition-transform`}>
+                    <MoveRight className="w-7 h-7 stroke-[2] animate-pulse" />
                   </div>
                 )}
               </div>
             );
           })}
-        </div>
-
-        {/* Bottom Callout */}
-        <div className="text-center pt-4">
-          <button
-            onClick={() => setActiveModule('login')}
-            className="inline-flex items-center gap-2 text-sm font-extrabold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors cursor-pointer"
-          >
-            <span>See how Brand DNA scraping works in action</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
         </div>
 
       </div>

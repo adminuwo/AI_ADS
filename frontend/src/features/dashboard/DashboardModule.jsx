@@ -153,21 +153,19 @@ export const DashboardModule = () => {
     <div className="space-y-5 animate-in fade-in w-full max-w-[1600px] mx-auto px-1 sm:px-3 pt-1 pb-8">
       {/* ── 1. LUXURY COLORFUL HERO BANNER ── */}
       <motion.div
-        initial={{ opacity: 0, y: 16, scale: 0.99 }}
+        initial={{ opacity: 0, y: 12, scale: 0.99 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-rose-500 shadow-sm relative overflow-hidden flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6"
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="p-4 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-rose-500 shadow-sm relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6"
       >
         {/* Soft Ambient Radial Background Glow */}
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-gradient-to-br from-pink-400/30 via-purple-500/30 to-cyan-400/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 left-1/3 w-80 h-80 bg-gradient-to-tr from-amber-300/30 via-pink-400/20 to-transparent rounded-full blur-3xl pointer-events-none" />
 
         {/* Left Welcome Text & Chips */}
-        <div className="relative z-10 space-y-3 max-w-2xl">
-
-
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+        <div className="relative z-10 space-y-2.5 max-w-2xl">
+          <div className="space-y-0.5">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 flex-wrap">
               <span>{t(timeGreeting)},</span>
               <span className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 dark:from-indigo-300 dark:via-purple-300 dark:to-pink-300 bg-clip-text text-transparent">
                 {displayName}
@@ -180,47 +178,47 @@ export const DashboardModule = () => {
                 👋
               </motion.span>
             </h1>
-            <p className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
+            <p className="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
               {t('Turn ideas into impactful brands with AI.')}
             </p>
           </div>
 
-          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed max-w-xl">
+          <p className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed max-w-xl">
             {t('Currently governing')} <strong className="text-slate-900 dark:text-white font-bold">{activeWorkspace?.brandName || 'BATA'}</strong> ({activeWorkspace?.domainUrl || 'https://www.bata.com/'}). {t('All output is anchored to immutable Brand DNA.')}
           </p>
 
           {/* 4 Feature Pill Chips */}
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-400/20 border border-amber-500/40 px-3 py-1 rounded-full shadow-2xs">
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-400/20 border border-amber-500/40 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-2xs">
               <span>⚡</span> {t('Create Faster')}
             </span>
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-900 dark:text-blue-200 bg-blue-400/20 border border-blue-500/40 px-3 py-1 rounded-full shadow-2xs">
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-blue-900 dark:text-blue-200 bg-blue-400/20 border border-blue-500/40 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-2xs">
               <span>📊</span> {t('Better Content')}
             </span>
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-900 dark:text-rose-200 bg-rose-400/20 border border-rose-500/40 px-3 py-1 rounded-full shadow-2xs">
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-rose-900 dark:text-rose-200 bg-rose-400/20 border border-rose-500/40 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-2xs">
               <span>🎯</span> {t('Smarter Campaigns')}
             </span>
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-400/20 border border-emerald-500/40 px-3 py-1 rounded-full shadow-2xs">
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-400/20 border border-emerald-500/40 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-2xs">
               <span>🚀</span> {t('Higher ROI')}
             </span>
           </div>
         </div>
 
-        {/* Right Action Buttons (Pill styling matching screenshot) */}
-        <div className="relative z-10 flex items-center gap-2.5 w-full xl:w-auto shrink-0 justify-start sm:justify-end flex-wrap">
+        {/* Right Action Buttons (Fits side-by-side cleanly on mobile & desktop) */}
+        <div className="relative z-10 grid grid-cols-2 sm:flex items-center gap-2 w-full md:w-auto shrink-0 justify-stretch sm:justify-end mt-1 md:mt-0">
           <button
             onClick={() => openScraperModal ? openScraperModal() : setIsScraperOpen(true)}
-            className="flex-1 sm:flex-initial bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2 py-2.5 px-4 sm:px-5 rounded-full shadow-md border border-slate-100 dark:border-slate-800 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98]"
+            className="w-full sm:w-auto bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white text-[11px] sm:text-xs font-black flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-3 sm:px-5 rounded-full shadow-md border border-slate-200 dark:border-slate-800 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Sparkles className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+            <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
             <span className="truncate">{t('brandDna', 'Enter Your Brand')}</span>
           </button>
 
           <button
             onClick={() => setIsQuickPostOpen(true)}
-            className="flex-1 sm:flex-initial bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 hover:opacity-95 text-white text-xs sm:text-sm font-black flex items-center justify-center gap-2 py-2.5 px-4 sm:px-5 rounded-full shadow-lg shadow-blue-500/25 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98]"
+            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 hover:opacity-95 text-white text-[11px] sm:text-xs font-black flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-3 sm:px-5 rounded-full shadow-lg shadow-blue-500/25 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Zap className="w-4.5 h-4.5 text-amber-300 fill-amber-300 shrink-0" />
+            <Zap className="w-4 h-4 text-amber-300 fill-amber-300 shrink-0" />
             <span className="truncate">{t('quickPost', 'Quick Post')}</span>
           </button>
         </div>
