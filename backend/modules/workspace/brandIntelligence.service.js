@@ -1,5 +1,5 @@
 const { scrapeBrandWebsite, formatCleanSpacedBrandName, extractOfficialLogoColors } = require('./brandScraper.service');
-const { classifyBrandCategory } = require('./brandProcessor.service');
+const { classifyBrandCategory, isValidOfficialTagline } = require('./brandProcessor.service');
 const { runBrandDnaMasterAgent } = require('../brandDnaAgent');
 const aiService = require('../../services/aiService');
 
@@ -46,6 +46,7 @@ STRICT EVIDENCE GROUNDING RULES (MANDATORY):
 3. For missionStatement & vision: Inspect page text, uploaded guideline documents, AND sustainability/about page screenshots to observe explicit mission/vision statements or core purpose commitments.
 4. For headquarters: Inspect contact/footer page text AND screenshots for complete corporate headquarters addresses (e.g. "Sant'Agata Bolognese, Italy").
 5. For parentCompany, industryCategory, businessType: Inspect text, uploaded documents, & visual branding.
+6. TAGLINE EXTRACTION RULE: Extract the EXACT official tagline/slogan from the website (homepage, hero/header, About/Brand pages, metadata, or JSON-LD schema). Prefer phrases explicitly identified as "tagline" or "slogan", then prominent branding phrases near the brand name. Return the EXACT wording as it appears on the website. NEVER rewrite, summarize, translate, or generate. NEVER use the company/legal name, product description, mission, vision, or generic marketing text (like "Bestsellers", "50% off", "Shop Now"). If no reliable tagline is explicitly supported by the website, return null. NEVER guess.
 
 Context from live website scrape & uploaded documents:
 - Domain: ${scrapedData.domainName || domainUrl || ''}
@@ -149,12 +150,50 @@ Return ONLY a raw valid JSON object with NO markdown formatting:
     )
   );
 
-  const taglineObj = masterAgentResult.tagline?.value ? masterAgentResult.tagline : (
-    scrapedData.schemaSlogan ? { value: scrapedData.schemaSlogan, sourceType: 'OFFICIAL_WEBSITE_SCHEMA', confidence: 0.95, evidence: 'Extracted from JSON-LD schema slogan', lastVerified: new Date().toISOString() }
-    : (scrapedData.heroBannerTagline ? { value: scrapedData.heroBannerTagline, sourceType: 'OFFICIAL_WEBSITE', confidence: 0.88, evidence: 'Extracted from official website hero banner', lastVerified: new Date().toISOString() }
-    : (aiEnrichedData?.tagline ? { value: aiEnrichedData.tagline, sourceType: aiSource, confidence: 0.82, evidence: 'Extracted by AI from visual page banner/text', lastVerified: new Date().toISOString() }
-    : { value: null, sourceType: 'UNKNOWN', confidence: 0, evidence: 'No slogan found in website evidence', lastVerified: new Date().toISOString() }
-  )));
+  let taglineCandidate = null;
+  let taglineProvenance = null;
+
+  if (masterAgentResult.tagline?.value && isValidOfficialTagline(masterAgentResult.tagline.value, brandName, scrapedData.domainName)) {
+    taglineCandidate = masterAgentResult.tagline.value;
+    taglineProvenance = masterAgentResult.tagline;
+  } else if (scrapedData.extractedTagline?.value && isValidOfficialTagline(scrapedData.extractedTagline.value, brandName, scrapedData.domainName)) {
+    taglineCandidate = scrapedData.extractedTagline.value;
+    taglineProvenance = scrapedData.extractedTagline;
+  } else if (scrapedData.schemaSlogan && isValidOfficialTagline(scrapedData.schemaSlogan, brandName, scrapedData.domainName)) {
+    taglineCandidate = scrapedData.schemaSlogan.trim();
+    taglineProvenance = {
+      value: taglineCandidate,
+      sourceType: 'OFFICIAL_WEBSITE_SCHEMA',
+      sourceUrl: scrapedData.cleanUrl || domainUrl,
+      evidence: `Extracted from JSON-LD schema slogan: "${taglineCandidate}"`,
+      confidence: 0.98,
+      lastVerified: new Date().toISOString()
+    };
+  } else if (aiEnrichedData?.tagline && isValidOfficialTagline(aiEnrichedData.tagline, brandName, scrapedData.domainName)) {
+    const aiTag = aiEnrichedData.tagline.trim();
+    const isVerbatimInScrape = (scrapedData.deepContextText || '').toLowerCase().includes(aiTag.toLowerCase()) ||
+                               (scrapedData.metaDescription || '').toLowerCase().includes(aiTag.toLowerCase());
+    if (isVerbatimInScrape) {
+      taglineCandidate = aiTag;
+      taglineProvenance = {
+        value: taglineCandidate,
+        sourceType: aiSource,
+        sourceUrl: scrapedData.cleanUrl || domainUrl,
+        evidence: `Extracted by AI from verified visual page banner/text: "${taglineCandidate}"`,
+        confidence: 0.88,
+        lastVerified: new Date().toISOString()
+      };
+    }
+  }
+
+  const taglineObj = taglineCandidate ? taglineProvenance : {
+    value: null,
+    sourceType: 'UNKNOWN',
+    sourceUrl: scrapedData.cleanUrl || domainUrl,
+    evidence: 'No reliable tagline explicitly supported by website',
+    confidence: 0,
+    lastVerified: new Date().toISOString()
+  };
 
   if (aiEnrichedData) {
     console.log(`[FIELD-MULTIMODAL] Field: vision | Value: "${visionObj.value || 'null'}" | Source: ${visionObj.sourceType}`);
@@ -438,7 +477,7 @@ Return ONLY a raw valid JSON object with NO markdown or explanation:
     businessType: aiData.businessType || null,
     headquarters: aiData.headquarters || null,
     companyDescription: aiData.companyDescription || searchAnswer || null,
-    tagline: aiData.tagline || null,
+    tagline: (aiData.tagline && isValidOfficialTagline(aiData.tagline, brandName, domainHost)) ? aiData.tagline.trim() : null,
     missionStatement: aiData.missionStatement || null,
     vision: aiData.vision || null,
     contactInfo: aiData.contactInfo || null,
@@ -583,7 +622,7 @@ Return ONLY a raw valid JSON object with NO markdown:
     businessType: aiData.businessType || null,
     headquarters: aiData.headquarters || null,
     companyDescription: aiData.companyDescription || null,
-    tagline: aiData.tagline || null,
+    tagline: (aiData.tagline && isValidOfficialTagline(aiData.tagline, brandName, domainHost)) ? aiData.tagline.trim() : null,
     missionStatement: aiData.missionStatement || null,
     vision: aiData.vision || null,
     contactInfo: aiData.contactInfo || null,
@@ -655,6 +694,10 @@ async function generateBrandDnaBoth(domainUrl, brandNameOverride = '') {
     }
   };
 
+  const validBothTagline = (gRes?.tagline && isValidOfficialTagline(gRes.tagline, brandName, cleanUrl))
+    ? gRes.tagline.trim()
+    : ((tavRes?.tagline && isValidOfficialTagline(tavRes.tagline, brandName, cleanUrl)) ? tavRes.tagline.trim() : null);
+
   return {
     brandName,
     companyName,
@@ -669,7 +712,7 @@ async function generateBrandDnaBoth(domainUrl, brandNameOverride = '') {
     businessType: gRes?.businessType || tavRes?.businessType || null,
     headquarters: gRes?.headquarters || tavRes?.headquarters || null,
     companyDescription: gRes?.companyDescription || tavRes?.companyDescription || null,
-    tagline: gRes?.tagline || tavRes?.tagline || null,
+    tagline: validBothTagline,
     missionStatement: gRes?.missionStatement || tavRes?.missionStatement || null,
     vision: gRes?.vision || tavRes?.vision || null,
     contactInfo: gRes?.contactInfo || tavRes?.contactInfo || null,
