@@ -77,10 +77,7 @@ export const Header = () => {
   }, []);
 
   return (
-    <header className="h-20 shadow-[0_4px_20px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] bg-white/70 dark:bg-[#070b19]/80 backdrop-blur-xl border-b border-purple-100/50 dark:border-slate-800/60 sticky top-0 z-30 transition-colors w-full overflow-x-clip relative">
-      {/* 🌿 Panch Tattva Animated 5-Element Color Ribbon (Earth, Water, Fire, Air, Ether) */}
-      <div className="absolute top-0 left-0 right-0 h-[3px] panch-tattva-ribbon z-40" />
-
+    <header className="h-13 sm:h-14 shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] bg-white/80 dark:bg-[#070b19]/85 backdrop-blur-xl border-b border-purple-100/50 dark:border-slate-800/60 sticky top-0 z-30 transition-all w-full overflow-x-clip relative">
       <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-6 h-full flex items-center justify-between gap-1 sm:gap-4">
         {/* Left: Mobile Toggle, Back Button & Workspace Switcher */}
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1 sm:flex-initial">

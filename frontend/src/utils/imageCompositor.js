@@ -18,8 +18,14 @@ export async function compositeBrandLogoOntoImage(imageUrl, brandOptions = {}) {
 
   return new Promise((resolve) => {
     const img = new Image();
+    const safetyTimer = setTimeout(() => {
+      console.warn('[ImageCompositor] Image load timed out, returning original URL.');
+      resolve(imageUrl);
+    }, 3000);
+
     img.crossOrigin = 'anonymous';
     img.onload = async () => {
+      clearTimeout(safetyTimer);
       try {
         const w = img.naturalWidth || img.width || 1080;
         const h = img.naturalHeight || img.height || 1080;
@@ -45,7 +51,7 @@ export async function compositeBrandLogoOntoImage(imageUrl, brandOptions = {}) {
           try {
             logoImg.crossOrigin = 'anonymous';
             logoLoaded = await new Promise((resLogo) => {
-              const timer = setTimeout(() => resLogo(false), 4000);
+              const timer = setTimeout(() => resLogo(false), 2500);
               logoImg.onload = () => { clearTimeout(timer); resLogo(true); };
               logoImg.onerror = () => { clearTimeout(timer); resLogo(false); };
               logoImg.src = logoUrl;
@@ -108,7 +114,12 @@ export async function compositeBrandLogoOntoImage(imageUrl, brandOptions = {}) {
       }
     };
 
-    img.onerror = () => resolve(imageUrl);
+    img.onerror = () => {
+      clearTimeout(safetyTimer);
+      console.warn('[ImageCompositor] Image failed to load, returning raw URL:', imageUrl);
+      resolve(imageUrl);
+    };
+
     img.src = imageUrl;
   });
 }

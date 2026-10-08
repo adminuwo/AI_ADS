@@ -29,33 +29,33 @@ const PLANS = [
     label: 'Starter Suite',
     accent: 'indigo',
     icon: Zap,
-    monthly: '799',
-    yearly: '639',
-    description: 'Ideal for individual brand creators and solopreneurs scaling initial social media channels.',
+    monthly: '499',
+    yearly: '399',
+    description: 'Essential AI copy (1,000 words) & 30 visual credits for solopreneurs starting out.',
     cta: 'Get Started',
     ctaStyle: 'secondary',
     badge: null,
   },
   {
     id: 'agency',
-    label: 'Growth Agency',
+    label: 'Pro / Growth',
     accent: 'amber',
     icon: Sparkles,
-    monthly: '2,499',
-    yearly: '1,999',
-    description: 'Built for fast-growing digital marketing agencies managing multiple client brands.',
+    monthly: '999',
+    yearly: '799',
+    description: 'Unlocked Storytelling, Problem Solving, Image Briefs & 7 Brand Workspaces + 120 credits.',
     cta: 'Start Free Trial',
     ctaStyle: 'primary',
     badge: 'Most Popular',
   },
   {
     id: 'enterprise',
-    label: 'Enterprise Scale',
+    label: 'Agency / Scale',
     accent: 'purple',
     icon: Shield,
-    monthly: '6,999',
-    yearly: '5,599',
-    description: 'Unlimited multi-tenant governance, custom AI model fine-tuning, and dedicated SLA.',
+    monthly: '1,299',
+    yearly: '999',
+    description: '300 visual credits, 50,000 words limit, 10 brand workspaces and full suite access.',
     cta: 'Contact Sales',
     ctaStyle: 'secondary',
     badge: null,
@@ -77,9 +77,9 @@ const ALL_FEATURES = [
 ];
 
 const PLAN_FEATURE_VALUES = {
-  starter:    ['50 credits', '1 workspace', true, false, true, '500 msgs/mo', null, false, false, false, false],
-  agency:     ['250 credits', '5 workspaces', true, true, true, 'Unlimited', null, true, true, true, false],
-  enterprise: ['1,000 credits', 'Unlimited', true, true, true, 'Unlimited', null, true, true, true, true],
+  starter:    ['30 credits', '1 workspace', true, false, true, 'Basic', null, false, false, false, false],
+  agency:     ['120 credits', '7 workspaces', true, true, true, 'Full', null, true, true, true, false],
+  enterprise: ['300 credits', '10 workspaces', true, true, true, 'Priority', null, true, true, true, true],
 };
 
 /* per-plan accent tokens */
@@ -121,15 +121,13 @@ const ACCENT = {
 
 /* ─────────────────── comparison rows ─────────────────── */
 const COMPARISON_ROWS = [
-  { label: 'Visual AI Credits / mo', values: ['50',  '250',       '1,000'] },
-  { label: 'Brand DNA Workspaces',   values: ['1',   '5',         'Unlimited'] },
-  { label: 'Campaign Strategy',      values: ['30-Day', '30-Day', '30-Day'] },
-  { label: 'Resolution',             values: ['Std', '8K',         '8K'] },
-  { label: 'AI Web Builder',         values: [false, true,         true] },
-  { label: 'Client Governance',      values: [false, true,         true] },
-  { label: 'AISA Copilot',           values: ['500 msgs', 'Unlimited', 'Unlimited'] },
-  { label: 'Custom API & Webhooks',  values: [false, false,        true] },
-  { label: 'Dedicated Mgr',          values: [false, false,        true] },
+  { label: 'Visual AI Credits / mo', values: ['30',  '120',       '300'] },
+  { label: 'Word Generation Limit',  values: ['1,000 words', '15,000 words', '50,000 words'] },
+  { label: 'Brand DNA Workspaces',   values: ['1',   '7',         '10'] },
+  { label: 'Storytelling & Problem Solving', values: [false, true, true] },
+  { label: 'Strategy Image Briefs',  values: [false, true,        true] },
+  { label: 'AI Web Builder',         values: [false, '5 Sites',    '20+ Sites'] },
+  { label: 'AISA Copilot',           values: ['Basic', 'Full', 'Priority'] },
 ];
 
 /* ─────────────────── card ─────────────────── */

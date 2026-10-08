@@ -80,7 +80,6 @@ const faqs = [
     questions: [
       { question: 'What is the Campaign Builder?', answer: 'The Campaign Builder lets you create end-to-end marketing campaigns — define your goal, target audience, budget, and the AI will generate a complete multi-channel content calendar.' },
       { question: 'How does SEO Intelligence work?', answer: 'Enter a topic or keyword cluster, and the AI generates SEO-optimized article briefs, meta tags, structured headings, and a content calendar to dominate search rankings.' },
-      { question: 'What is the Approvals Desk?', answer: 'All AI-generated content goes to the Approvals Desk where team members can review, comment, approve, or reject before publishing — maintaining brand compliance.' },
     ],
   },
   {
@@ -115,104 +114,104 @@ const CURRENCY_OPTIONS = [
 
 const PLAN_PRICES = {
   base: {
-    INR: { primary: '₹799', period: '/month', secondary: '($9.99/mo)' },
-    USD: { primary: '$9.99', period: '/month', secondary: '(₹799/mo)' },
-    EUR: { primary: '€8.99', period: '/month', secondary: '($9.99/mo)' },
-    GBP: { primary: '£7.99', period: '/month', secondary: '($9.99/mo)' },
-    CAD: { primary: 'CA$12.99', period: '/month', secondary: '($9.99/mo)' },
-    AUD: { primary: 'A$14.99', period: '/month', secondary: '($9.99/mo)' },
-    AED: { primary: 'AED 36.99', period: '/month', secondary: '($9.99/mo)' },
+    INR: { primary: '₹499', period: '/month', secondary: '($5.99/mo)' },
+    USD: { primary: '$5.99', period: '/month', secondary: '(₹499/mo)' },
+    EUR: { primary: '€4.99', period: '/month', secondary: '($5.99/mo)' },
+    GBP: { primary: '£4.49', period: '/month', secondary: '($5.99/mo)' },
+    CAD: { primary: 'CA$7.99', period: '/month', secondary: '($5.99/mo)' },
+    AUD: { primary: 'A$8.99', period: '/month', secondary: '($5.99/mo)' },
+    AED: { primary: 'AED 21.99', period: '/month', secondary: '($5.99/mo)' },
   },
   professional: {
-    INR: { primary: '₹2,399', period: '/month', secondary: '($29.99/mo)' },
-    USD: { primary: '$29.99', period: '/month', secondary: '(₹2,399/mo)' },
+    INR: { primary: '₹999', period: '/month', secondary: '($11.99/mo)' },
+    USD: { primary: '$11.99', period: '/month', secondary: '(₹999/mo)' },
+    EUR: { primary: '€10.99', period: '/month', secondary: '($11.99/mo)' },
+    GBP: { primary: '£9.49', period: '/month', secondary: '($11.99/mo)' },
+    CAD: { primary: 'CA$15.99', period: '/month', secondary: '($11.99/mo)' },
+    AUD: { primary: 'A$17.99', period: '/month', secondary: '($11.99/mo)' },
+    AED: { primary: 'AED 43.99', period: '/month', secondary: '($11.99/mo)' },
+  },
+  agency_pro: {
+    INR: { primary: '₹1,299', period: '/month', secondary: '($15.99/mo)' },
+    USD: { primary: '$15.99', period: '/month', secondary: '(₹1,299/mo)' },
+    EUR: { primary: '€14.49', period: '/month', secondary: '($15.99/mo)' },
+    GBP: { primary: '£12.49', period: '/month', secondary: '($15.99/mo)' },
+    CAD: { primary: 'CA$21.99', period: '/month', secondary: '($15.99/mo)' },
+    AUD: { primary: 'A$23.99', period: '/month', secondary: '($15.99/mo)' },
+    AED: { primary: 'AED 58.99', period: '/month', secondary: '($15.99/mo)' },
+  },
+  enterprise: {
+    INR: { primary: '₹2,499', period: '/month', secondary: '($29.99/mo)' },
+    USD: { primary: '$29.99', period: '/month', secondary: '(₹2,499/mo)' },
     EUR: { primary: '€26.99', period: '/month', secondary: '($29.99/mo)' },
     GBP: { primary: '£22.99', period: '/month', secondary: '($29.99/mo)' },
     CAD: { primary: 'CA$39.99', period: '/month', secondary: '($29.99/mo)' },
     AUD: { primary: 'A$44.99', period: '/month', secondary: '($29.99/mo)' },
     AED: { primary: 'AED 109.99', period: '/month', secondary: '($29.99/mo)' },
-  },
-  agency_pro: {
-    INR: { primary: '₹6,399', period: '/month', secondary: '($79.99/mo)' },
-    USD: { primary: '$79.99', period: '/month', secondary: '(₹6,399/mo)' },
-    EUR: { primary: '€72.99', period: '/month', secondary: '($79.99/mo)' },
-    GBP: { primary: '£62.99', period: '/month', secondary: '($79.99/mo)' },
-    CAD: { primary: 'CA$109.99', period: '/month', secondary: '($79.99/mo)' },
-    AUD: { primary: 'A$119.99', period: '/month', secondary: '($79.99/mo)' },
-    AED: { primary: 'AED 289.99', period: '/month', secondary: '($79.99/mo)' },
-  },
-  enterprise: {
-    INR: { primary: '₹15,999', period: '/month', secondary: '($199.99/mo)' },
-    USD: { primary: '$199.99', period: '/month', secondary: '(₹15,999/mo)' },
-    EUR: { primary: '€179.99', period: '/month', secondary: '($199.99/mo)' },
-    GBP: { primary: '£159.99', period: '/month', secondary: '($199.99/mo)' },
-    CAD: { primary: 'CA$269.99', period: '/month', secondary: '($199.99/mo)' },
-    AUD: { primary: 'A$299.99', period: '/month', secondary: '($199.99/mo)' },
-    AED: { primary: 'AED 729.99', period: '/month', secondary: '($199.99/mo)' },
   }
 };
 
 const getPlanPrice = (planId, currencyCode) => {
-  return PLAN_PRICES[planId]?.[currencyCode] || PLAN_PRICES[planId]?.['INR'] || { primary: '₹799', period: '/month', secondary: '($9.99/mo)' };
+  return PLAN_PRICES[planId]?.[currencyCode] || PLAN_PRICES[planId]?.['INR'] || { primary: '₹499', period: '/month', secondary: '($5.99/mo)' };
 };
 
 // ──────────────────────────────────────────────
-// Master Subscription Plans Data (50% Profit Margin Architecture)
+// Master Subscription Plans Data
 // ──────────────────────────────────────────────
 const DETAILED_PLANS = [
   {
     id: 'base',
     name: 'Starter',
     badge: 'Starter',
-    subtitle: 'Core AI text generation & 150 monthly visual credits for solo creators',
-    credits: '150 Visual Credits / mo',
-    creditsDetail: 'Generates up to 150 high-res AI visual assets or ad creatives monthly.',
+    subtitle: 'Essential AI copy & 30 monthly visual credits for solo creators',
+    credits: '30 Visual Credits / mo',
+    creditsDetail: 'Generates up to 30 high-res AI visual assets or ad creatives monthly.',
     color: 'from-blue-600 via-indigo-600 to-slate-900',
     borderColor: 'border-blue-500/30',
     features: [
-      { text: '150 Monthly Visual Credits (AI Image & Ad Creative Generator)', highlighted: true },
-      { text: '1,000 Text Generations / mo (Social Posts, Blogs, Emails & Ads)', highlighted: true },
-      { text: '3 Brand DNA Workspaces (Website Scraper & Tone Ingestion)', highlighted: false },
-      { text: '30-Day Marketing Roadmap Generator (Strategy Hub)', highlighted: false },
-      { text: 'SEO Intelligence (Keyword Clusters & Content Briefs)', highlighted: false },
-      { text: 'Content Studio (Social Copy, Blogs & Sales Copy Generators)', highlighted: false },
-      { text: 'AISA™ Copilot AI Assistant & Drag-and-Drop Calendar', highlighted: false }
+      { text: '30 Monthly Visual Credits (AI Image Generator)', highlighted: true },
+      { text: '1,000 Words / mo (Social Copy & Ad Generations)', highlighted: true },
+      { text: '1 Brand DNA Workspace (Scraper & Tone Ingestion)', highlighted: false },
+      { text: '30-Day Marketing Roadmap (Basic Strategy)', highlighted: false },
+      { text: '🔒 Storytelling & Problem-Solving Copy (Locked)', highlighted: false },
+      { text: '🔒 Strategy Image Briefs (Locked)', highlighted: false },
+      { text: '🔒 AI Website Builder (Locked)', highlighted: false }
     ]
   },
   {
     id: 'professional',
     name: 'Pro / Growth',
     badge: 'Growth Tier',
-    subtitle: 'Multi-brand DNA, 450 visual credits, Campaign Builder & Approvals Desk',
-    credits: '450 Visual Credits / mo',
-    creditsDetail: 'Generates up to 450 high-res AI visual assets or ad creatives each month.',
+    subtitle: 'Unlocked Storytelling, Image Briefs, Website Builder & 120 visual credits',
+    credits: '120 Visual Credits / mo',
+    creditsDetail: 'Generates up to 120 high-res AI visual assets or ad creatives each month.',
     color: 'from-violet-600 via-purple-600 to-indigo-900',
     borderColor: 'border-violet-500/40',
     features: [
-      { text: '450 Monthly Visual Credits (Creative Studio + Aspect Controls)', highlighted: true },
-      { text: '3,000 Text Generations / mo (Full Content & Copy Suite)', highlighted: true },
-      { text: '10 Brand DNA Workspaces (Multi-Brand Tone & Scraping)', highlighted: false },
-      { text: 'Campaign Builder (Multi-Channel Planner & Post Generator)', highlighted: true },
-      { text: 'AI Website Builder (Brief Analyzer & Full-Page HTML Code)', highlighted: true },
-      { text: 'Approvals Desk (Content Review Queue & Workflows)', highlighted: false },
-      { text: 'Asset Library & Performance Dashboard (KPI Metrics)', highlighted: false }
+      { text: '120 Monthly Visual Credits (Creative Studio)', highlighted: true },
+      { text: '15,000 Words / mo (Full Content & Copy Suite)', highlighted: true },
+      { text: 'Storytelling & Problem-Solving Copy Unlocked', highlighted: true },
+      { text: 'Image Brief Strategy Module Unlocked', highlighted: true },
+      { text: 'AI Website Builder Unlocked (5 Full Sites)', highlighted: true },
+      { text: '7 Brand DNA Workspaces', highlighted: true },
+      { text: 'AI Copilot & Campaign Planner', highlighted: false }
     ]
   },
   {
     id: 'agency_pro',
     name: 'Agency / Scale',
     badge: 'Most Popular',
-    subtitle: 'Unlimited multi-client workspaces & 1,200 visual credits',
-    credits: '1,200 Visual Credits / mo',
-    creditsDetail: '1,200 high-res visual credits included monthly.',
+    subtitle: 'High capacity 300 visual credits, 50,000 words & 10 brand workspaces',
+    credits: '300 Visual Credits / mo',
+    creditsDetail: '300 high-res visual credits included monthly.',
     color: 'from-amber-500 via-brand-500 to-cyan-500',
     features: [
-      { text: '1,200 Monthly Visual Credits (4x Visual Variation Engine)', highlighted: true },
-      { text: '8,000 Text Generations / mo (High-Volume Strategy & Copy)', highlighted: true },
-      { text: 'Unlimited Multi-Client Workspaces & Brand DNA Ingestion', highlighted: true },
-      { text: 'AI Web Builder + Hero Visuals (Code + 2x Hero Visual Generator)', highlighted: true },
-      { text: 'Full Approvals Desk Queue & Workflow Management', highlighted: false },
-      { text: 'Media Asset Library with Cloud Storage', highlighted: false }
+      { text: '300 Monthly Visual Credits (4x Variation Engine)', highlighted: true },
+      { text: '50,000 Words / mo (High-Volume Strategy & Copy)', highlighted: true },
+      { text: '10 Brand Workspaces & Multi-Client Access', highlighted: true },
+      { text: 'AI Web Builder (20+ Full Websites & Live Edits)', highlighted: true },
+      { text: 'All Premium Copy, Briefs & Strategy Features Unlocked', highlighted: true },
+      { text: 'Media Asset Library & Cloud Storage', highlighted: false }
     ]
   },
   {
@@ -309,13 +308,6 @@ const FEATURE_COMPARISON_MATRIX = [
     enterprise: { type: 'check', text: 'Included' },
   },
   {
-    feature: 'Approvals Desk Queue',
-    starter: { type: 'cross' },
-    pro: { type: 'check', text: 'Included' },
-    agency: { type: 'check', text: 'Included' },
-    enterprise: { type: 'check', text: 'Full Workflow Queue' },
-  },
-  {
     feature: 'Asset Library & Cloud Storage',
     starter: { type: 'check', text: 'Included' },
     pro: { type: 'check', text: 'Included' },
@@ -330,7 +322,7 @@ const FEATURE_COMPARISON_MATRIX = [
     enterprise: { type: 'check', text: 'Full Analytics' },
   },
   {
-    feature: 'AISA™ Copilot AI Assistant',
+    feature: 'AI Copilot Assistant',
     starter: { type: 'check', text: 'Included' },
     pro: { type: 'check', text: 'Included' },
     agency: { type: 'check', text: 'Included' },
@@ -1806,9 +1798,6 @@ export const SettingsModal = () => {
                             <tr key={idx} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
                               <td className="py-3.5 px-5">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[9.5px] font-black text-brand-600 dark:text-brand-400 bg-brand-500/15 px-2 py-0.5 rounded-md uppercase tracking-wider border border-brand-500/30 shrink-0">
-                                    AISA™
-                                  </span>
                                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{row.feature}</span>
                                 </div>
                               </td>

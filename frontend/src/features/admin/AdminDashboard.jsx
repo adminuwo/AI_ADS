@@ -407,7 +407,7 @@ const UserDetailDrawer = ({ userId, initialUser, onClose, onUserUpdated }) => {
                   <option value="free">Free Tier (₹0)</option>
                   <option value="starter">Starter Plan (₹999)</option>
                   <option value="pro">Pro Plan (₹2,499)</option>
-                  <option value="enterprise">Enterprise (₹7,579)</option>
+                  <option value="enterprise">Enterprise (₹2,499)</option>
                 </select>
               </div>
 
@@ -1987,7 +1987,7 @@ export const AdminDashboardModule = () => {
               { key: 'free', title: 'Free Tier', price: '₹0 / mo', desc: 'Personal experimentation & trial access', color: 'border-slate-200' },
               { key: 'starter', title: 'Starter Plan', price: '₹999 / mo', desc: 'Solopreneurs & early stage brands', color: 'border-blue-300' },
               { key: 'pro', title: 'Pro Plan', price: '₹2,499 / mo', desc: 'Growing agencies & digital studios', color: 'border-brand-300' },
-              { key: 'enterprise', title: 'Enterprise', price: '₹7,579 / mo', desc: 'Dedicated corporate infrastructure', color: 'border-purple-300' }
+              { key: 'enterprise', title: 'Enterprise', price: '₹2,499 / mo', desc: 'Dedicated corporate infrastructure', color: 'border-purple-300' }
             ].map((plan, i) => {
               const count = summary?.planDistribution?.[plan.key] ?? 0;
               return (
@@ -2069,7 +2069,7 @@ export const AdminDashboardModule = () => {
                         <option value="free">Free Tier (₹0)</option>
                         <option value="starter">Starter Plan (₹999)</option>
                         <option value="pro">Pro Plan (₹2,499)</option>
-                        <option value="enterprise">Enterprise (₹7,579)</option>
+                        <option value="enterprise">Enterprise (₹2,499)</option>
                       </select>
 
                       <button

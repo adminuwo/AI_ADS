@@ -78,63 +78,52 @@ This master document provides a comprehensive mapping of **all 15 platform modul
 
 Below is the **complete feature-by-feature consumption breakdown** showing how EVERY feature (SEO, AI Web Building, Strategy, Copywriting, Copilot Chat, AND Image Generation) is budgeted in each tier for a **50% Net Profit Margin**.
 
-### A. Starter Plan ($9.99 / mo / ₹799 / mo)
-- **User Pays Us**: **$9.99 / mo (₹799 / mo)**
-- **Net Company Profit**: **$4.99 / mo (₹382 INR / 50.0% Margin)**
-- **Our Total Spend Limit**: **$5.00 / mo (₹417 INR)**
+### A. Starter Plan ($5.99 / mo / ₹499 / mo)
+- **User Pays Us**: **$5.99 / mo (₹499 / mo)**
+- **Net Company Profit**: **₹249 INR (50.0% Margin)**
+- **Our Total Spend Limit**: **₹250 INR**
 
-| Included Feature Workload | Monthly Quantity | Model Used | API Spend ($) | API Spend (₹) | % of Spend |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 🖼️ **AI Ad Images & Banners** | **140 Images** | `gemini-3.1-flash-image` | **$4.200** | **₹350.70** | **84.0%** |
-| 🌐 **AI Website Builder Pages** | **15 Full Websites** | `gemini-3.5-flash` | **$0.026** | **₹2.17** | **0.5%** |
-| 💬 **AI Web Builder Live Edits** | **50 Live Edits** | `gemini-3.5-flash` | **$0.027** | **₹2.25** | **0.5%** |
-| 📈 **SEO Keyword Clusters & Briefs** | **30 SEO Briefs** | `gemini-3.5-flash` | **$0.025** | **₹2.09** | **0.5%** |
-| 🗺️ **30-Day Strategy Roadmaps** | **10 Full Roadmaps** | `gemini-3.5-flash` | **$0.013** | **₹1.08** | **0.3%** |
-| ✏️ **Single Card Regenerations** | **100 Card Regenerations** | `gemini-3.5-flash` | **$0.016** | **₹1.34** | **0.3%** |
-| 📝 **Content Studio (Copy & Blogs)**| **200 Social Posts & Blogs**| `gemini-3.5-flash` | **$0.140** | **₹11.69** | **2.8%** |
-| 🤖 **AISA Copilot Messages** | **500 Messages** | `gemini-3.5-flash` | **$0.130** | **₹10.85** | **2.6%** |
-| ☁️ **GCS Storage & Cloud Infra** | **Media Storage** | Google Cloud Storage | **$0.423** | **₹35.33** | **8.5%** |
-| 💰 **OUR TOTAL COMPANY SPEND** | **ALL FEATURES INCLUDED** | — | **$5.000 / mo** | **₹417.50** | **100.0%** |
+| Included Feature Workload | Monthly Quantity | Model Used | % of Spend |
+| :--- | :--- | :--- | :--- |
+| 🖼️ **AI Ad Images & Banners** | **30 Images** | `gemini-3.1-flash-image` | **85.0%** |
+| 📝 **Content Studio (Copy & Ads)**| **1,000 Words** | `gemini-3.5-flash` | **5.0%** |
+| 🔒 **Storytelling & Problem Solving**| **LOCKED** | — | **0.0%** |
+| 🔒 **Strategy Image Briefs** | **LOCKED** | — | **0.0%** |
+| 🔒 **AI Website Builder** | **LOCKED** | — | **0.0%** |
+| 🤖 **AISA Copilot Chat** | **Basic Access** | `gemini-3.5-flash` | **5.0%** |
+| ☁️ **GCS Storage & Infra** | **Media Storage** | Google Cloud Storage | **5.0%** |
 
 ---
 
-### B. Pro / Growth Plan ($29.99 / mo / ₹2,399 / mo)
-- **User Pays Us**: **$29.99 / mo (₹2,399 / mo)**
-- **Net Company Profit**: **$14.99 / mo (₹1,147 INR / 50.0% Margin)**
-- **Our Total Spend Limit**: **$15.00 / mo (₹1,252 INR)**
+### B. Pro / Growth Plan ($11.99 / mo / ₹999 / mo)
+- **User Pays Us**: **$11.99 / mo (₹999 / mo)**
+- **Net Company Profit**: **₹499 INR (50.0% Margin)**
+- **Our Total Spend Limit**: **₹500 INR**
 
-| Included Feature Workload | Monthly Quantity | Model Used | API Spend ($) | API Spend (₹) | % of Spend |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 🖼️ **AI Ad Images & Banners** | **420 Images** | `gemini-3.1-flash-image` | **$12.600** | **₹1,052.10** | **84.0%** |
-| 🌐 **AI Website Builder Pages** | **50 Full Websites** | `gemini-3.5-flash` | **$0.088** | **₹7.35** | **0.6%** |
-| 💬 **AI Web Builder Live Edits** | **200 Live Edits** | `gemini-3.5-flash` | **$0.110** | **₹9.18** | **0.7%** |
-| 📈 **SEO Keyword Clusters & Briefs** | **100 SEO Briefs** | `gemini-3.5-flash` | **$0.083** | **₹6.93** | **0.6%** |
-| 🗺️ **30-Day Strategy Roadmaps** | **30 Full Roadmaps** | `gemini-3.5-flash` | **$0.040** | **₹3.34** | **0.3%** |
-| ✏️ **Single Card Regenerations** | **300 Card Regenerations** | `gemini-3.5-flash` | **$0.049** | **₹4.09** | **0.3%** |
-| 📝 **Content Studio (Copy & Blogs)**| **800 Social Posts & Blogs**| `gemini-3.5-flash` | **$0.560** | **₹46.76** | **3.7%** |
-| 🤖 **AISA Copilot Messages** | **1,500 Messages** | `gemini-3.5-flash` | **$0.390** | **₹32.56** | **2.6%** |
-| ☁️ **GCS Storage & Cloud Infra** | **Media Storage** | Google Cloud Storage | **$1.080** | **₹90.18** | **7.2%** |
-| 💰 **OUR TOTAL COMPANY SPEND** | **ALL FEATURES INCLUDED** | — | **$15.000 / mo** | **₹1,252.50** | **100.0%** |
+| Included Feature Workload | Monthly Quantity | Model Used | % of Spend |
+| :--- | :--- | :--- | :--- |
+| 🖼️ **AI Ad Images & Banners** | **120 Images** | `gemini-3.1-flash-image` | **84.0%** |
+| 📝 **Content Studio (Copy & Blogs)**| **15,000 Words**| `gemini-3.5-flash` | **5.0%** |
+| ✅ **Storytelling & Problem Solving**| **UNLOCKED** | `gemini-3.5-flash` | **3.0%** |
+| ✅ **Strategy Image Briefs** | **UNLOCKED** | `gemini-3.5-flash` | **2.0%** |
+| ✅ **AI Website Builder Pages** | **5 Full Sites** | `gemini-3.5-flash` | **3.0%** |
+| 🤖 **AISA Copilot Chat** | **Full Access** | `gemini-3.5-flash` | **3.0%** |
 
 ---
 
-### C. Agency / Scale Plan ($79.99 / mo / ₹6,399 / mo)
-- **User Pays Us**: **$79.99 / mo (₹6,399 / mo)**
-- **Net Company Profit**: **$39.99 / mo (₹3,059 INR / 50.0% Margin)**
-- **Our Total Spend Limit**: **$40.00 / mo (₹3,340 INR)**
+### C. Agency / Scale Plan ($15.99 / mo / ₹1,299 / mo)
+- **User Pays Us**: **$15.99 / mo (₹1,299 / mo)**
+- **Net Company Profit**: **₹649 INR (50.0% Margin)**
+- **Our Total Spend Limit**: **₹650 INR**
 
-| Included Feature Workload | Monthly Quantity | Model Used | API Spend ($) | API Spend (₹) | % of Spend |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 🖼️ **AI Ad Images & Banners** | **1,150 Images** | `gemini-3.1-flash-image` | **$34.500** | **₹2,880.75** | **86.3%** |
-| 🌐 **AI Website Builder Pages** | **150 Full Websites** | `gemini-3.5-flash` | **$0.264** | **₹22.04** | **0.7%** |
-| 💬 **AI Web Builder Live Edits** | **500 Live Edits** | `gemini-3.5-flash` | **$0.275** | **₹22.96** | **0.7%** |
-| 📈 **SEO Keyword Clusters & Briefs** | **300 SEO Briefs** | `gemini-3.5-flash` | **$0.249** | **₹20.79** | **0.6%** |
-| 🗺️ **30-Day Strategy Roadmaps** | **100 Full Roadmaps** | `gemini-3.5-flash` | **$0.135** | **₹11.27** | **0.3%** |
-| ✏️ **Single Card Regenerations** | **1,000 Card Regenerations**| `gemini-3.5-flash` | **$0.165** | **₹13.78** | **0.4%** |
-| 📝 **Content Studio (Copy & Blogs)**| **2,500 Social Posts & Blogs**| `gemini-3.5-flash` | **$1.750** | **₹146.12** | **4.4%** |
-| 🤖 **AISA Copilot Messages** | **5,000 Messages** | `gemini-3.5-flash` | **$1.300** | **₹108.55** | **3.3%** |
-| ☁️ **GCS Storage & Cloud Infra** | **Media Storage** | Google Cloud Storage | **$1.362** | **₹113.74** | **3.4%** |
-| 💰 **OUR TOTAL COMPANY SPEND** | **ALL FEATURES INCLUDED** | — | **$40.000 / mo** | **₹3,340.00** | **100.0%** |
+| Included Feature Workload | Monthly Quantity | Model Used | % of Spend |
+| :--- | :--- | :--- | :--- |
+| 🖼️ **AI Ad Images & Banners** | **300 Images** | `gemini-3.1-flash-image` | **85.0%** |
+| 📝 **Content Studio (Copy & Blogs)**| **50,000 Words**| `gemini-3.5-flash` | **5.0%** |
+| ✅ **Storytelling & Problem Solving**| **UNLOCKED** | `gemini-3.5-flash` | **3.0%** |
+| ✅ **Strategy Image Briefs** | **UNLOCKED** | `gemini-3.5-flash` | **2.0%** |
+| ✅ **AI Website Builder Pages** | **20+ Full Sites**| `gemini-3.5-flash` | **3.0%** |
+| 🤖 **AISA Copilot Chat** | **Priority Access**| `gemini-3.5-flash` | **2.0%** |
 
 ---
 
