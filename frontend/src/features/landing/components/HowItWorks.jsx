@@ -45,19 +45,19 @@ export const HowItWorks = () => {
   ];
 
   return (
-    <section id="how-it-works" className="pt-8 pb-14 sm:pt-10 sm:pb-16 bg-slate-50/90 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-b border-slate-200/80 dark:border-slate-800/60 scroll-mt-6 transition-colors duration-300 relative overflow-hidden">
+    <section id="how-it-works" className="pt-12 pb-20 sm:pt-16 sm:pb-24 bg-slate-50/90 dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-b border-slate-200/80 dark:border-slate-800/60 scroll-mt-6 transition-colors duration-300 relative overflow-hidden min-h-[65vh] flex flex-col justify-center">
       
       {/* Background ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-indigo-500/5 dark:bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 relative z-10 w-full">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-2">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white">
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
             How AI Ads™ Works
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+          <p className="text-base sm:text-xl text-slate-600 dark:text-slate-400 max-w-xl mx-auto font-medium">
             From brand identity ingestion to full campaign execution in three simple steps.
           </p>
         </div>

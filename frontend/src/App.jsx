@@ -167,8 +167,8 @@ const MainContent = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden ml-[52px] lg:ml-0">
         <Header />
-        <main className="p-2.5 sm:p-4 lg:p-6 flex-1 overflow-y-auto overflow-x-hidden w-full max-w-[1600px] mx-auto">
-          <div key={activeModule} className="animate-in fade-in duration-200">
+        <main className="p-4 sm:p-6 lg:p-8 flex-1 overflow-y-auto overflow-x-hidden w-full max-w-[1600px] mx-auto">
+          <div key={activeModule} className="animate-in fade-in duration-200 w-full">
             {renderModule()}
           </div>
         </main>

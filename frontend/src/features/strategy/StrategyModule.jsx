@@ -134,6 +134,7 @@ export const StrategyModule = () => {
 
   const userPlanNorm = (user?.plan || 'starter').toLowerCase();
   const isCampaignLocked = false;
+  const isImageBriefLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free' || userPlanNorm === 'pro' || userPlanNorm === 'professional' || userPlanNorm === 'growth';
   const isHighestPlan = userPlanNorm === 'enterprise' || userPlanNorm === 'unlimited';
 
   const [selectedStrategyType, setSelectedStrategyType] = useState(() => {
@@ -1267,7 +1268,7 @@ export const StrategyModule = () => {
 
             <button
               onClick={() => {
-                if (isCampaignLocked) {
+                if (isImageBriefLocked) {
                   showCustomAlert({
                     title: 'Feature Locked',
                     message: 'Image Brief Strategy is a premium feature. Please upgrade your plan to unlock.',
@@ -1408,7 +1409,7 @@ export const StrategyModule = () => {
           </p>
           <button
             onClick={() => {
-              if (isCampaignLocked) {
+              if (isImageBriefLocked) {
                 showCustomAlert({
                   title: 'Feature Locked',
                   message: 'Image Brief Strategy is a premium feature. Please upgrade your plan to unlock.',
@@ -1703,7 +1704,7 @@ export const StrategyModule = () => {
               </div>
               <button
                 onClick={() => {
-                  if (isCampaignLocked) {
+                  if (isImageBriefLocked) {
                     showCustomAlert({
                       title: 'Feature Locked',
                       message: 'Image Brief Strategy is a premium feature. Please upgrade your plan to unlock.',

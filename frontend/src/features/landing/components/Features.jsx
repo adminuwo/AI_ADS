@@ -528,7 +528,7 @@ export const Features = () => {
   return (
     <section 
       id="features" 
-      className="pt-8 pb-14 sm:pt-10 sm:pb-16 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800/80 scroll-mt-6 transition-all duration-700 select-none"
+      className="pt-12 pb-20 sm:pt-16 sm:pb-24 bg-slate-950 text-white relative overflow-hidden border-b border-slate-800/80 scroll-mt-6 transition-all duration-700 select-none min-h-[70vh] flex flex-col justify-center"
     >
       {/* Dynamic Ambient Background Glow based on active card */}
       <div 
@@ -541,15 +541,15 @@ export const Features = () => {
       {/* Cinematic Top Spotlight Grid overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 relative z-10 w-full">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-2.5">
-          <h2 className="text-3xl sm:text-5xl font-black font-['Outfit'] tracking-tight text-white leading-tight">
+        <div className="text-center max-w-4xl mx-auto space-y-3">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black font-['Outfit'] tracking-tight text-white leading-tight">
             Features Built for Complete Marketing Execution
           </h2>
           
-          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl text-slate-400 max-w-2xl mx-auto font-medium">
             9 integrated modules working in harmony from a single source of truth.
           </p>
         </div>

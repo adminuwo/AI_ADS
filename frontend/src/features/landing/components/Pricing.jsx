@@ -37,28 +37,40 @@ const PLANS = [
     badge: null,
   },
   {
-    id: 'agency',
+    id: 'pro',
     label: 'Pro / Growth',
     accent: 'amber',
     icon: Sparkles,
     monthly: '999',
     yearly: '799',
-    description: 'Unlocked Storytelling, Problem Solving, Image Briefs & 7 Brand Workspaces + 120 credits.',
+    description: 'Unlocked Storytelling & Problem Solving, AI Website Builder (5 Sites) & 7 Brand Workspaces + 120 credits.',
     cta: 'Start Free Trial',
     ctaStyle: 'primary',
     badge: 'Most Popular',
   },
   {
-    id: 'enterprise',
+    id: 'agency',
     label: 'Agency / Scale',
     accent: 'purple',
     icon: Shield,
     monthly: '1,299',
     yearly: '999',
-    description: '300 visual credits, 50,000 words limit, 10 brand workspaces and full suite access.',
-    cta: 'Contact Sales',
+    description: '300 visual credits, 50,000 words limit, 10 brand workspaces, 20+ Sites & full strategy suite.',
+    cta: 'Scale Now',
     ctaStyle: 'secondary',
     badge: null,
+  },
+  {
+    id: 'enterprise',
+    label: 'Enterprise Suite',
+    accent: 'emerald',
+    icon: Users,
+    monthly: '2,499',
+    yearly: '1,999',
+    description: '750 visual credits, 150,000 words limit, unlimited workspaces, 50+ Sites & priority processing.',
+    cta: 'Contact Sales',
+    ctaStyle: 'secondary',
+    badge: 'Unlimited Power',
   },
 ];
 
@@ -78,8 +90,9 @@ const ALL_FEATURES = [
 
 const PLAN_FEATURE_VALUES = {
   starter:    ['30 credits', '1 workspace', true, false, true, 'Basic', null, false, false, false, false],
-  agency:     ['120 credits', '7 workspaces', true, true, true, 'Full', null, true, true, true, false],
-  enterprise: ['300 credits', '10 workspaces', true, true, true, 'Priority', null, true, true, true, true],
+  pro:        ['120 credits', '7 workspaces', true, true, true, 'Full', null, '5 Sites', true, true, false],
+  agency:     ['300 credits', '10 workspaces', true, true, true, 'Priority', null, '20+ Sites', true, true, true],
+  enterprise: ['750 credits', 'Unlimited', true, true, true, 'VIP Priority', null, '50+ Sites', true, true, true],
 };
 
 /* per-plan accent tokens */
@@ -117,17 +130,29 @@ const ACCENT = {
     badge:      'bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30',
     orb:        'bg-purple-500/5 dark:bg-purple-500/10',
   },
+  emerald: {
+    glow:       'shadow-emerald-500/15',
+    glowHover:  'hover:shadow-emerald-500/30',
+    border:     'border-emerald-300 dark:border-emerald-500/40',
+    borderHov:  'hover:border-emerald-400 dark:hover:border-emerald-400/70',
+    iconBg:     'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+    label:      'text-emerald-600 dark:text-emerald-400',
+    check:      'text-emerald-600 dark:text-emerald-400',
+    badge:      'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    orb:        'bg-emerald-500/5 dark:bg-emerald-500/10',
+  },
 };
 
 /* ─────────────────── comparison rows ─────────────────── */
 const COMPARISON_ROWS = [
-  { label: 'Visual AI Credits / mo', values: ['30',  '120',       '300'] },
-  { label: 'Word Generation Limit',  values: ['1,000 words', '15,000 words', '50,000 words'] },
-  { label: 'Brand DNA Workspaces',   values: ['1',   '7',         '10'] },
-  { label: 'Storytelling & Problem Solving', values: [false, true, true] },
-  { label: 'Strategy Image Briefs',  values: [false, true,        true] },
-  { label: 'AI Web Builder',         values: [false, '5 Sites',    '20+ Sites'] },
-  { label: 'AISA Copilot',           values: ['Basic', 'Full', 'Priority'] },
+  { label: 'Visual AI Credits / mo', values: ['30',  '120',       '300', '750'] },
+  { label: 'Word Generation Limit',  values: ['1,000 words', '15,000 words', '50,000 words', '150,000 words'] },
+  { label: 'Brand DNA Workspaces',   values: ['1',   '7',         '10', 'Unlimited'] },
+  { label: 'Storytelling & Problem Solving', values: [false, true, true, true] },
+  { label: 'Strategy Image Briefs',  values: [false, false,       true, true] },
+  { label: 'SEO Competitor Gaps & Opportunities', values: [false, false, true, true] },
+  { label: 'AI Web Builder',         values: [false, '5 Sites',    '20+ Sites', '50+ Sites'] },
+  { label: 'AI Copilot',             values: ['Basic', 'Full', 'Priority', 'VIP Priority'] },
 ];
 
 /* ─────────────────── card ─────────────────── */
@@ -273,26 +298,26 @@ export const Pricing = () => {
     <section
       id="pricing"
       ref={sectionRef}
-      className="relative pt-8 pb-14 sm:pt-10 sm:pb-16 bg-slate-50/80 dark:bg-[#080809] text-slate-900 dark:text-white border-b border-slate-200 dark:border-white/5 scroll-mt-6 overflow-hidden transition-colors duration-300"
+      className="relative pt-12 pb-20 sm:pt-16 sm:pb-24 bg-slate-50/80 dark:bg-[#080809] text-slate-900 dark:text-white border-b border-slate-200 dark:border-white/5 scroll-mt-6 overflow-hidden transition-colors duration-300 min-h-[70vh] flex flex-col justify-center"
     >
       {/* ── ambient orbs ── */}
       <div aria-hidden className="pointer-events-none absolute top-0 left-1/3 w-96 h-96 rounded-full bg-indigo-500/5 dark:bg-indigo-600/8 blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-amber-500/5 dark:bg-amber-500/6 blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute top-1/2 left-0 w-64 h-64 rounded-full bg-fuchsia-500/5 dark:bg-fuchsia-600/5 blur-3xl" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 w-full">
 
         {/* ── header ── */}
         <div
-          className={`text-center max-w-2xl mx-auto space-y-2 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+          className={`text-center max-w-3xl mx-auto space-y-3 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
         >
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
             Simple Billing.{' '}
             <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 dark:from-indigo-400 dark:via-violet-400 dark:to-fuchsia-400 bg-clip-text text-transparent">
               Zero Hidden Fees.
             </span>
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400">
+          <p className="text-base sm:text-lg text-slate-600 dark:text-zinc-400 font-medium">
             All plans billed in Indian Rupees (₹). Unused credits roll over automatically.
           </p>
 
@@ -324,9 +349,9 @@ export const Pricing = () => {
           </div>
         </div>
 
-        {/* ── 3 cards ── */}
+        {/* ── 4 cards ── */}
         <div
-          className={`grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+          className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-5 items-stretch transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
           style={{ transitionDelay: '150ms' }}
         >
           {PLANS.map((plan, i) => (
