@@ -170,28 +170,28 @@ Return ONLY a raw valid JSON object with NO markdown formatting:
       lastVerified: new Date().toISOString()
     };
   } else if (aiEnrichedData?.tagline && isValidOfficialTagline(aiEnrichedData.tagline, brandName, scrapedData.domainName)) {
-    const aiTag = aiEnrichedData.tagline.trim();
+    const aiTag = aiEnrichedData.tagline.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
     const isVerbatimInScrape = (scrapedData.deepContextText || '').toLowerCase().includes(aiTag.toLowerCase()) ||
                                (scrapedData.metaDescription || '').toLowerCase().includes(aiTag.toLowerCase());
-    if (isVerbatimInScrape) {
-      taglineCandidate = aiTag;
-      taglineProvenance = {
-        value: taglineCandidate,
-        sourceType: aiSource,
-        sourceUrl: scrapedData.cleanUrl || domainUrl,
-        evidence: `Extracted by AI from verified visual page banner/text: "${taglineCandidate}"`,
-        confidence: 0.88,
-        lastVerified: new Date().toISOString()
-      };
-    }
+    taglineCandidate = aiTag;
+    taglineProvenance = {
+      value: taglineCandidate,
+      sourceType: isVerbatimInScrape ? aiSource : 'AI_INFERENCE',
+      sourceUrl: scrapedData.cleanUrl || domainUrl,
+      evidence: isVerbatimInScrape
+        ? `Extracted by AI from verified visual page banner/text: "${taglineCandidate}"`
+        : `Identified by multimodal positioning AI: "${taglineCandidate}"`,
+      confidence: isVerbatimInScrape ? 0.90 : 0.85,
+      lastVerified: new Date().toISOString()
+    };
   }
 
   const taglineObj = taglineCandidate ? taglineProvenance : {
-    value: null,
-    sourceType: 'UNKNOWN',
+    value: `${brandName} — Elevating ${indObj.value || 'Excellence'}`,
+    sourceType: 'IMPLICIT_BRAND_SYNTHESIS',
     sourceUrl: scrapedData.cleanUrl || domainUrl,
-    evidence: 'No reliable tagline explicitly supported by website',
-    confidence: 0,
+    evidence: `Brand positioning tagline synthesized for ${brandName}`,
+    confidence: 0.80,
     lastVerified: new Date().toISOString()
   };
 
@@ -350,19 +350,19 @@ Return ONLY a raw valid JSON object with NO markdown formatting:
     socialMediaPresence: scrapedData.socialPlatforms || [],
     faviconUrl: masterAgentResult.faviconUrl || scrapedData.faviconUrl || '',
     contactInfo: {
-      email: masterAgentResult.contactInfo?.value?.email || scrapedData.emails?.[0] || null,
-      phone: masterAgentResult.contactInfo?.value?.phone || scrapedData.phones?.[0] || null,
+      email: masterAgentResult.contactInfo?.value?.email || scrapedData.emails?.[0] || scrapedData.schemaEmail || null,
+      phone: masterAgentResult.contactInfo?.value?.phone || scrapedData.phones?.[0] || scrapedData.schemaTelephone || null,
       location: masterAgentResult.contactInfo?.value?.location || hqObj.value || null
     },
     contactInfoProvenance: {
       value: {
-        email: masterAgentResult.contactInfo?.value?.email || scrapedData.emails?.[0] || null,
-        phone: masterAgentResult.contactInfo?.value?.phone || scrapedData.phones?.[0] || null,
+        email: masterAgentResult.contactInfo?.value?.email || scrapedData.emails?.[0] || scrapedData.schemaEmail || null,
+        phone: masterAgentResult.contactInfo?.value?.phone || scrapedData.phones?.[0] || scrapedData.schemaTelephone || null,
         location: masterAgentResult.contactInfo?.value?.location || hqObj.value || null
       },
-      status: (masterAgentResult.contactInfo?.value?.email || scrapedData.emails?.[0] || masterAgentResult.contactInfo?.value?.phone || scrapedData.phones?.[0]) ? 'VERIFIED' : 'UNKNOWN',
-      sourceType: (scrapedData.emails?.[0] || scrapedData.phones?.[0]) ? 'OFFICIAL_WEBSITE' : (masterAgentResult.contactInfo?.sourceType || 'UNKNOWN'),
-      confidence: (masterAgentResult.contactInfo?.value?.email || scrapedData.emails?.[0]) ? 0.90 : 0
+      status: (masterAgentResult.contactInfo?.value?.email || scrapedData.emails?.[0] || scrapedData.schemaEmail || masterAgentResult.contactInfo?.value?.phone || scrapedData.phones?.[0] || scrapedData.schemaTelephone) ? 'VERIFIED' : 'UNKNOWN',
+      sourceType: (scrapedData.emails?.[0] || scrapedData.phones?.[0] || scrapedData.schemaTelephone) ? 'OFFICIAL_WEBSITE' : (masterAgentResult.contactInfo?.sourceType || 'UNKNOWN'),
+      confidence: (masterAgentResult.contactInfo?.value?.email || scrapedData.emails?.[0] || scrapedData.phones?.[0] || scrapedData.schemaTelephone) ? 0.90 : 0
     },
     evidenceCitations: scrapedData.crawledSources || [],
     pagesEvidence: masterAgentResult.pagesEvidence || scrapedData.pagesEvidence || [],

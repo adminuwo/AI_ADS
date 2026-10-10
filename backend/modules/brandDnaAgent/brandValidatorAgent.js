@@ -73,7 +73,9 @@ function validateIndustry(industryObj, combinedText) {
 }
 
 function validateHeadquarters(hqObj) {
-  if (!hqObj || !hqObj.value || hqObj.sourceType === 'UNKNOWN') {
+  const target = hqObj?.headquarters || hqObj;
+  const rawVal = typeof target === 'string' ? target : target?.value;
+  if (!rawVal || target?.sourceType === 'UNKNOWN') {
     return {
       value: null,
       type: 'HEADQUARTERS',
@@ -83,9 +85,9 @@ function validateHeadquarters(hqObj) {
     };
   }
 
-  let cleanHq = String(hqObj.value).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+  let cleanHq = String(rawVal).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
   return {
-    ...hqObj,
+    ...(typeof target === 'object' ? target : {}),
     value: cleanHq
   };
 }
@@ -131,12 +133,13 @@ function validateContactInfo(contactObj) {
 
   const email = contactObj.value.email || null;
   let phone = contactObj.value.phone || null;
+  const location = contactObj.value.location || null;
 
   if (phone) {
     phone = filterValidPhoneNumber(phone);
   }
 
-  if (!email && !phone) {
+  if (!email && !phone && !location) {
     return {
       value: null,
       sourceType: 'UNKNOWN',
@@ -150,7 +153,7 @@ function validateContactInfo(contactObj) {
     value: {
       email,
       phone,
-      location: contactObj.value.location || null
+      location
     }
   };
 }

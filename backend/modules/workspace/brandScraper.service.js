@@ -93,9 +93,23 @@ async function fetchWebsiteHtmlWithResilience(cleanUrl, brandName, domainName) {
     }
   }
 
-  // TIER 2: Puppeteer Headless Chrome Browser DOM Rendering (Bypasses Cloudflare JS challenges)
+  // Detect Single-Page Application (SPA) skeleton or thin static DOM
+  if ($) {
+    const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
+    const headingsCount = $('h1, h2, h3').length;
+    const hasSpaRoot = $('#root, #app, #__next, [id*="root" i]').length > 0;
+    const hasScriptBundles = $('script[src*="index"], script[src*="bundle"], script[src*="app"], script[src*="chunk"], script[type="module"]').length > 0;
+
+    if (bodyText.length < 400 || (headingsCount === 0 && (hasSpaRoot || hasScriptBundles))) {
+      console.log(`📡 [SCRAPER] Tier 1 static fetch detected SPA skeleton / thin DOM (${bodyText.length} text chars, ${headingsCount} headings). Escalating to Tier 2 Puppeteer for full JS hydration...`);
+      html = '';
+      $ = null;
+    }
+  }
+
+  // TIER 2: Puppeteer Headless Chrome Browser DOM Rendering (Bypasses Cloudflare & renders client-side SPAs)
   if ((!html || html.length < 300) && puppeteer) {
-    console.log(`🛡️ [SCRAPER] Direct HTTP blocked/incomplete. Tier 2: Launching Puppeteer browser renderer for ${cleanUrl}...`);
+    console.log(`🛡️ [SCRAPER] Direct HTTP blocked/incomplete/SPA. Tier 2: Launching Puppeteer browser renderer for ${cleanUrl}...`);
     let browser = null;
     try {
       browser = await puppeteer.launch({
@@ -112,15 +126,21 @@ async function fetchWebsiteHtmlWithResilience(cleanUrl, brandName, domainName) {
       });
       const page = await browser.newPage();
       await page.setUserAgent(USER_AGENTS[0]);
-      await page.setViewport({ width: 1280, height: 800 });
-      await page.goto(cleanUrl, { waitUntil: 'domcontentloaded', timeout: 8000 });
-      await new Promise(r => setTimeout(r, 1000));
+      await page.setViewport({ width: 1280, height: 900 });
+      try {
+        await page.goto(cleanUrl, { waitUntil: 'networkidle2', timeout: 20000 });
+      } catch (e) {
+        try {
+          await page.goto(cleanUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
+        } catch (e2) {}
+      }
+      await new Promise(r => setTimeout(r, 2000));
       const renderedHtml = await page.content();
       if (renderedHtml && renderedHtml.length > 300) {
         html = renderedHtml;
         $ = cheerio.load(html);
         crawledSources.push('PUPPETEER_LIVE_DOM_RENDER');
-        console.log(`📡 [SCRAPER] Tier 2: Puppeteer Browser DOM Rendering Successful (${html.length} chars)`);
+        console.log(`📡 [SCRAPER] Tier 2: Puppeteer Browser DOM Rendering Successful (${html.length} chars, ${$('h1, h2, h3').length} headings, ${$('body').text().length} body chars)`);
       }
     } catch (pupErr) {
       console.warn(`⚠️ [SCRAPER] Tier 2 Puppeteer Note: ${pupErr.message}`);
@@ -406,13 +426,18 @@ function extractSvgFills(html) {
 function extractSchemaJsonLd($) {
   let schemaLogo = '';
   let schemaName = '';
+  let schemaLegalName = '';
   let schemaSlogan = '';
   let schemaIndustry = '';
   let schemaAddress = '';
   let schemaFoundingDate = '';
   let schemaSameAs = [];
+  let schemaTelephone = '';
+  let schemaEmail = '';
+  let schemaAreaServed = '';
+  let schemaParentCompany = '';
 
-  if (!$) return { schemaLogo, schemaName, schemaSlogan, schemaIndustry, schemaAddress, schemaFoundingDate, schemaSameAs };
+  if (!$) return { schemaLogo, schemaName, schemaLegalName, schemaSlogan, schemaIndustry, schemaAddress, schemaFoundingDate, schemaSameAs, schemaTelephone, schemaEmail, schemaAreaServed, schemaParentCompany };
 
   function flattenSchemaItems(json) {
     if (!json || typeof json !== 'object') return [];
@@ -433,44 +458,75 @@ function extractSchemaJsonLd($) {
       items.forEach(item => {
         if (!item || typeof item !== 'object') return;
         const type = item['@type'];
-        const isOrgOrBrand = type === 'Organization' || type === 'Corporation' || type === 'Brand' || type === 'WebSite' || (Array.isArray(type) && type.some(t => ['Organization', 'Corporation', 'Brand', 'WebSite'].includes(t)));
+        const isOrgOrBrand = type === 'Organization' || type === 'Corporation' || type === 'Brand' || type === 'WebSite' || type === 'SoftwareApplication' || (Array.isArray(type) && type.some(t => ['Organization', 'Corporation', 'Brand', 'WebSite', 'SoftwareApplication'].includes(t)));
         if (isOrgOrBrand) {
           if (!schemaLogo && item.logo) {
             schemaLogo = typeof item.logo === 'string' ? item.logo : (item.logo.url || '');
           }
           if (!schemaName && item.name) schemaName = item.name;
-          if (!schemaSlogan && item.slogan) schemaSlogan = item.slogan;
+          if (!schemaLegalName && item.legalName) schemaLegalName = String(item.legalName).trim();
+          if (!schemaSlogan && (item.slogan || item.tagline || (item.disambiguatingDescription && typeof item.disambiguatingDescription === 'string' && item.disambiguatingDescription.length <= 60))) {
+            schemaSlogan = String(item.slogan || item.tagline || item.disambiguatingDescription).trim();
+          }
           if (!schemaIndustry && (item.industry || item.category)) schemaIndustry = item.industry || item.category;
           if (!schemaFoundingDate && (item.foundingDate || item.foundingYear)) schemaFoundingDate = String(item.foundingDate || item.foundingYear);
+
+          // Direct or contactPoint telephone & email
+          if (!schemaTelephone && item.telephone) schemaTelephone = String(item.telephone).trim();
+          if (!schemaEmail && item.email) schemaEmail = String(item.email).trim();
+
+          const contactPoints = Array.isArray(item.contactPoint) ? item.contactPoint : (item.contactPoint ? [item.contactPoint] : []);
+          contactPoints.forEach(cp => {
+            if (!schemaTelephone && cp.telephone) schemaTelephone = String(cp.telephone).trim();
+            if (!schemaEmail && cp.email) schemaEmail = String(cp.email).trim();
+            if (!schemaAreaServed && cp.areaServed) schemaAreaServed = typeof cp.areaServed === 'string' ? cp.areaServed : (cp.areaServed?.name || '');
+          });
+
+          // Address & Location resolution
           if (!schemaAddress && item.address) {
             const addr = item.address;
             if (typeof addr === 'string') schemaAddress = addr;
             else if (typeof addr === 'object') {
               const parts = [
+                addr.streetAddress,
                 addr.addressLocality,
                 addr.addressRegion,
+                addr.postalCode,
                 addr.addressCountry
               ].filter(Boolean);
               schemaAddress = parts.join(', ');
             }
           }
+          if (!schemaAddress && item.location) {
+            const loc = item.location;
+            if (typeof loc === 'string') schemaAddress = loc;
+            else if (typeof loc === 'object') {
+              schemaAddress = loc.name || loc.address || loc.streetAddress || '';
+            }
+          }
+
+          if (!schemaParentCompany && (item.parentOrganization || item.parentCompany)) {
+            const pOrg = item.parentOrganization || item.parentCompany;
+            schemaParentCompany = typeof pOrg === 'string' ? pOrg : (pOrg?.name || '');
+          }
+
           if (Array.isArray(item.sameAs) && schemaSameAs.length === 0) schemaSameAs = item.sameAs;
         }
       });
     } catch (e) {}
   });
 
-  return { schemaLogo, schemaName, schemaSlogan, schemaIndustry, schemaAddress, schemaFoundingDate, schemaSameAs };
+  return { schemaLogo, schemaName, schemaLegalName, schemaSlogan, schemaIndustry, schemaAddress, schemaFoundingDate, schemaSameAs, schemaTelephone, schemaEmail, schemaAreaServed, schemaParentCompany };
 }
 
 /**
  * Extracts EXACT official tagline/slogan from DOM, metadata, and page text.
  * Strictly verifies against isValidOfficialTagline to prevent product descriptions or legal names.
  */
-function extractOfficialTaglineFromDOM($, cleanUrl, brandName = '', domainName = '', schemaSlogan = '', aboutPageText = '') {
+function extractOfficialTaglineFromDOM($, cleanUrl, brandName = '', domainName = '', schemaSlogan = '', aboutPageText = '', crawledPageDetails = []) {
   const rawUrl = cleanUrl || (domainName ? `https://${domainName}` : '');
 
-  // 1. Priority 1: JSON-LD Schema Slogan
+  // 1. Priority 1: JSON-LD Schema Slogan / Tagline
   if (schemaSlogan && typeof schemaSlogan === 'string') {
     const cleanSlogan = schemaSlogan.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
     if (isValidOfficialTagline(cleanSlogan, brandName, domainName)) {
@@ -498,7 +554,8 @@ function extractOfficialTaglineFromDOM($, cleanUrl, brandName = '', domainName =
   const metaTagline = $('meta[name="tagline" i]').attr('content') ||
                       $('meta[property="tagline" i]').attr('content') ||
                       $('meta[name="slogan" i]').attr('content') ||
-                      $('meta[property="slogan" i]').attr('content');
+                      $('meta[property="slogan" i]').attr('content') ||
+                      $('meta[property="og:slogan" i]').attr('content');
   if (metaTagline && typeof metaTagline === 'string') {
     const cleanMeta = metaTagline.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
     if (isValidOfficialTagline(cleanMeta, brandName, domainName)) {
@@ -519,11 +576,16 @@ function extractOfficialTaglineFromDOM($, cleanUrl, brandName = '', domainName =
     '#tagline',
     '.slogan',
     '#slogan',
+    '.site-description',
+    '.site-tagline',
+    '.brand-subtitle',
     '.brand-slogan',
     '.site-slogan',
     '.logo-tagline',
     '.header-tagline',
     '.hero-tagline',
+    '.header-subhead',
+    '.brand-motto',
     'header .tagline',
     'header .slogan'
   ];
@@ -538,18 +600,51 @@ function extractOfficialTaglineFromDOM($, cleanUrl, brandName = '', domainName =
           sourceType: 'WEBSITE_DOM',
           sourceUrl: rawUrl,
           evidence: `Explicit DOM element (${selector}): "${text}"`,
-          confidence: 0.92
+          confidence: 0.94
         };
       }
     }
   }
 
-  // 4. Priority 4: Header / Logo Alt Text Lockup (e.g. alt="Brand - Slogan")
+  // 4. Priority 4: Hero / Header prominent branding headings (e.g. h1 / h2 prominent branding motto)
+  const heroHeadings = $('header h1, header h2, .hero h1, .hero h2, [class*="hero" i] h1, [class*="hero" i] h2, main h1, h1, [class*="hero" i] p[class*="subtitle" i], header [class*="subtitle" i]');
+  for (let i = 0; i < Math.min(heroHeadings.length, 6); i++) {
+    const text = $(heroHeadings[i]).text().trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+    if (text && text.length >= 3 && text.length <= 80 && isValidOfficialTagline(text, brandName, domainName)) {
+      return {
+        value: text,
+        sourceType: 'WEBSITE_DOM',
+        sourceUrl: rawUrl,
+        evidence: `Hero/Header branding heading: "${text}"`,
+        confidence: 0.92
+      };
+    }
+  }
+
+  // 5. Priority 5: Page title branding lockups (<title> tag) - NEVER split on hyphens inside words (e.g. Multi-Channel)
+  const pageTitle = $('title').first().text().trim();
+  if (pageTitle && pageTitle.length > 3) {
+    const titleParts = pageTitle.split(/\s+[-–—|:]\s+|\s*[:|—–~]\s*|\s+--\s+/).map(p => p.trim()).filter(Boolean);
+    for (const part of titleParts) {
+      const cleanSeg = part.replace(/^["“'«]+|["”'»]+$/g, '').trim();
+      if (isValidOfficialTagline(cleanSeg, brandName, domainName)) {
+        return {
+          value: cleanSeg,
+          sourceType: 'WEBSITE_DOM',
+          sourceUrl: rawUrl,
+          evidence: `Page title branding lockup ("${pageTitle}"): "${cleanSeg}"`,
+          confidence: 0.88
+        };
+      }
+    }
+  }
+
+  // 6. Priority 6: Header / Logo Alt Text Lockup (e.g. alt="Brand - Slogan")
   const logoElements = $('header img[alt*="logo" i], nav img[alt*="logo" i], img[class*="logo" i], img[id*="logo" i], header a img, nav a img');
   for (let i = 0; i < Math.min(logoElements.length, 5); i++) {
     const altText = $(logoElements[i]).attr('alt') || $(logoElements[i]).attr('title') || '';
-    if (altText && (altText.includes('-') || altText.includes('|') || altText.includes('–') || altText.includes(':'))) {
-      const parts = altText.split(/[-|–:]/).map(p => p.trim()).filter(Boolean);
+    if (altText && (altText.includes(' - ') || altText.includes('|') || altText.includes('–') || altText.includes(':') || altText.includes('—'))) {
+      const parts = altText.split(/\s+[-–—|:]\s+|\s*[:|—–~]\s*/).map(p => p.trim()).filter(Boolean);
       for (const part of parts) {
         const cleanPart = part.replace(/^["“'«]+|["”'»]+$/g, '').trim();
         if (isValidOfficialTagline(cleanPart, brandName, domainName)) {
@@ -558,14 +653,29 @@ function extractOfficialTaglineFromDOM($, cleanUrl, brandName = '', domainName =
             sourceType: 'WEBSITE_DOM',
             sourceUrl: rawUrl,
             evidence: `Header logo lockup alt text ("${altText}"): "${cleanPart}"`,
-            confidence: 0.90
+            confidence: 0.87
           };
         }
       }
     }
   }
 
-  // 5. Priority 5: Explicit text statements in page text ("Our Tagline is...", "Our Slogan is...")
+  // 7. Priority 7: Internal Crawled About / Brand Pages
+  if (crawledPageDetails && Array.isArray(crawledPageDetails)) {
+    for (const page of crawledPageDetails) {
+      if (page.tagline && isValidOfficialTagline(page.tagline, brandName, domainName)) {
+        return {
+          value: page.tagline,
+          sourceType: 'WEBSITE_SUBPAGE',
+          sourceUrl: page.url || rawUrl,
+          evidence: `Official tagline extracted from internal page (${page.url || 'About page'}): "${page.tagline}"`,
+          confidence: 0.90
+        };
+      }
+    }
+  }
+
+  // 8. Priority 8: Explicit text statements in page text ("Our Tagline is...", "Our Slogan is...")
   const combinedScraped = ($('body').text() || '') + ' ' + (aboutPageText || '');
   const statementMatches = [
     /(?:our\s+tagline|our\s+slogan|official\s+slogan|official\s+tagline|brand\s+slogan|brand\s+tagline)\s+(?:is|:)\s*["“']?([^"”'\n\r.]{3,80})["”']?/i,
@@ -596,6 +706,54 @@ function extractOfficialTaglineFromDOM($, cleanUrl, brandName = '', domainName =
   };
 }
 
+/**
+ * Targeted domain-restricted fallback: Queries site:${domain} "tagline" OR "slogan" OR "motto"
+ * to extract verified official statements on the company's official domain.
+ */
+async function searchOfficialTaglineFromDomain(domainName, brandName = '', cleanUrl = '') {
+  const cleanDomain = (domainName || '').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].toLowerCase().trim();
+  if (!cleanDomain || cleanDomain.length < 3) return null;
+
+  try {
+    const query = `site:${cleanDomain} "tagline" OR "slogan" OR "motto"`;
+    const searchRes = await Promise.race([
+      searchTavily(query, 'advanced', 3),
+      new Promise(resolve => setTimeout(() => resolve(null), 8000))
+    ]);
+
+    if (!searchRes || (!searchRes.results && !searchRes.answer)) return null;
+
+    const items = [
+      ...(searchRes.results || []),
+      ...(searchRes.answer ? [{ title: 'Domain Answer', snippet: searchRes.answer, url: cleanUrl }] : [])
+    ];
+
+    const taglineQuotesRegex = /(?:tagline|slogan|motto)(?:\s+is|\s*:|,)?\s*["“'«]([^"”'»\r\n.]{3,70})["”'»]/i;
+    const sloganLockupRegex = /["“'«]([^"”'»\r\n.]{3,70})["”'»]\s*(?:is\s+(?:the|our)\s+(?:official\s+)?(?:tagline|slogan|motto))/i;
+
+    for (const item of items) {
+      const text = `${item.title || ''} ${item.snippet || ''}`;
+      const match = text.match(taglineQuotesRegex) || text.match(sloganLockupRegex);
+      if (match && match[1]) {
+        const candidate = match[1].trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+        if (isValidOfficialTagline(candidate, brandName, domainName)) {
+          return {
+            value: candidate,
+            sourceType: 'OFFICIAL_DOMAIN_SEARCH',
+            sourceUrl: item.url || cleanUrl,
+            evidence: `Verified official quote from official domain (${item.url || cleanDomain}): "${candidate}"`,
+            confidence: 0.90
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn(`[SCRAPER] Domain tagline search note: ${err.message}`);
+  }
+
+  return null;
+}
+
 async function extractOfficialLogoColors(cleanUrl, brandName = '', logoUrl = '') {
   const domainHost = (cleanUrl || '').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
   const bName = brandName || domainHost.split('.')[0].toUpperCase();
@@ -619,14 +777,19 @@ Return ONLY a raw JSON array of hex strings with no markdown formatting. Example
       let aiRes = null;
       for (const modelName of candidateModels) {
         try {
-          aiRes = await client.models.generateContent({
+          const genPromise = client.models.generateContent({
             model: modelName,
             contents: prompt,
             config: { tools: [{ googleSearch: {} }] }
           });
+          aiRes = await Promise.race([
+            genPromise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('AI logo color grounding timed out after 25s')), 25000))
+          ]);
           if (aiRes?.text) break;
         } catch (mErr) {
           console.warn(`[COLOR-SCRAPER] Model ${modelName} note:`, mErr.message);
+          break; // Don't retry if Google API failed or timed out
         }
       }
 
@@ -925,6 +1088,27 @@ async function crawlBrandContext(cleanUrl, $) {
         crawledTexts.push(`[Page URL: ${pageUrl}]\nHeadings: ${pageHeadings.join(' | ')}\nContent: ${textSnippet}`);
       }
 
+      let subTagline = null;
+      try {
+        const subSchema = extractSchemaJsonLd(page$);
+        if (subSchema.schemaSlogan && isValidOfficialTagline(subSchema.schemaSlogan, '', '')) {
+          subTagline = subSchema.schemaSlogan;
+        } else {
+          const el = page$('[itemprop="slogan"], .tagline, .slogan, .site-description, .brand-slogan').first();
+          if (el.length > 0) {
+            const subTxt = el.text().trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+            if (isValidOfficialTagline(subTxt, '', '')) subTagline = subTxt;
+          }
+        }
+        if (!subTagline) {
+          const match = (page$('body').text() || '').match(/(?:our\s+tagline|our\s+slogan|official\s+slogan)\s+(?:is|:)\s*["“']?([^"”'\n\r.]{3,80})["”']?/i);
+          if (match && match[1]) {
+            const subCand = match[1].trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+            if (isValidOfficialTagline(subCand, '', '')) subTagline = subCand;
+          }
+        }
+      } catch (e) {}
+
       crawledPageDetails.push({
         url: pageUrl,
         pageTitle: pageTitle,
@@ -935,7 +1119,8 @@ async function crawlBrandContext(cleanUrl, $) {
         phones: subPhones,
         socialPlatforms: subSocials,
         metadata: { metaTitle: pageTitle, metaDescription: '' },
-        jsonLd: null
+        jsonLd: null,
+        tagline: subTagline
       });
     } catch (e) {}
   }));
@@ -970,16 +1155,16 @@ async function capturePageScreenshots(pagesList) {
     }));
   }
 
-  // Cap to top 2 key pages (Homepage + top About/Contact page) for ultra-fast performance
-  const targetPages = pagesList.slice(0, 2);
-  const remainingPages = pagesList.slice(2).map(p => ({
+  // Cap to top 4 key pages (Homepage + About + Contact + Products) for comprehensive coverage
+  const targetPages = pagesList.slice(0, 4);
+  const remainingPages = pagesList.slice(4).map(p => ({
     ...p,
     screenshot: {
       base64: null,
       mimeType: 'image/jpeg',
       timestamp: new Date().toISOString(),
       status: 'SKIPPED',
-      error: 'Capped for speed optimization'
+      error: 'Capped for performance balance'
     }
   }));
 
@@ -1004,17 +1189,23 @@ async function capturePageScreenshots(pagesList) {
     const capturedResults = [];
     for (const pageItem of targetPages) {
       const pageUrl = pageItem.url;
-      console.log(`[SCREENSHOT] Ultra-fast capture: ${pageUrl}`);
+      console.log(`[SCREENSHOT] Capturing high-fidelity screenshot for: ${pageUrl}`);
       let pageInstance = null;
       try {
         pageInstance = await browser.newPage();
-        await pageInstance.setViewport({ width: 1024, height: 640 });
+        await pageInstance.setViewport({ width: 1280, height: 800 });
 
-        // Fast navigation (6s timeout)
-        await pageInstance.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 6000 });
+        // Resilient navigation (up to 18s for network idle, with fallback to domcontentloaded)
+        try {
+          await pageInstance.goto(pageUrl, { waitUntil: 'networkidle2', timeout: 18000 });
+        } catch (navErr) {
+          try {
+            await pageInstance.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 12000 });
+          } catch (e2) {}
+        }
 
-        // Fast render pause (150ms instead of 1000ms)
-        await new Promise(resolve => setTimeout(resolve, 150));
+        // Allow 1500ms for full SPA hydration and animated components
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
         let liveRenderedText = '';
         try {
@@ -1027,10 +1218,9 @@ async function capturePageScreenshots(pagesList) {
           });
         } catch (e) {}
 
-        // Compressed JPEG format (quality: 60) for fast base64 & low LLM memory overhead
         const base64Screenshot = await pageInstance.screenshot({
           type: 'jpeg',
-          quality: 60,
+          quality: 75,
           encoding: 'base64',
           fullPage: false
         });
@@ -1038,7 +1228,7 @@ async function capturePageScreenshots(pagesList) {
         successCount++;
         let enrichedTextEvidence = pageItem.textEvidence || '';
         if (liveRenderedText && (liveRenderedText.length > enrichedTextEvidence.length || enrichedTextEvidence.length < 50)) {
-          enrichedTextEvidence = liveRenderedText.slice(0, 1200);
+          enrichedTextEvidence = liveRenderedText.slice(0, 3000);
         }
 
         capturedResults.push({
@@ -1053,7 +1243,7 @@ async function capturePageScreenshots(pagesList) {
           }
         });
       } catch (err) {
-        console.warn(`[SCREENSHOT] Fast capture note for ${pageUrl}: ${err.message}`);
+        console.warn(`[SCREENSHOT] Capture note for ${pageUrl}: ${err.message}`);
         capturedResults.push({
           ...pageItem,
           screenshot: {
@@ -1071,7 +1261,7 @@ async function capturePageScreenshots(pagesList) {
       }
     }
 
-    console.log(`[SCREENSHOT] Ultra-fast captured ${successCount} / ${targetPages.length} pages sequentially`);
+    console.log(`[SCREENSHOT] Successfully captured ${successCount} / ${targetPages.length} pages`);
     return [...capturedResults, ...remainingPages];
   } catch (browserErr) {
     console.error(`[SCREENSHOT] Browser launch failed: ${browserErr.message}`);
@@ -1134,7 +1324,7 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
   let faviconUrl = googleFaviconUrl;
   let logoUrl = googleFaviconUrl; // Primary high-confidence fallback
 
-  const { schemaLogo, schemaName, schemaSlogan, schemaIndustry, schemaAddress, schemaFoundingDate, schemaSameAs } = extractSchemaJsonLd($);
+  const { schemaLogo, schemaName, schemaLegalName, schemaSlogan, schemaIndustry, schemaAddress, schemaFoundingDate, schemaSameAs, schemaTelephone, schemaEmail, schemaAreaServed, schemaParentCompany } = extractSchemaJsonLd($);
   let parsedLogo = schemaLogo;
   let logoText = '';
   let heroBannerTagline = '';
@@ -1187,6 +1377,30 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
     }
   }
 
+  // Convert SVG logo to high-fidelity raster PNG Data URL so mobile/web image components render perfectly
+  if (logoUrl && (logoUrl.toLowerCase().includes('.svg') || logoUrl.toLowerCase().endsWith('.svg'))) {
+    try {
+      const svgRes = await axios.get(logoUrl, { responseType: 'arraybuffer', timeout: 5000, httpsAgent });
+      if (svgRes.status === 200 && svgRes.data) {
+        const sharp = require('sharp');
+        const pngBuf = await sharp(Buffer.from(svgRes.data))
+          .resize(256, 256, { fit: 'inside' })
+          .png()
+          .toBuffer();
+        logoUrl = `data:image/png;base64,${pngBuf.toString('base64')}`;
+        crawledSources.push('SVG_TO_PNG_RASTERIZED');
+        console.log(`✨ [SCRAPER] Converted vector SVG logo to raster PNG Data URL (256x256, ${pngBuf.length} bytes)`);
+      }
+    } catch (convErr) {
+      console.warn(`[SCRAPER] SVG to PNG conversion fallback to Google Favicon:`, convErr.message);
+      logoUrl = googleFaviconUrl;
+    }
+  }
+
+  if (faviconUrl && (faviconUrl.toLowerCase().includes('.svg') || faviconUrl.toLowerCase().endsWith('.svg'))) {
+    faviconUrl = googleFaviconUrl;
+  }
+
 
   let metaTitle = '';
   let metaDescription = '';
@@ -1195,7 +1409,16 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
   let socialPlatforms = schemaSameAs || [];
   let emails = [];
   let phones = [];
-  let hqAddress = '';
+  let hqAddress = schemaAddress || '';
+
+  // Seed with Schema.org verified telephone & email
+  if (schemaTelephone) {
+    const validPhone = filterValidPhoneNumber(schemaTelephone);
+    if (validPhone && !phones.includes(validPhone)) phones.push(validPhone);
+  }
+  if (schemaEmail && !emails.includes(schemaEmail)) {
+    emails.push(schemaEmail);
+  }
 
   if ($) {
     // Clean scripts, styles, iframe, code, and svg before text extraction
@@ -1231,11 +1454,33 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
         const validP = filterValidPhoneNumber(rawPhone);
         if (validP && !phones.includes(validP)) phones.push(validP);
       }
+
+      // Check WhatsApp links
+      if (/wa\.me\/(\d+)|whatsapp\.com\/send\?phone=(\d+)/i.test(href)) {
+        const waMatch = href.match(/wa\.me\/(\d+)|phone=(\d+)/i);
+        const waPhone = waMatch ? (waMatch[1] || waMatch[2]) : '';
+        const validP = filterValidPhoneNumber(waPhone);
+        if (validP && !phones.includes(validP)) phones.push(validP);
+      }
+
+      // Check Google Maps location search links (e.g. google.com/maps/search/?api=1&query=Jabalpur,+Madhya+Pradesh)
+      if (/google\.[a-z.]+\/maps|maps\.google\.[a-z.]+/i.test(href)) {
+        try {
+          const u = new URL(href.startsWith('http') ? href : 'https:' + href);
+          const q = u.searchParams.get('query') || u.searchParams.get('q');
+          if (q) {
+            const decoded = decodeURIComponent(q).replace(/\+/g, ' ').trim();
+            if (decoded.length >= 3 && !hqAddress) {
+              hqAddress = decoded;
+            }
+          }
+        } catch (e) {}
+      }
     });
 
-    // Extract official toll-free / helpline phone numbers & HQ Location from cleaned body text
+    // Extract official toll-free / helpline phone numbers & HQ Location from cleaned body text + raw html
     const cleanBodyText = $clean('body').text().replace(/\s+/g, ' ') || '';
-    const phoneMatches = cleanBodyText.match(/(?:\+?91[-\s]?\d{10}|\+?1[-\s]?\d{3}[-\s]?\d{3}[-\s]?\d{4}|1800[-\s]?\d{3}[-\s]?\d{4})/gi) || [];
+    const phoneMatches = (cleanBodyText + ' ' + html).match(/(?:\+?91[\s.-]?\d{5}[\s.-]?\d{5}|\+?91[\s.-]?\d{10}|\+?1[\s.-]?\d{3}[\s.-]?\d{3}[\s.-]?\d{4}|1800[\s.-]?\d{3}[\s.-]?\d{3,4}|\+?\d{1,3}[\s.-]?\d{3,4}[\s.-]?\d{4,6})/gi) || [];
     phoneMatches.forEach(p => {
       const validP = filterValidPhoneNumber(p);
       if (validP && !phones.includes(validP)) {
@@ -1254,6 +1499,25 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
       const candidateHQ = hqMatch[1].trim().split('\n')[0].trim();
       if (candidateHQ.length >= 3 && !/looking|feel free|welcome|click|call|services|our|booking/i.test(candidateHQ)) {
         hqAddress = candidateHQ;
+      }
+    }
+
+    if (!hqAddress) {
+      const addrTag = $clean('address, footer [class*="address" i], footer [class*="location" i]').first().text().replace(/\s+/g, ' ').trim();
+      if (addrTag && addrTag.length > 5 && addrTag.length < 150) {
+        hqAddress = addrTag;
+      }
+    }
+
+    // Extract parent company statement or legal corporate entity
+    var parentCompany = schemaParentCompany || (schemaLegalName && schemaLegalName.toLowerCase() !== (brandName || '').toLowerCase() ? schemaLegalName : null);
+    if (!parentCompany) {
+      const parentMatch = cleanBodyText.match(/(?:powered by|a subsidiary of|subsidiary of|a division of|part of|owned by|a unit of)\s+([A-Z0-9™®©][a-zA-Z0-9™®©\s&.-]{1,40})/i);
+      if (parentMatch && parentMatch[1]) {
+        const cand = parentMatch[1].trim().replace(/[.,;]$/, '').trim();
+        if (cand.length >= 2 && cand.toLowerCase() !== brandName.toLowerCase()) {
+          parentCompany = cand;
+        }
       }
     }
   }
@@ -1327,11 +1591,49 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
     deepContextText = (deepContextText + '\n\n' + puppeteerTextSnippets.join('\n\n')).trim();
   }
 
+  // Post-crawl parent company extraction from deep context & about pages if not found in initial schema/DOM
+  if (!parentCompany) {
+    const combinedAboutAndDeep = ((aboutPageText || '') + ' ' + (aboutPageHeadings || []).join(' ') + ' ' + (deepContextText || '')).trim();
+    const parentPatterns = [
+      /(?:about)\s+([A-Z0-9™®©]{2,10}\s+Unified Web Options|[A-Z0-9™®©]{2,10}\s+[A-Za-z0-9\s&.-]{2,30}?)\s+(?:a next-generation|a leading|a company|an organization|corporate)/i,
+      /(?:is an?|is a)\s+([A-Z0-9™®©][a-zA-Z0-9™®©\s&.-]{1,35}?)\s+(?:innovation|initiative|brand|subsidiary|product|venture)/i,
+      /(?:powered by|a subsidiary of|subsidiary of|a division of|part of|owned by|owned and operated by|a unit of|parent company[:\s]+)\s+([A-Z0-9™®©][a-zA-Z0-9™®©\s&.-]{1,40})/i,
+      /(?:©|&copy;)\s*(?:\d{4}\s*)?([A-Z0-9™®©][a-zA-Z0-9™®©\s&.-]{1,35}?)\s*(?:—|[-–]|,)\s*[\s\S]{0,60}?(?:innovation|subsidiary|all rights reserved)/i
+    ];
+    for (const pat of parentPatterns) {
+      const m = combinedAboutAndDeep.match(pat);
+      if (m && m[1]) {
+        let cand = m[1].replace(/[™®©]/g, '').trim().replace(/[.,;]$/, '').trim();
+        cand = cand.replace(/^[A-Z]{2,6}\s+([A-Z][a-zA-Z\s&.-]+)$/, '$1').trim();
+        if (cand.length >= 2 && cand.toLowerCase() !== (schemaName || brandName || '').toLowerCase() && !/^(the|our|this|we|all|copyright)$/i.test(cand)) {
+          parentCompany = cand;
+          console.log(`🏢 [SCRAPER] Discovered Parent Company from Deep Content: "${parentCompany}"`);
+          break;
+        }
+      }
+    }
+  }
+
   brandColors = colorsResult;
   console.log(`🎨 [SCRAPER] Step 3: Extracted Logo & Color Palette (${brandColors.join(', ')})`);
   console.log(`🔍 [SCRAPER] Step 4: JSON-LD Schema & DOM Signals Parsed (Brand: "${schemaName || brandName}", Schema Slogan: "${schemaSlogan || 'N/A'}")`);
 
-  const extractedTagline = extractOfficialTaglineFromDOM($, cleanUrl, schemaName || brandName, domainName, schemaSlogan, aboutPageText);
+  let extractedTagline = extractOfficialTaglineFromDOM($, cleanUrl, schemaName || brandName, domainName, schemaSlogan, aboutPageText, deepData?.crawledPageDetails);
+
+  if (!extractedTagline.value) {
+    try {
+      const domainSearchRes = await searchOfficialTaglineFromDomain(domainName, schemaName || brandName, cleanUrl);
+      if (domainSearchRes && domainSearchRes.value) {
+        extractedTagline = domainSearchRes;
+      }
+    } catch (e) {}
+  }
+
+  if (extractedTagline.value) {
+    console.log(`✨ [SCRAPER] Official Tagline Extracted: "${extractedTagline.value}" [${extractedTagline.sourceType}] (Evidence: ${extractedTagline.evidence})`);
+  } else {
+    console.log(`ℹ️ [SCRAPER] No official tagline explicitly found on website for "${schemaName || brandName}". Setting to null.`);
+  }
 
   return {
     cleanUrl,
@@ -1351,7 +1653,7 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
     metaDescription,
     faviconUrl,
     logoUrl,
-    headings: headings.slice(0, 8),
+    headings: headings.slice(0, 30),
     aboutPageHeadings,
     aboutPageText,
     contactPageText,
@@ -1362,6 +1664,12 @@ async function scrapeBrandWebsite(urlInput, brandNameOverride = '') {
     emails,
     phones,
     hqAddress: hqAddress || '',
+    parentCompany: parentCompany || null,
+    legalName: schemaLegalName || '',
+    schemaTelephone: schemaTelephone || '',
+    schemaEmail: schemaEmail || '',
+    schemaAreaServed: schemaAreaServed || '',
+    searchEnrichmentText: '',
     deepContextText,
     crawledSources,
     pagesEvidence
@@ -1395,5 +1703,6 @@ module.exports = {
   generateDynamicBrandPalette,
   extractLogoPixelColors,
   extractSchemaJsonLd,
+  extractOfficialTaglineFromDOM,
   filterValidPhoneNumber
 };

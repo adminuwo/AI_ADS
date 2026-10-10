@@ -49,7 +49,10 @@ If the user talks about or asks questions about anything else EXCEPT AI Ads, SEO
 // ─── Gemini / Vertex AI Chat (@google/genai SDK in Vertex AI Mode) ──────────
 const chatWithGemini = async (messages, options = {}) => {
   const reqTag = options.reqId ? `[WB:${options.reqId}] ` : '[AI-Service] ';
-  const systemInstruction = buildSystemPrompt(options);
+  const isJsonMode = options.jsonMode || (options.responseFormat === 'json') || /valid JSON|raw JSON|Return ONLY.*JSON/i.test(messages[messages.length - 1]?.content || '');
+  const systemInstruction = isJsonMode
+    ? (options.systemInstruction || 'You are an expert AI data extraction engine. You must output ONLY valid, parseable JSON matching the requested schema. No markdown formatting, no explanations.')
+    : buildSystemPrompt(options);
 
   const clientCandidates = [aiClient, globalAiClient].filter(Boolean);
 
@@ -117,10 +120,16 @@ const chatWithGemini = async (messages, options = {}) => {
               console.log(`${reqTag}Calling @google/genai model: ${mId}...`);
             }
 
-            const response = await client.models.generateContent({
+            const timeoutMs = (options.images && options.images.length > 0) ? 75000 : 60000;
+            const genPromise = client.models.generateContent({
               model: mId,
               contents,
             });
+
+            const response = await Promise.race([
+              genPromise,
+              new Promise((_, reject) => setTimeout(() => reject(new Error(`@google/genai (${mId}) timed out after ${timeoutMs}ms`)), timeoutMs))
+            ]);
 
             const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '';
             if (text) {
@@ -131,7 +140,12 @@ const chatWithGemini = async (messages, options = {}) => {
             lastError = modelErr;
             const errStr = modelErr.message || String(modelErr);
             const isRateLimit = errStr.includes('429') || errStr.includes('Resource exhausted');
+            const isFatalNetwork = /getaddrinfo|ENOTFOUND|timed out|unable to impersonate|EAI_AGAIN|connect ETIMEDOUT/i.test(errStr);
             console.warn(`${reqTag}Model ${mId} attempt note: ${errStr.slice(0, 150)}`);
+
+            if (isFatalNetwork) {
+              break;
+            }
 
             if (isRateLimit && retry < maxRetries) {
               continue;
@@ -151,18 +165,53 @@ const chatWithGemini = async (messages, options = {}) => {
 // ─── OpenAI Chat ──────────────────────────────────────────────────────────────
 const chatWithOpenAI = async (messages, options = {}) => {
   const client = getOpenAIClient();
-  const systemMsg = { role: 'system', content: buildSystemPrompt(options) };
-  const fullMessages = [systemMsg, ...messages.map((m) => ({
-    role: m.role === 'model' ? 'assistant' : m.role,
-    content: m.content,
-  }))];
+  const isJsonMode = options.jsonMode || (options.responseFormat === 'json') || /valid JSON|raw JSON|Return ONLY.*JSON/i.test(messages[messages.length - 1]?.content || '');
 
-  const response = await client.chat.completions.create({
+  let systemMsg;
+  if (isJsonMode) {
+    systemMsg = {
+      role: 'system',
+      content: options.systemInstruction || 'You are an expert AI data extraction engine. You must output ONLY a valid, parseable JSON object matching the requested schema. Do not include markdown codeblocks, conversational text, or any explanations.'
+    };
+  } else {
+    systemMsg = { role: 'system', content: buildSystemPrompt(options) };
+  }
+
+  const fullMessages = [systemMsg];
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i];
+    const role = m.role === 'model' ? 'assistant' : m.role;
+    if (i === messages.length - 1 && options.images && Array.isArray(options.images) && options.images.length > 0) {
+      const contentParts = [{ type: 'text', text: m.content }];
+      options.images.forEach(img => {
+        const rawB64 = typeof img === 'string' ? img : (img.base64 || img.data);
+        const mimeType = (typeof img === 'object' && img.mimeType) ? img.mimeType : 'image/jpeg';
+        if (rawB64) {
+          const cleanB64 = rawB64.replace(/^data:image\/\w+;base64,/, '').trim();
+          contentParts.push({
+            type: 'image_url',
+            image_url: { url: `data:${mimeType};base64,${cleanB64}` }
+          });
+        }
+      });
+      fullMessages.push({ role, content: contentParts });
+    } else {
+      fullMessages.push({ role, content: m.content });
+    }
+  }
+
+  const completionParams = {
     model: options.modelId || 'gpt-4o',
     messages: fullMessages,
-    temperature: options.temperature || 0.7,
+    temperature: options.temperature !== undefined ? options.temperature : 0.1,
     max_tokens: options.maxTokens || 4096,
-  });
+  };
+
+  if (isJsonMode) {
+    completionParams.response_format = { type: 'json_object' };
+  }
+
+  const response = await client.chat.completions.create(completionParams);
 
   return {
     text: response.choices[0].message.content,
@@ -513,11 +562,11 @@ const generateJSON = async (prompt, options = {}) => {
   const langDirective = targetLang ? `\nCRITICAL LANGUAGE INSTRUCTION: Write and output ALL text, headlines, titles, copy, descriptions, hooks, sections, and content strictly in "${targetLang}" language.` : '';
   const jsonInstruction = `\n\nIMPORTANT: Respond ONLY with valid JSON. No markdown, no code blocks, no explanation. Just raw JSON.${langDirective}`;
 
-  console.log(`${reqTag}AI generateJSON started (${targetLang || 'English'})...`);
+  const jsonOptions = { ...options, jsonMode: true, responseFormat: 'json' };
 
   let result = null;
   try {
-    result = await generate(prompt + jsonInstruction, options);
+    result = await generate(prompt + jsonInstruction, jsonOptions);
   } catch (genErr) {
     console.warn(`${reqTag}AI generate threw error (${genErr.message}). Using Smart Fallback JSON.`);
   }

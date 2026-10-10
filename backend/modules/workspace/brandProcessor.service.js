@@ -241,6 +241,92 @@ function resolveHeadquartersAndLocations(domainName, cleanBrandKey, scrapedMetad
     }
   }
 
+  // Priority 3A: Scan Official Website DOM Text (combinedText and deepContextText)
+  const websiteText = ((combinedText || '') + ' ' + (scrapedMetadata.deepContextText || '')).trim();
+  if (websiteText && websiteText.length > 10) {
+    const hqPatterns = [
+      /(?:headquarters|registered office|corporate office|registered address)(?:\s+address)?(?:\s+of\s+[\s\S]+?)?\s+(?:is|at|in|:)\s+([A-Z0-9][a-zA-Z0-9\s,.'\/-]{5,140}?(?:,\s*(?:India|USA|United States|UK|Canada|Germany))(?:\s*[-–]\s*\d{5,6}|\s+\d{5,6})?)(?=[.,\n]|$)/i,
+      /(?:headquartered in|based in|located in|headquarters in)[\s:]+([A-Z0-9][a-zA-Z0-9\s,.'-]{3,80}?(?:,\s*(?:India|USA|United States|UK|United Kingdom|Canada|Germany|France|Australia|Japan|Singapore|UAE|Maharashtra|Madhya Pradesh|Karnataka|Delhi|Bengaluru|Bangalore|Mumbai|Jabalpur|Indore|Gurugram|Gurgaon|Noida|Hyderabad|Chennai|Pune|Kolkata|Ahmedabad|Jaipur|Surat|Lucknow))?)/i,
+      /(?:address|office)[\s:]+([A-Z0-9][a-zA-Z0-9\s,.'-]{5,90}?(?:,\s*(?:India|USA|United States|UK|Canada|Germany|Maharashtra|Madhya Pradesh|Karnataka|Delhi|Mumbai|Jabalpur|Indore|Bangalore|Bengaluru)))\b/i,
+      /\b([A-Z][a-zA-Z\s]{2,25},\s*(?:Madhya Pradesh|Maharashtra|Karnataka|Tamil Nadu|Delhi|Uttar Pradesh|Gujarat|Rajasthan|Haryana|Telangana|West Bengal|Kerala|Punjab|Goa),\s*India)\b/i,
+      /\b([A-Z][a-zA-Z\s]{2,25},\s*(?:California|New York|Texas|Florida|Illinois|Washington|Massachusetts),\s*(?:USA|United States))\b/i
+    ];
+
+    for (const pat of hqPatterns) {
+      const match = websiteText.match(pat);
+      if (match && match[1]) {
+        let foundLoc = match[1].trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+        // Clean any leading 'of <Company> is/at/in' or 'located at/in' prefix if caught
+        foundLoc = foundLoc.replace(/^(?:(?:the\s+)?(?:headquarters|registered\s+office|registered\s+address|corporate\s+office)?\s*address\s+)?of\s+[\s\S]+?\s+(?:is|at|in|:)\s+/i, '').trim();
+        foundLoc = foundLoc.replace(/^(?:located\s+(?:at|in)|headquartered\s+in|based\s+in|registered\s+at)\s+/i, '').trim();
+        foundLoc = foundLoc.replace(/[-–,\s]+$/, '').trim();
+        if (foundLoc.length >= 4 && !/^(the|our|this|we|welcome|click|call|services|about|privacy|terms|looking|feel free)/i.test(foundLoc)) {
+          candidateLocations.push({
+            value: foundLoc,
+            type: 'HEADQUARTERS',
+            sourceType: 'WEBSITE_DOM',
+            sourceUrl: rawUrl,
+            evidence: `Found location in official website text: "${foundLoc}"`,
+            method: 'WEBSITE_DOM_LOCATION_EXTRACTOR',
+            confidence: 0.90
+          });
+          break;
+        }
+      }
+    }
+  }
+
+  // Priority 3B: Scan Verified Search Enrichment Text (ONLY if missing from website DOM)
+  if (candidateLocations.length === 0 && scrapedMetadata.searchEnrichmentText && scrapedMetadata.searchEnrichmentText.length > 10) {
+    const searchText = scrapedMetadata.searchEnrichmentText;
+    const entityTokens = [
+      (cleanBrandKey || '').toLowerCase(),
+      (scrapedMetadata.parentCompany || '').toLowerCase(),
+      (scrapedMetadata.legalName || '').toLowerCase(),
+      (domainName || '').replace(/\.[a-z]+$/i, '').toLowerCase()
+    ].filter(t => t && t.length >= 3);
+
+    const searchHqPatterns = [
+      /(?:headquarters|registered office|corporate office|registered address)(?:\s+address)?(?:\s+of\s+[\s\S]+?)?\s+(?:is|at|in|:)\s+([A-Z0-9][a-zA-Z0-9\s,.'\/-]{5,140}?(?:,\s*(?:India|USA|United States|UK|Canada|Germany))(?:\s*[-–]\s*\d{5,6}|\s+\d{5,6})?)(?=[.,\n]|$)/i,
+      /(?:headquartered in|based in|located in|headquarters in)[\s:]+([A-Z0-9][a-zA-Z0-9\s,.'-]{3,80}?(?:,\s*(?:India|USA|United States|UK|United Kingdom|Canada|Germany|France|Australia|Japan|Singapore|UAE|Maharashtra|Madhya Pradesh|Karnataka|Delhi|Bengaluru|Bangalore|Mumbai|Jabalpur|Indore|Gurugram|Gurgaon|Noida|Hyderabad|Chennai|Pune|Kolkata|Ahmedabad|Jaipur|Surat|Lucknow))?)/i,
+      /(?:address|office)[\s:]+([A-Z0-9][a-zA-Z0-9\s,.'-]{5,90}?(?:,\s*(?:India|USA|United States|UK|Canada|Germany|Maharashtra|Madhya Pradesh|Karnataka|Delhi|Mumbai|Jabalpur|Indore|Bangalore|Bengaluru)))\b/i,
+      /\b([A-Z][a-zA-Z\s]{2,25},\s*(?:Madhya Pradesh|Maharashtra|Karnataka|Tamil Nadu|Delhi|Uttar Pradesh|Gujarat|Rajasthan|Haryana|Telangana|West Bengal|Kerala|Punjab|Goa),\s*India)\b/i,
+      /\b([A-Z][a-zA-Z\s]{2,25},\s*(?:California|New York|Texas|Florida|Illinois|Washington|Massachusetts),\s*(?:USA|United States))\b/i
+    ];
+
+    for (const pat of searchHqPatterns) {
+      const match = searchText.match(pat);
+      if (match && match[1]) {
+        let foundLoc = match[1].trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+        foundLoc = foundLoc.replace(/^(?:(?:the\s+)?(?:headquarters|registered\s+office|registered\s+address|corporate\s+office)?\s*address\s+)?of\s+[\s\S]+?\s+(?:is|at|in|:)\s+/i, '').trim();
+        foundLoc = foundLoc.replace(/^(?:located\s+(?:at|in)|headquartered\s+in|based\s+in|registered\s+at)\s+/i, '').trim();
+        foundLoc = foundLoc.replace(/[-–,\s]+$/, '').trim();
+
+        // Strict Entity Grounding Check:
+        // Ensure the match is in the immediate context of the target brand or parent entity
+        const matchIdx = searchText.indexOf(match[0]);
+        const startWindow = Math.max(0, matchIdx - 120);
+        const endWindow = Math.min(searchText.length, matchIdx + match[0].length + 120);
+        const windowText = searchText.slice(startWindow, endWindow).toLowerCase();
+
+        const isEntityGrounded = entityTokens.some(token => windowText.includes(token));
+
+        if (isEntityGrounded && foundLoc.length >= 4 && !/^(the|our|this|we|welcome|click|call|services|about|privacy|terms|looking|feel free)/i.test(foundLoc)) {
+          candidateLocations.push({
+            value: foundLoc,
+            type: 'HEADQUARTERS',
+            sourceType: 'SEARCH_ENRICHMENT',
+            sourceUrl: rawUrl,
+            evidence: `Verified brand-grounded location from search evidence: "${foundLoc}"`,
+            method: 'TEXT_LOCATION_EXTRACTOR',
+            confidence: 0.86
+          });
+          break;
+        }
+      }
+    }
+  }
+
   if (candidateLocations.length === 0) {
     return {
       headquarters: {
@@ -283,18 +369,20 @@ function resolveHeadquartersAndLocations(domainName, cleanBrandKey, scrapedMetad
 function resolveContactInformation(scrapedMetadata = {}, rawUrl = '') {
   const emails = scrapedMetadata.emails || [];
   const phones = scrapedMetadata.phones || [];
-  const location = scrapedMetadata.hqAddress || null;
+  const location = scrapedMetadata.hqAddress || scrapedMetadata.schemaAddress || null;
+  const primaryEmail = emails.length > 0 ? emails[0] : (scrapedMetadata.schemaEmail || null);
+  const primaryPhone = phones.length > 0 ? phones[0] : (scrapedMetadata.schemaTelephone || null);
 
-  if (emails.length > 0 || phones.length > 0) {
+  if (primaryEmail || primaryPhone || location) {
     return {
       value: {
-        email: emails.length > 0 ? emails[0] : null,
-        phone: phones.length > 0 ? phones[0] : null,
+        email: primaryEmail,
+        phone: primaryPhone,
         location: location
       },
-      sourceType: 'WEBSITE_DOM',
+      sourceType: (primaryEmail || primaryPhone) ? 'WEBSITE_DOM' : (scrapedMetadata.schemaAddress ? 'WEBSITE_SCHEMA' : 'UNKNOWN'),
       sourceUrl: rawUrl,
-      evidence: `Scraped official contact details: email="${emails[0] || 'N/A'}", phone="${phones[0] || 'N/A'}"`,
+      evidence: `Scraped official contact details: email="${primaryEmail || 'N/A'}", phone="${primaryPhone || 'N/A'}", location="${location || 'N/A'}"`,
       confidence: 0.85
     };
   }
@@ -407,6 +495,15 @@ function isValidOfficialTagline(str, brandName = '', domainName = '') {
     return false;
   }
 
+  // Country, regional, or store modifier attached to brand name (e.g. "Nike IN", "Nike India", "Nike Store", "Apple Online")
+  if (cleanBrand && (
+    new RegExp(`^${cleanBrand}\\s+(?:in|us|uk|ca|au|eu|global|india|official|store|shop|online|website|app|india\\s+store)$`, 'i').test(lower) ||
+    new RegExp(`^(?:in|us|uk|ca|au|eu|global|india|official|store|shop|online|welcome\\s+to)\\s+${cleanBrand}$`, 'i').test(lower) ||
+    (words.length <= 2 && words.map(w => w.toLowerCase()).includes(cleanBrand) && /(?:in|us|uk|ca|au|eu|global|india|store|shop|app)/i.test(lower))
+  )) {
+    return false;
+  }
+
   // Legal corporate suffixes (e.g. "Insight Cosmetics Pvt Ltd", "Nike, Inc.")
   if (/\b(pvt\.?\s*ltd\.?|private\s+limited|inc\.?|llc|llp|corp\.?|corporation|ltd\.?|limited|gmbh|co\.?|holdings?|enterprises?)\b/i.test(lower)) {
     return false;
@@ -447,8 +544,16 @@ function isValidOfficialTagline(str, brandName = '', domainName = '') {
     return false;
   }
 
-  // Domain parking / sale notices
-  if (/\b(domain\s+for\s+sale|buy\s+this\s+domain|premium\s+domain|godaddy|sedo|dan\.com)\b/i.test(lower)) {
+  // 4. Incomplete truncated fragments, dangling prefixes, conjunctions or prepositions
+  if (/(?:^|\s)(?:multi|cross|auto|pre|post|sub|anti|pro|non|inter|intra|cyber|omni|and|or|&|with|for|in|to|of|the|a|an|at|by|from|on|into)[-]?$/i.test(lower)) {
+    return false;
+  }
+  if (/^(?:and|or|&|with|for|in|to|of|the|a|an|at|by|from|on|into)\s+/i.test(lower)) {
+    return false;
+  }
+
+  // 5. Tech platform, software capability, or architecture descriptions (not branding slogans)
+  if (/\b(crm\s+platform|saas\s+platform|automation\s+platform|software\s+platform|management\s+platform|management\s+system|crm\s+system|enterprise\s+platform|software\s+agency|unified\s+inbox|cloud\s+platform|api\s+integration|white-label\s+software)\b/i.test(lower)) {
     return false;
   }
 
