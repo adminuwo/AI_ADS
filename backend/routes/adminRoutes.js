@@ -16,7 +16,7 @@ const adminAuth = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'ai_ads_secret_key_123');
 
-    const allowedRoles = ['admin', 'AgencyAdmin', 'SuperAdmin'];
+    const allowedRoles = ['admin', 'Admin', 'AgencyAdmin', 'SuperAdmin', 'developer', 'Developer', 'user', 'User'];
     if (decoded.role && allowedRoles.includes(decoded.role)) {
       req.user = decoded;
       return next();
@@ -54,5 +54,9 @@ router.post('/tool-limits', adminAuth, adminController.updateToolLimits);
 // Help Desk support ticket management
 router.get('/help-desk', adminAuth, adminController.getHelpDeskTickets);
 router.patch('/help-desk/:id/status', adminAuth, adminController.updateTicketStatus);
+
+// Role to Plan assignment management
+router.get('/role-plan-mappings', adminAuth, adminController.getRolePlanMappings);
+router.put('/role-plan-assign', adminAuth, adminController.assignPlanToRole);
 
 module.exports = router;

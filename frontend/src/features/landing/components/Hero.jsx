@@ -156,20 +156,11 @@ export const Hero = () => {
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent" />
       </CinematicBackground>
 
-      <div className="relative z-10 w-full max-w-3xl mx-auto px-4 sm:px-6 py-20 text-center flex flex-col items-center">
-
-        {/* Eyebrow */}
-        <div className="pipeline-pop inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/15 backdrop-blur-md text-[11px] sm:text-xs font-semibold tracking-wide text-white/80">
-          <span className="relative flex w-2 h-2">
-            <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-            <span className="relative inline-flex w-2 h-2 rounded-full bg-emerald-400" />
-          </span>
-          AI marketing suite for brands &amp; agencies
-        </div>
+      <div className="relative z-10 w-full max-w-3xl mx-auto px-4 sm:px-6 pt-8 pb-14 sm:pt-12 sm:pb-16 text-center flex flex-col items-center">
 
         {/* Headline */}
         <h1
-          className="pipeline-pop mt-6 font-['Outfit'] font-extrabold tracking-tight leading-[1.02] text-5xl sm:text-6xl lg:text-7xl"
+          className="pipeline-pop font-['Outfit'] font-extrabold tracking-tight leading-[1.02] text-5xl sm:text-6xl lg:text-7xl"
           style={{ animationDelay: '120ms' }}
         >
           <span className="block text-white">One brief.</span>
@@ -179,14 +170,14 @@ export const Hero = () => {
         </h1>
 
         <p
-          className="pipeline-pop mt-5 max-w-xl text-base sm:text-lg text-white/70 leading-relaxed"
+          className="pipeline-pop mt-4 max-w-xl text-base sm:text-lg text-white/70 leading-relaxed"
           style={{ animationDelay: '220ms' }}
         >
           Describe your goal. AI Ads turns it into strategy, SEO content, ad creatives and landing pages — all locked to your Brand DNA.
         </p>
 
         {/* Live composer demo */}
-        <div className="pipeline-pop mt-9 w-full flex justify-center" style={{ animationDelay: '340ms' }}>
+        <div className="pipeline-pop mt-7 w-full flex justify-center" style={{ animationDelay: '340ms' }}>
           <BriefComposer reduced={reduced} />
         </div>
 

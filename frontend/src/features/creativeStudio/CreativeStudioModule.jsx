@@ -87,25 +87,43 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
     setGenerating(true);
     deductVisualCredits(cost, `AI Visual: "${prompt.slice(0, 30)}..."`);
     try {
+      const token = localStorage.getItem('aisa_token');
       const res = await fetch(`${API_BASE}/creative/visual/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, style, creditCost: cost })
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          workspaceId: workspace?._id || workspace?.id,
+          prompt: prompt || topic || 'Modern Commercial Asset',
+          topic: topic || prompt || 'Commercial Brand Campaign',
+          style,
+          brandName: workspace?.brandName,
+          brandColors: workspace?.brandColors,
+          industry: workspace?.industryCategory || workspace?.niche,
+          creditCost: cost
+        })
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.asset) {
         const rawUrl = data.asset.imageUrl || data.asset.url;
-        const compositedUrl = await compositeBrandLogoOntoImage(rawUrl, {
-          brandName: workspace?.brandName,
-          domainUrl: workspace?.domainUrl,
-          logoUrl: workspace?.logoUrl,
-          faviconUrl: workspace?.faviconUrl
-        });
+        let compositedUrl = rawUrl;
+        try {
+          compositedUrl = await compositeBrandLogoOntoImage(rawUrl, {
+            brandName: workspace?.brandName,
+            domainUrl: workspace?.domainUrl,
+            logoUrl: workspace?.logoUrl,
+            faviconUrl: workspace?.faviconUrl
+          });
+        } catch (cErr) {
+          console.warn('[CreativeStudio] Logo compositing fallback to raw URL:', cErr);
+        }
         const finalAsset = { ...data.asset, imageUrl: compositedUrl || rawUrl };
         setResult(finalAsset);
         addGlobalAsset({ name: topic || 'AI Generated Image', type: 'IMAGE', url: finalAsset.imageUrl, date: new Date().toISOString(), credits: cost });
       }
-      else throw new Error('API error');
+      else throw new Error(data?.error || 'API generation failed');
     } catch (err) {
       console.error('Creative image synthesis error:', err);
       const escapeXml = (s = '') => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
@@ -113,12 +131,15 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
       const safeStyle = escapeXml(style);
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800"><rect width="800" height="800" fill="#0F172A"/><circle cx="400" cy="400" r="250" fill="#6366F1" opacity="0.25"/><text x="400" y="390" fill="#FFFFFF" font-family="sans-serif" font-size="24" font-weight="bold" text-anchor="middle">${cleanPrompt}</text><text x="400" y="430" fill="#818CF8" font-family="sans-serif" font-size="14" text-anchor="middle">Style: ${safeStyle}</text><text x="400" y="520" fill="#94A3B8" font-family="sans-serif" font-size="12" text-anchor="middle">Google Cloud Vertex AI • Gemini Image Pipeline</text></svg>`;
       const rawFallback = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`;
-      const compositedFallback = await compositeBrandLogoOntoImage(rawFallback, {
-        brandName: workspace?.brandName,
-        domainUrl: workspace?.domainUrl,
-        logoUrl: workspace?.logoUrl,
-        faviconUrl: workspace?.faviconUrl
-      });
+      let compositedFallback = rawFallback;
+      try {
+        compositedFallback = await compositeBrandLogoOntoImage(rawFallback, {
+          brandName: workspace?.brandName,
+          domainUrl: workspace?.domainUrl,
+          logoUrl: workspace?.logoUrl,
+          faviconUrl: workspace?.faviconUrl
+        });
+      } catch (fErr) {}
       const fallbackResult = {
         id: `vis_${Date.now()}`,
         topic,
@@ -129,7 +150,6 @@ const VisualStudio = ({ workspace, credits, deductVisualCredits, setIsCreditModa
         createdAt: new Date().toISOString()
       };
       setResult(fallbackResult);
-      // Removed addGlobalAsset here so we don't save wireframes to the asset library
     } finally { setGenerating(false); }
   };
 

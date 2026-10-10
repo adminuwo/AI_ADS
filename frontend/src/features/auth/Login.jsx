@@ -644,16 +644,16 @@ export const Login = ({ onLoginSuccess }) => {
                         setError('');
                       }
                     }}
-                    className="mt-0.5 w-3 h-3 rounded border-slate-300 text-rose-500 focus:ring-rose-500 cursor-pointer shrink-0"
+                    className="mt-0.5 w-3 h-3 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
                   />
                   <label htmlFor="acceptTermsCheck" className="text-[10px] text-slate-600 leading-tight">
                     I agree to the{' '}
-                    <button type="button" onClick={() => { setActiveLegalTab('privacy'); setShowLegalModal(true); }} className="font-bold text-rose-600 hover:underline">
+                    <button type="button" onClick={() => { setShowLegalModal(true); }} className="font-bold text-emerald-600 hover:underline">
                       Privacy Policy
                     </button>
                     {' '}&{' '}
-                    <button type="button" onClick={() => { setActiveLegalTab('terms'); setShowLegalModal(true); }} className="font-bold text-rose-600 hover:underline">
-                      Terms
+                    <button type="button" onClick={() => { setShowLegalModal(true); }} className="font-bold text-emerald-600 hover:underline">
+                      Terms & Conditions
                     </button>.
                   </label>
                 </div>
@@ -800,14 +800,11 @@ export const Login = ({ onLoginSuccess }) => {
               {/* Modal Header */}
               <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
-                      First-Time User Consent
-                    </span>
-                    <h3 className="text-base font-extrabold text-slate-900 leading-tight mt-0.5">
+                    <h3 className="text-base font-extrabold text-slate-900 leading-tight">
                       AI Ads™ Platform Policies & Agreements
                     </h3>
                   </div>
@@ -821,92 +818,63 @@ export const Login = ({ onLoginSuccess }) => {
                 </button>
               </div>
 
-              {/* Tab Switcher: Privacy Policy vs Terms of Service */}
-              <div className="flex items-center gap-2 p-3 bg-slate-50 border-b border-slate-200 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setActiveLegalTab('privacy')}
-                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                    activeLegalTab === 'privacy'
-                      ? 'bg-white text-emerald-600 shadow-sm border border-emerald-100 font-extrabold'
-                      : 'text-slate-500 hover:bg-white hover:text-slate-700'
-                  }`}
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Privacy Policy</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveLegalTab('terms')}
-                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                    activeLegalTab === 'terms'
-                      ? 'bg-white text-rose-600 shadow-sm border border-rose-100 font-extrabold'
-                      : 'text-slate-500 hover:bg-white hover:text-slate-700'
-                  }`}
-                >
-                  <Scale className="w-4 h-4" />
-                  <span>Terms of Service</span>
-                </button>
-              </div>
-
-              {/* Scrollable Content Reader Area */}
-              <div className="p-5 overflow-y-auto space-y-4 text-xs text-slate-700 leading-relaxed max-h-[50vh]">
-                {activeLegalTab === 'privacy' ? (
-                  <div className="space-y-3">
-                    <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-900 font-medium">
-                      <p className="font-extrabold text-xs uppercase tracking-wide text-emerald-700 mb-1">
-                        🔒 Customer Privacy & Data Protection Policy
-                      </p>
-                      <p className="text-[11.5px]">
-                        Your Brand DNA parameters, campaign content, and prompts are strictly protected. We do not sell your workspace data or use your proprietary content to train public AI models.
-                      </p>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      <h4 className="font-extrabold text-slate-900 text-xs">Summary of Key Privacy Rights:</h4>
-                      <ul className="list-disc pl-5 space-y-1.5 text-[11.5px] text-slate-600">
-                        <li><strong>1. Information Collection:</strong> We store account credentials, Brand DNA guidelines, uploaded media, and platform telemetry needed to run your workspace.</li>
-                        <li><strong>2. How Data is Used:</strong> Data powers AI ad generation, strategy creation, transactional emails, and system stability.</li>
-                        <li><strong>3. 100% Proprietary Ownership:</strong> You retain complete ownership of your uploaded assets and AI-generated campaign outputs.</li>
-                        <li><strong>4. Third-Party Infrastructure:</strong> Cloud hosting, payment processing (Razorpay), and AI models process data securely under strict confidentiality.</li>
-                        <li><strong>5. Data Security:</strong> Protected using standard industry encryption during network transit and database storage.</li>
-                        <li><strong>6. Permanent Account Deletion:</strong> You can purge your account and workspace data permanently at any time via 6-digit email OTP verification.</li>
-                      </ul>
-
-                      <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-500">
-                        Privacy Contact: <a href="mailto:admin@uwo24.com" className="text-rose-600 underline font-bold">admin@uwo24.com</a> · Phone: <a href="tel:+918358990909" className="text-rose-600 underline font-bold">+91 83589 90909</a>
-                      </div>
-                    </div>
+              {/* Scrollable Single Combined Content Card */}
+              <div className="p-5 overflow-y-auto space-y-4 text-xs text-slate-700 leading-relaxed max-h-[55vh]">
+                {/* 1. Privacy Policy Section */}
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-900 font-medium">
+                    <p className="font-extrabold text-xs uppercase tracking-wide text-emerald-700 mb-1 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      Customer Privacy & Data Protection Policy
+                    </p>
+                    <p className="text-[11.5px]">
+                      Your Brand DNA parameters, campaign content, and prompts are strictly protected. We do not sell your workspace data or use your proprietary content to train public AI models.
+                    </p>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-100 text-rose-900 font-medium">
-                      <p className="font-extrabold text-xs uppercase tracking-wide text-rose-700 mb-1">
-                        ⚖️ Commercial Ownership & Usage Terms
-                      </p>
-                      <p className="text-[11.5px]">
-                        AI Ads™ provides an enterprise marketing generation platform. All website code, ad graphics, and copy synthesized in your workspace belong exclusively to your organization.
-                      </p>
-                    </div>
 
-                    <div className="space-y-2.5">
-                      <h4 className="font-extrabold text-slate-900 text-xs">Summary of Key Terms:</h4>
-                      <ul className="list-disc pl-5 space-y-1.5 text-[11.5px] text-slate-600">
-                        <li><strong>1. License Agreement:</strong> Platform access is licensed according to your selected plan (Starter, Pro, Agency, Enterprise).</li>
-                        <li><strong>2. Account Security:</strong> You are responsible for maintaining secure password credentials for your workspace.</li>
-                        <li><strong>3. Commercial IP Ownership:</strong> AI Ads™ makes zero claim of ownership over your Brand DNA inputs or generated campaign outputs.</li>
-                        <li><strong>4. Acceptable Use:</strong> Users agree not to synthesize illegal, fraudulent, harmful, or deceptive content.</li>
-                        <li><strong>5. Subscriptions & Credits:</strong> AI generation consumes visual credits based on your active subscription balance.</li>
-                        <li><strong>6. Self-Service Deletion:</strong> You can cancel subscriptions or initiate permanent account deletion at any time.</li>
-                      </ul>
-
-                      <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-500">
-                        Legal Support: <a href="mailto:admin@uwo24.com" className="text-rose-600 underline font-bold">admin@uwo24.com</a> · Phone: <a href="tel:+918358990909" className="text-rose-600 underline font-bold">+91 83589 90909</a>
-                      </div>
-                    </div>
+                  <div className="space-y-2">
+                    <h4 className="font-extrabold text-slate-900 text-xs">Summary of Key Privacy Rights:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-[11.5px] text-slate-600">
+                      <li><strong>1. Information Collection:</strong> We store account credentials, Brand DNA guidelines, uploaded media, and platform telemetry needed to run your workspace.</li>
+                      <li><strong>2. How Data is Used:</strong> Data powers AI ad generation, strategy creation, transactional emails, and system stability.</li>
+                      <li><strong>3. 100% Proprietary Ownership:</strong> You retain complete ownership of your uploaded assets and AI-generated campaign outputs.</li>
+                      <li><strong>4. Third-Party Infrastructure:</strong> Cloud hosting, payment processing (Razorpay), and AI models process data securely under strict confidentiality.</li>
+                      <li><strong>5. Data Security:</strong> Protected using standard industry encryption during network transit and database storage.</li>
+                      <li><strong>6. Permanent Account Deletion:</strong> You can purge your account and workspace data permanently at any time via 6-digit email OTP verification.</li>
+                    </ul>
                   </div>
-                )}
+                </div>
+
+                <div className="my-2 border-t border-slate-200" />
+
+                {/* 2. Terms of Service Section */}
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-900 font-medium">
+                    <p className="font-extrabold text-xs uppercase tracking-wide text-emerald-700 mb-1 flex items-center gap-1.5">
+                      <Scale className="w-4 h-4 text-emerald-600" />
+                      Commercial Ownership & Terms of Service
+                    </p>
+                    <p className="text-[11.5px]">
+                      AI Ads™ provides an enterprise marketing generation platform. All website code, ad graphics, and copy synthesized in your workspace belong exclusively to your organization.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="font-extrabold text-slate-900 text-xs">Summary of Key Terms:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-[11.5px] text-slate-600">
+                      <li><strong>1. License Agreement:</strong> Platform access is licensed according to your selected plan (Starter, Pro, Agency, Enterprise).</li>
+                      <li><strong>2. Account Security:</strong> You are responsible for maintaining secure password credentials for your workspace.</li>
+                      <li><strong>3. Commercial IP Ownership:</strong> AI Ads™ makes zero claim of ownership over your Brand DNA inputs or generated campaign outputs.</li>
+                      <li><strong>4. Acceptable Use:</strong> Users agree not to synthesize illegal, fraudulent, harmful, or deceptive content.</li>
+                      <li><strong>5. Subscriptions & Credits:</strong> AI generation consumes visual credits based on your active subscription balance.</li>
+                      <li><strong>6. Self-Service Deletion:</strong> You can cancel subscriptions or initiate permanent account deletion at any time.</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-500">
+                  Privacy & Legal Support: <a href="mailto:admin@uwo24.com" className="text-emerald-600 underline font-bold">admin@uwo24.com</a> · Phone: <a href="tel:+918358990909" className="text-emerald-600 underline font-bold">+91 83589 90909</a>
+                </div>
               </div>
 
               {/* Modal Footer Controls */}
@@ -922,7 +890,7 @@ export const Login = ({ onLoginSuccess }) => {
                     setShowLegalModal(false);
                     setError('');
                   }}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-extrabold text-xs shadow-md shadow-rose-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0"
                 >
                   <Check className="w-4 h-4" />
                   <span>I Accept</span>

@@ -63,6 +63,8 @@ export const plansAPI = {
   getPlans: () => apiFetch('/plans'),
   getTopups: () => Promise.resolve({ success: true, topups: [] }),
   subscribe: (body) => apiFetch('/plans/subscribe', { method: 'POST', body }),
+  saveDeveloperCustomPlans: (plans) => apiFetch('/plans/developer-custom', { method: 'POST', body: { plans } }),
+  resetDeveloperCustomPlans: () => apiFetch('/plans/developer-custom/reset', { method: 'POST' }),
 };
 
 // ─── Campaign API ──────────────────────────────────────────────────────────────
@@ -307,6 +309,8 @@ export const adminAPI = {
   updateToolLimits: (data) => adminApiFetch('/admin/tool-limits', { method: 'POST', body: data }),
   getHelpDeskTickets: () => adminApiFetch('/admin/help-desk'),
   updateTicketStatus: (ticketId, status) => adminApiFetch(`/admin/help-desk/${ticketId}/status`, { method: 'PATCH', body: { status } }),
+  getRolePlanMappings: () => adminApiFetch('/admin/role-plan-mappings'),
+  assignPlanToRole: (role, plan) => adminApiFetch('/admin/role-plan-assign', { method: 'PUT', body: { role, plan } }),
 };
 
 // ─── Health Check & Testing Diagnostics ────────────────────────────────────────

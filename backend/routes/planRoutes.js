@@ -149,10 +149,22 @@ const ensurePlansSeeded = async () => {
   }
 };
 
+const { optionalAuth, requireAuth } = require('../middleware/auth');
+
 // ─── GET /api/plans ─────────────────────────────────────────────────────────
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     await ensurePlansSeeded();
+
+    // Check if requester is authenticated and has Developer role with custom plans
+    if (req.user && req.user.role && req.user.role.toLowerCase() === 'developer') {
+      const User = require('../models/User');
+      const devUser = await User.findById(req.user.userId || req.user._id).select('customPlans role');
+      if (devUser && Array.isArray(devUser.customPlans) && devUser.customPlans.length > 0) {
+        return res.json({ success: true, plans: devUser.customPlans, isDeveloperCustom: true });
+      }
+    }
+
     let plans = [];
     if (mongoose.connection.readyState === 1) {
       plans = await Plan.find({}).sort({ order: 1 });
@@ -160,10 +172,71 @@ router.get('/', async (req, res) => {
     if (!plans || plans.length === 0) {
       plans = memoryPlans;
     }
-    res.json({ success: true, plans });
+    res.json({ success: true, plans, isDeveloperCustom: false });
   } catch (err) {
     console.error('[Get Plans Error]:', err.message);
-    res.json({ success: true, plans: memoryPlans });
+    res.json({ success: true, plans: memoryPlans, isDeveloperCustom: false });
+  }
+});
+
+// ─── POST /api/plans/developer-custom ─────────────────────────────────────────
+router.post('/developer-custom', requireAuth, async (req, res) => {
+  try {
+    const userRole = (req.user?.role || '').toLowerCase();
+    if (userRole !== 'developer') {
+      return res.status(403).json({
+        success: false,
+        error: 'Only Developer role accounts can edit and save custom subscription plans.'
+      });
+    }
+
+    const { plans } = req.body || {};
+    if (!Array.isArray(plans) || plans.length === 0) {
+      return res.status(400).json({ success: false, error: 'A valid array of custom plans is required.' });
+    }
+
+    const User = require('../models/User');
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId || req.user._id,
+      { customPlans: plans },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'Developer custom plans saved! These plan modifications are private and visible exclusively to your developer account.',
+      customPlans: updatedUser.customPlans
+    });
+  } catch (err) {
+    console.error('[Save Developer Custom Plans Error]:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── POST /api/plans/developer-custom/reset ─────────────────────────────────
+router.post('/developer-custom/reset', requireAuth, async (req, res) => {
+  try {
+    const userRole = (req.user?.role || '').toLowerCase();
+    if (userRole !== 'developer') {
+      return res.status(403).json({
+        success: false,
+        error: 'Only Developer role accounts can reset custom subscription plans.'
+      });
+    }
+
+    const User = require('../models/User');
+    await User.findByIdAndUpdate(
+      req.user.userId || req.user._id,
+      { customPlans: [] }
+    );
+
+    res.json({
+      success: true,
+      message: 'Reset custom developer plans to platform default plans.'
+    });
+  } catch (err) {
+    console.error('[Reset Developer Custom Plans Error]:', err.message);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

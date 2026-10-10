@@ -3,20 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --brand-500: #7B61FF;
-  --brand-600: #6B5AED;
-  --brand-400: #A882FF;
-  --brand-300: #B388FF;
-  --brand-100: #E8E3FF;
+  --brand-500: #2196EA;
+  --brand-600: #1B7FCA;
+  --brand-400: #54B0F3;
+  --brand-300: #7BC3F6;
+  --brand-100: #E3F2FD;
   --brand-50: #F8F9FD;
-  --brand-glow: rgba(123, 97, 255, 0.35);
-  --brand-from: #6B5AED;
-  --brand-to: #7B61FF;
-  --brand-500-rgb: 123, 97, 255;
-  --brand-600-rgb: 107, 90, 237;
-  --brand-400-rgb: 168, 130, 255;
-  --brand-300-rgb: 179, 136, 255;
-  --brand-700-rgb: 86, 70, 199;
+  --brand-glow: rgba(33, 150, 234, 0.35);
+  --brand-from: #2196EA;
+  --brand-to: #F5A014;
+  --brand-500-rgb: 33, 150, 234;
+  --brand-600-rgb: 27, 127, 202;
+  --brand-400-rgb: 84, 176, 243;
+  --brand-300-rgb: 123, 195, 246;
+  --brand-700-rgb: 21, 101, 192;
 
   /* 🌿 Panch Tattva (Five Elements) Indian Philosophy Color Palette */
   --tattva-prithvi: #F59E0B; /* Earth: Yellow - Stability, Grounding & Fertility */
@@ -29,11 +29,11 @@
 /* 🎨 Panch Tattva Rang Biranga Animated Ribbon Bar */
 .panch-tattva-ribbon {
   background: linear-gradient(90deg, 
-    #F59E0B 0%,   /* Prithvi (Yellow) */
-    #3B82F6 25%,  /* Jal (Blue) */
-    #EF4444 50%,  /* Agni (Red) */
-    #10B981 75%,  /* Vayu (Green) */
-    #8B5CF6 100%  /* Akash (Ether/Violet) */
+    #2196EA 0%,   /* Electric Blue */
+    #FFFFFF 33%,  /* Pure White */
+    #F5A014 66%,  /* Warm Amber Gold */
+    #2196EA 100%  /* Electric Blue */
+
   );
   background-size: 200% 200%;
   animation: tattvaFlow 8s ease infinite;
@@ -98,14 +98,14 @@
 
 .accent-card-hover:hover {
   transform: translateY(-4px);
-  border-color: var(--brand-500, #7B61FF) !important;
+  border-color: var(--brand-500, #2196EA) !important;
   box-shadow: 0 16px 36px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)) !important;
 }
 
 .btn-primary,
 .btn-brand {
-  background: linear-gradient(135deg, var(--brand-from, #7B61FF) 0%, var(--brand-to, #907CFF) 100%) !important;
-  background-image: linear-gradient(135deg, var(--brand-from, #7B61FF) 0%, var(--brand-to, #907CFF) 100%) !important;
+  background: linear-gradient(135deg, var(--brand-from, #2196EA) 0%, var(--brand-to, #F5A014) 100%) !important;
+  background-image: linear-gradient(135deg, var(--brand-from, #2196EA) 0%, var(--brand-to, #F5A014) 100%) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 8px 24px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)), inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
@@ -114,14 +114,14 @@
 
 .btn-primary:hover,
 .btn-brand:hover {
-  background: linear-gradient(135deg, var(--brand-600, #6B5AED) 0%, var(--brand-400, #A882FF) 100%) !important;
-  background-image: linear-gradient(135deg, var(--brand-600, #6B5AED) 0%, var(--brand-400, #A882FF) 100%) !important;
+  background: linear-gradient(135deg, var(--brand-600, #1B7FCA) 0%, var(--brand-400, #F5A014) 100%) !important;
+  background-image: linear-gradient(135deg, var(--brand-600, #1B7FCA) 0%, var(--brand-400, #F5A014) 100%) !important;
   box-shadow: 0 12px 28px -4px var(--brand-glow, rgba(123, 97, 255, 0.6)), inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
 }
 
 .btn-save {
-  background: linear-gradient(135deg, var(--brand-from, #7B61FF) 0%, var(--brand-to, #907CFF) 100%) !important;
-  background-image: linear-gradient(135deg, var(--brand-from, #7B61FF) 0%, var(--brand-to, #907CFF) 100%) !important;
+  background: linear-gradient(135deg, var(--brand-from, #2196EA) 0%, var(--brand-to, #F5A014) 100%) !important;
+  background-image: linear-gradient(135deg, var(--brand-from, #2196EA) 0%, var(--brand-to, #F5A014) 100%) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 8px 22px -4px var(--brand-glow, rgba(123, 97, 255, 0.4)), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;

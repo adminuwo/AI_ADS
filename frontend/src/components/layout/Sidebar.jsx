@@ -206,7 +206,6 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
         <div 
           className="fixed top-0 left-0 h-[100dvh] w-[52px] z-50 flex flex-col items-center justify-between py-2 bg-white/95 dark:bg-[#080B1A]/95 border-r border-purple-100/50 dark:border-slate-800/70 backdrop-blur-xl select-none"
         >
-          <div className="absolute top-0 left-0 right-0 h-[3px] panch-tattva-ribbon z-40" />
           
           {/* Logo - tap to open */}
           <button 
@@ -268,7 +267,6 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
         <div className="flex flex-col h-full overflow-hidden">
           {/* Top Header / Logo */}
           <div className={`h-14 flex items-center ${collapsed ? 'justify-center px-2' : 'justify-between px-3'} shrink-0 border-b border-purple-100/50 dark:border-slate-800/60 bg-white dark:bg-[#070b19] relative transition-colors duration-200`}>
-            <div className="absolute top-0 left-0 right-0 h-[3px] panch-tattva-ribbon z-40" />
             <div 
               onClick={toggleSidebar}
               className={`flex items-center ${collapsed ? 'justify-center w-full h-full py-1' : 'gap-2.5 min-w-0 flex-1'} cursor-pointer group select-none active:scale-95`}

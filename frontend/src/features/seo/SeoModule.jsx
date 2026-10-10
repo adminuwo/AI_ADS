@@ -816,7 +816,7 @@ export const SeoModule = () => {
             )}
 
             {(activeTab === 'all' || activeTab === 'competitors') && (
-              (userPlanNorm === 'starter' || userPlanNorm === 'free') ? (
+              (userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free' || userPlanNorm === 'pro' || userPlanNorm === 'professional' || userPlanNorm === 'growth') ? (
                 <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-emerald-500 flex flex-col items-center justify-center h-full text-center space-y-3 shadow-sm min-h-[300px]">
                   <Lock className="w-8 h-8 text-emerald-500" />
                   <div className="space-y-1">

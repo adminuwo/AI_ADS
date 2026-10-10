@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { plansAPI } from '../../services/api';
 import { Settings, CreditCard, Key, Sparkles, Check, ShieldCheck, Globe, Zap, Loader2, DollarSign, Layers } from 'lucide-react';
@@ -6,83 +6,81 @@ import { Settings, CreditCard, Key, Sparkles, Check, ShieldCheck, Globe, Zap, Lo
 const DEFAULT_PLANS_LIST = [
   {
     planId: 'base',
-    name: 'Starter',
+    name: 'Starter Suite',
     badge: 'Starter',
-    description: 'Core AI text generation & 150 monthly visual credits for solo creators',
-    priceUSD: 9.99,
-    priceINR: 799,
-    imageCredits: 150,
-    textGenerations: '1,000 Gens / mo',
+    description: 'Essential AI copy (1,000 words) & 30 visual credits for solopreneurs',
+    priceUSD: 5.99,
+    priceINR: 499,
+    imageCredits: 30,
+    textGenerations: '1,000 Words / mo',
     billingCycle: 'month',
     isPopular: false,
     features: [
-      '150 Monthly Visual Credits (AI Image & Ad Creative Generator)',
-      '1,000 Text Generations / mo (Social Posts, Blogs, Emails & Ads)',
-      '3 Brand DNA Workspaces (Website Scraper & Tone Ingestion)',
+      '30 Monthly Visual Credits (AI Image & Ad Creative Generator)',
+      '1,000 Words Content Limit (Social Posts, Blogs, Emails & Ads)',
+      '1 Brand DNA Workspace (Website Scraper & Tone Ingestion)',
       '30-Day Marketing Roadmap Generator (Strategy Hub)',
-      'SEO Intelligence (Keyword Clusters & Content Briefs)',
-      'Content Studio (Social Copy, Blogs & Sales Copy Generators)',
-      'AISA™ Copilot AI Assistant & Drag-and-Drop Calendar'
+      'Content Studio (Copy & Ads Generator)',
+      'Basic AISA™ Copilot AI Assistant'
     ]
   },
   {
-    planId: 'professional',
+    planId: 'pro',
     name: 'Pro / Growth',
-    badge: 'Growth Tier',
-    description: 'Multi-brand DNA, 450 visual credits, Campaign Builder & Approvals Desk',
-    priceUSD: 29.99,
-    priceINR: 2399,
-    imageCredits: 450,
-    textGenerations: '3,000 Gens / mo',
+    badge: 'Most Popular',
+    description: 'Unlocked Storytelling & Problem Solving, AI Website Builder & 7 Brand Workspaces',
+    priceUSD: 11.99,
+    priceINR: 999,
+    imageCredits: 120,
+    textGenerations: '15,000 Words / mo',
     billingCycle: 'month',
-    isPopular: false,
+    isPopular: true,
     features: [
-      '450 Monthly Visual Credits (Creative Studio + Aspect Controls)',
-      '3,000 Text Generations / mo (Full Content & Copy Suite)',
-      '10 Brand DNA Workspaces (Multi-Brand Tone & Scraping)',
-      'Campaign Builder (Multi-Channel Planner & Post Generator)',
-      'AI Website Builder (Brief Analyzer & Full-Page HTML Code)',
-      'Approvals Desk (Content Review Queue & Workflows)',
-      'Asset Library & Performance Dashboard (KPI Metrics)'
+      '120 Monthly Visual Credits (Creative Studio + Aspect Controls)',
+      '15,000 Words Content Limit (Full Content & Copy Suite)',
+      '7 Brand DNA Workspaces (Multi-Brand Tone & Scraping)',
+      'Unlocked Storytelling & Problem Solving Modules',
+      'AI Website Builder (5 Full Landing Pages)',
+      'Full AISA™ Copilot AI Assistant & Drag-and-Drop Calendar'
     ]
   },
   {
     planId: 'agency_pro',
     name: 'Agency / Scale',
-    badge: 'Most Popular',
-    isPopular: true,
-    description: 'Unlimited multi-client workspaces & 1,200 visual credits',
-    priceUSD: 79.99,
-    priceINR: 6399,
-    imageCredits: 1200,
-    textGenerations: '8,000 Gens / mo',
+    badge: 'Scale Tier',
+    isPopular: false,
+    description: '300 visual credits, 50,000 words limit, 10 brand workspaces & 20+ AI Web Builder sites',
+    priceUSD: 15.99,
+    priceINR: 1299,
+    imageCredits: 300,
+    textGenerations: '50,000 Words / mo',
     billingCycle: 'month',
     features: [
-      '1,200 Monthly Visual Credits (4x Visual Variation Engine)',
-      '8,000 Text Generations / mo (High-Volume Strategy & Copy)',
-      'Unlimited Multi-Client Workspaces & Brand DNA Ingestion',
-      'AI Web Builder + Hero Visuals (Code + 2x Hero Visual Generator)',
-      'Full Approvals Desk Queue & Workflow Management',
-      'Media Asset Library with Cloud Storage'
+      '300 Monthly Visual Credits (4x Visual Variation Engine)',
+      '50,000 Words Content Limit (High-Volume Strategy & Copy)',
+      '10 Brand Workspaces & Multi-Brand DNA Ingestion',
+      'AI Web Builder (20+ Full Landing Page Sites)',
+      'Strategy Image Briefs & SEO Competitor Gap Analysis',
+      'Priority AISA Copilot & Team Governance'
     ]
   },
   {
     planId: 'enterprise',
-    name: 'Enterprise',
-    badge: 'Enterprise',
-    description: 'High-volume production with 3,000 monthly visual credits & priority AI processing',
-    priceUSD: 199.99,
-    priceINR: 15999,
-    imageCredits: 3000,
-    textGenerations: 'UNLIMITED Gens / mo',
+    name: 'Enterprise Suite',
+    badge: 'Unlimited Power',
+    description: 'High-volume production with 750 visual credits, 150k words & VIP priority processing',
+    priceUSD: 29.99,
+    priceINR: 2499,
+    imageCredits: 750,
+    textGenerations: '150,000 Words / mo',
     billingCycle: 'month',
     isPopular: false,
     features: [
-      '3,000 Monthly Visual Credits (High-Volume Ad & Visual Gen)',
-      'UNLIMITED Text Generations (Uncapped AI Content Engine)',
-      'Unlimited Brand Workspaces & Priority Processing',
-      'AI Web Builder with Live Chat Edit (Real-Time Code Tweaking)',
-      'All Core Platform Modules Included (Strategy, SEO, Content, Web & Ads)'
+      '750 Monthly Visual Credits (High-Volume Ad & Visual Gen)',
+      '150,000 Words Content Limit (Uncapped AI Content Engine)',
+      'Unlimited Brand Workspaces & Priority AI Processing',
+      'AI Web Builder (50+ Full Landing Pages)',
+      'Dedicated Account Manager & Custom SOP Governance'
     ]
   }
 ];

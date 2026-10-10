@@ -296,14 +296,11 @@ export const PipelineSpotlight = () => {
   const progressPct = (active / (STEPS.length - 1)) * 100;
 
   return (
-    <section className="py-20 bg-slate-50/80 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <section className="pt-8 pb-14 sm:pt-10 sm:pb-16 bg-slate-50/80 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/60 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-100/80 dark:bg-cyan-950/80 border border-cyan-200 dark:border-cyan-500/30 text-xs font-extrabold text-cyan-800 dark:text-cyan-300 shadow-sm">
-            <span>SPOTLIGHT: 2-AGENT VISION ARCHITECTURE</span>
-          </div>
+        <div className="text-center max-w-3xl mx-auto space-y-2">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-['Outfit'] tracking-tight text-slate-900 dark:text-white leading-tight">
             Two AI agents. One on-brand creative.
           </h2>

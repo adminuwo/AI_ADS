@@ -38,8 +38,8 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'glow': '0 0 25px -5px var(--brand-glow, rgba(123, 97, 255, 0.35))',
-        'cyan-glow': '0 0 25px -5px var(--brand-glow, rgba(168, 130, 255, 0.35))',
+        'glow': '0 0 25px -5px var(--brand-glow, rgba(33, 150, 234, 0.35))',
+        'cyan-glow': '0 0 25px -5px var(--brand-glow, rgba(245, 160, 20, 0.35))',
         'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
       }
     },
