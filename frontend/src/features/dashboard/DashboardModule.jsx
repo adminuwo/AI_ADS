@@ -336,7 +336,7 @@ export const DashboardModule = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
             <Globe className="w-4 h-4 text-emerald-500" />
-            <span>{t('END-TO-END CONTENT PIPELINE')}</span>
+            <span>{t('TOOLKIT', 'TOOLKIT')}</span>
           </h2>
           <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-serif italic flex items-center gap-1 hover:underline cursor-pointer">
             {t('From Strategy to Success →')}

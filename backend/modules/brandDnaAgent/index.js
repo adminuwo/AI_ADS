@@ -48,7 +48,7 @@ async function runBrandDnaMasterAgent(targetUrl, seedBrandName = '') {
     industryCategory: positioningResult.primaryIndustry,
     secondaryIndustries: positioningResult.secondaryIndustries,
     businessType: positioningResult.businessType,
-    headquarters: (positioningResult.headquarters?.value ? positioningResult.headquarters : crawlResult.hqObj),
+    headquarters: (positioningResult.headquarters?.value ? positioningResult.headquarters : (crawlResult.hqObj?.headquarters || crawlResult.hqObj)),
     tagline: positioningResult.tagline,
     missionStatement: positioningResult.missionStatement,
     vision: positioningResult.vision,

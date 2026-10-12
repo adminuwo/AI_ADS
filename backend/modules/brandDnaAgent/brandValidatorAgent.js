@@ -9,6 +9,7 @@
  */
 
 const { filterValidPhoneNumber } = require('../workspace/brandScraper.service');
+const { isValidOfficialTagline } = require('../workspace/brandProcessor.service');
 
 function validateBrandName(brandNameObj, domainName) {
   if (!brandNameObj || !brandNameObj.value || typeof brandNameObj.value !== 'string') {
@@ -72,7 +73,9 @@ function validateIndustry(industryObj, combinedText) {
 }
 
 function validateHeadquarters(hqObj) {
-  if (!hqObj || !hqObj.value || hqObj.sourceType === 'UNKNOWN') {
+  const target = hqObj?.headquarters || hqObj;
+  const rawVal = typeof target === 'string' ? target : target?.value;
+  if (!rawVal || target?.sourceType === 'UNKNOWN') {
     return {
       value: null,
       type: 'HEADQUARTERS',
@@ -82,25 +85,40 @@ function validateHeadquarters(hqObj) {
     };
   }
 
-  let cleanHq = String(hqObj.value).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+  let cleanHq = String(rawVal).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
   return {
-    ...hqObj,
+    ...(typeof target === 'object' ? target : {}),
     value: cleanHq
   };
 }
 
-function validateTagline(taglineObj) {
+function validateTagline(taglineObj, brandName = '', domainName = '') {
   if (!taglineObj || !taglineObj.value || taglineObj.sourceType === 'UNKNOWN') {
     return {
       value: null,
       sourceType: 'UNKNOWN',
       sourceUrl: taglineObj?.sourceUrl || '',
-      evidence: 'No slogan or tagline found in website evidence',
+      evidence: 'No reliable tagline explicitly supported by website',
       confidence: 0
     };
   }
 
-  return taglineObj;
+  const candidate = String(taglineObj.value).trim();
+  if (!isValidOfficialTagline(candidate, brandName, domainName)) {
+    console.warn(`[ValidatorAgent] ⚠️ Overriding Tagline to null (Matches prohibited company name, product description, or marketing text: "${candidate}")`);
+    return {
+      value: null,
+      sourceType: 'UNKNOWN',
+      sourceUrl: taglineObj?.sourceUrl || '',
+      evidence: `Tagline candidate "${candidate}" rejected: matches legal name, product catalog, or generic marketing text`,
+      confidence: 0
+    };
+  }
+
+  return {
+    ...taglineObj,
+    value: candidate
+  };
 }
 
 function validateContactInfo(contactObj) {
@@ -115,12 +133,13 @@ function validateContactInfo(contactObj) {
 
   const email = contactObj.value.email || null;
   let phone = contactObj.value.phone || null;
+  const location = contactObj.value.location || null;
 
   if (phone) {
     phone = filterValidPhoneNumber(phone);
   }
 
-  if (!email && !phone) {
+  if (!email && !phone && !location) {
     return {
       value: null,
       sourceType: 'UNKNOWN',
@@ -134,7 +153,7 @@ function validateContactInfo(contactObj) {
     value: {
       email,
       phone,
-      location: contactObj.value.location || null
+      location
     }
   };
 }
@@ -209,8 +228,8 @@ async function runValidatorAgent(draftPayload, crawlResult) {
   else if (validHQ.value !== null) passedFields.push('headquarters');
 
   // Audit 4: Tagline / Slogan
-  const validTagline = validateTagline(draftPayload.tagline);
-  if (validTagline.value === null && draftPayload.tagline.value !== null) overriddenFields.push('tagline');
+  const validTagline = validateTagline(draftPayload.tagline, validBrandName.value, crawlResult.domainName);
+  if (validTagline.value === null && draftPayload.tagline?.value !== null) overriddenFields.push('tagline');
   else if (validTagline.value !== null) passedFields.push('tagline');
 
   // Audit 5: Contact Info

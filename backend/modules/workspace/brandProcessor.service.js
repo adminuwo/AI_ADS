@@ -241,6 +241,92 @@ function resolveHeadquartersAndLocations(domainName, cleanBrandKey, scrapedMetad
     }
   }
 
+  // Priority 3A: Scan Official Website DOM Text (combinedText and deepContextText)
+  const websiteText = ((combinedText || '') + ' ' + (scrapedMetadata.deepContextText || '')).trim();
+  if (websiteText && websiteText.length > 10) {
+    const hqPatterns = [
+      /(?:headquarters|registered office|corporate office|registered address)(?:\s+address)?(?:\s+of\s+[\s\S]+?)?\s+(?:is|at|in|:)\s+([A-Z0-9][a-zA-Z0-9\s,.'\/-]{5,140}?(?:,\s*(?:India|USA|United States|UK|Canada|Germany))(?:\s*[-–]\s*\d{5,6}|\s+\d{5,6})?)(?=[.,\n]|$)/i,
+      /(?:headquartered in|based in|located in|headquarters in)[\s:]+([A-Z0-9][a-zA-Z0-9\s,.'-]{3,80}?(?:,\s*(?:India|USA|United States|UK|United Kingdom|Canada|Germany|France|Australia|Japan|Singapore|UAE|Maharashtra|Madhya Pradesh|Karnataka|Delhi|Bengaluru|Bangalore|Mumbai|Jabalpur|Indore|Gurugram|Gurgaon|Noida|Hyderabad|Chennai|Pune|Kolkata|Ahmedabad|Jaipur|Surat|Lucknow))?)/i,
+      /(?:address|office)[\s:]+([A-Z0-9][a-zA-Z0-9\s,.'-]{5,90}?(?:,\s*(?:India|USA|United States|UK|Canada|Germany|Maharashtra|Madhya Pradesh|Karnataka|Delhi|Mumbai|Jabalpur|Indore|Bangalore|Bengaluru)))\b/i,
+      /\b([A-Z][a-zA-Z\s]{2,25},\s*(?:Madhya Pradesh|Maharashtra|Karnataka|Tamil Nadu|Delhi|Uttar Pradesh|Gujarat|Rajasthan|Haryana|Telangana|West Bengal|Kerala|Punjab|Goa),\s*India)\b/i,
+      /\b([A-Z][a-zA-Z\s]{2,25},\s*(?:California|New York|Texas|Florida|Illinois|Washington|Massachusetts),\s*(?:USA|United States))\b/i
+    ];
+
+    for (const pat of hqPatterns) {
+      const match = websiteText.match(pat);
+      if (match && match[1]) {
+        let foundLoc = match[1].trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+        // Clean any leading 'of <Company> is/at/in' or 'located at/in' prefix if caught
+        foundLoc = foundLoc.replace(/^(?:(?:the\s+)?(?:headquarters|registered\s+office|registered\s+address|corporate\s+office)?\s*address\s+)?of\s+[\s\S]+?\s+(?:is|at|in|:)\s+/i, '').trim();
+        foundLoc = foundLoc.replace(/^(?:located\s+(?:at|in)|headquartered\s+in|based\s+in|registered\s+at)\s+/i, '').trim();
+        foundLoc = foundLoc.replace(/[-–,\s]+$/, '').trim();
+        if (foundLoc.length >= 4 && !/^(the|our|this|we|welcome|click|call|services|about|privacy|terms|looking|feel free)/i.test(foundLoc)) {
+          candidateLocations.push({
+            value: foundLoc,
+            type: 'HEADQUARTERS',
+            sourceType: 'WEBSITE_DOM',
+            sourceUrl: rawUrl,
+            evidence: `Found location in official website text: "${foundLoc}"`,
+            method: 'WEBSITE_DOM_LOCATION_EXTRACTOR',
+            confidence: 0.90
+          });
+          break;
+        }
+      }
+    }
+  }
+
+  // Priority 3B: Scan Verified Search Enrichment Text (ONLY if missing from website DOM)
+  if (candidateLocations.length === 0 && scrapedMetadata.searchEnrichmentText && scrapedMetadata.searchEnrichmentText.length > 10) {
+    const searchText = scrapedMetadata.searchEnrichmentText;
+    const entityTokens = [
+      (cleanBrandKey || '').toLowerCase(),
+      (scrapedMetadata.parentCompany || '').toLowerCase(),
+      (scrapedMetadata.legalName || '').toLowerCase(),
+      (domainName || '').replace(/\.[a-z]+$/i, '').toLowerCase()
+    ].filter(t => t && t.length >= 3);
+
+    const searchHqPatterns = [
+      /(?:headquarters|registered office|corporate office|registered address)(?:\s+address)?(?:\s+of\s+[\s\S]+?)?\s+(?:is|at|in|:)\s+([A-Z0-9][a-zA-Z0-9\s,.'\/-]{5,140}?(?:,\s*(?:India|USA|United States|UK|Canada|Germany))(?:\s*[-–]\s*\d{5,6}|\s+\d{5,6})?)(?=[.,\n]|$)/i,
+      /(?:headquartered in|based in|located in|headquarters in)[\s:]+([A-Z0-9][a-zA-Z0-9\s,.'-]{3,80}?(?:,\s*(?:India|USA|United States|UK|United Kingdom|Canada|Germany|France|Australia|Japan|Singapore|UAE|Maharashtra|Madhya Pradesh|Karnataka|Delhi|Bengaluru|Bangalore|Mumbai|Jabalpur|Indore|Gurugram|Gurgaon|Noida|Hyderabad|Chennai|Pune|Kolkata|Ahmedabad|Jaipur|Surat|Lucknow))?)/i,
+      /(?:address|office)[\s:]+([A-Z0-9][a-zA-Z0-9\s,.'-]{5,90}?(?:,\s*(?:India|USA|United States|UK|Canada|Germany|Maharashtra|Madhya Pradesh|Karnataka|Delhi|Mumbai|Jabalpur|Indore|Bangalore|Bengaluru)))\b/i,
+      /\b([A-Z][a-zA-Z\s]{2,25},\s*(?:Madhya Pradesh|Maharashtra|Karnataka|Tamil Nadu|Delhi|Uttar Pradesh|Gujarat|Rajasthan|Haryana|Telangana|West Bengal|Kerala|Punjab|Goa),\s*India)\b/i,
+      /\b([A-Z][a-zA-Z\s]{2,25},\s*(?:California|New York|Texas|Florida|Illinois|Washington|Massachusetts),\s*(?:USA|United States))\b/i
+    ];
+
+    for (const pat of searchHqPatterns) {
+      const match = searchText.match(pat);
+      if (match && match[1]) {
+        let foundLoc = match[1].trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+        foundLoc = foundLoc.replace(/^(?:(?:the\s+)?(?:headquarters|registered\s+office|registered\s+address|corporate\s+office)?\s*address\s+)?of\s+[\s\S]+?\s+(?:is|at|in|:)\s+/i, '').trim();
+        foundLoc = foundLoc.replace(/^(?:located\s+(?:at|in)|headquartered\s+in|based\s+in|registered\s+at)\s+/i, '').trim();
+        foundLoc = foundLoc.replace(/[-–,\s]+$/, '').trim();
+
+        // Strict Entity Grounding Check:
+        // Ensure the match is in the immediate context of the target brand or parent entity
+        const matchIdx = searchText.indexOf(match[0]);
+        const startWindow = Math.max(0, matchIdx - 120);
+        const endWindow = Math.min(searchText.length, matchIdx + match[0].length + 120);
+        const windowText = searchText.slice(startWindow, endWindow).toLowerCase();
+
+        const isEntityGrounded = entityTokens.some(token => windowText.includes(token));
+
+        if (isEntityGrounded && foundLoc.length >= 4 && !/^(the|our|this|we|welcome|click|call|services|about|privacy|terms|looking|feel free)/i.test(foundLoc)) {
+          candidateLocations.push({
+            value: foundLoc,
+            type: 'HEADQUARTERS',
+            sourceType: 'SEARCH_ENRICHMENT',
+            sourceUrl: rawUrl,
+            evidence: `Verified brand-grounded location from search evidence: "${foundLoc}"`,
+            method: 'TEXT_LOCATION_EXTRACTOR',
+            confidence: 0.86
+          });
+          break;
+        }
+      }
+    }
+  }
+
   if (candidateLocations.length === 0) {
     return {
       headquarters: {
@@ -283,18 +369,20 @@ function resolveHeadquartersAndLocations(domainName, cleanBrandKey, scrapedMetad
 function resolveContactInformation(scrapedMetadata = {}, rawUrl = '') {
   const emails = scrapedMetadata.emails || [];
   const phones = scrapedMetadata.phones || [];
-  const location = scrapedMetadata.hqAddress || null;
+  const location = scrapedMetadata.hqAddress || scrapedMetadata.schemaAddress || null;
+  const primaryEmail = emails.length > 0 ? emails[0] : (scrapedMetadata.schemaEmail || null);
+  const primaryPhone = phones.length > 0 ? phones[0] : (scrapedMetadata.schemaTelephone || null);
 
-  if (emails.length > 0 || phones.length > 0) {
+  if (primaryEmail || primaryPhone || location) {
     return {
       value: {
-        email: emails.length > 0 ? emails[0] : null,
-        phone: phones.length > 0 ? phones[0] : null,
+        email: primaryEmail,
+        phone: primaryPhone,
         location: location
       },
-      sourceType: 'WEBSITE_DOM',
+      sourceType: (primaryEmail || primaryPhone) ? 'WEBSITE_DOM' : (scrapedMetadata.schemaAddress ? 'WEBSITE_SCHEMA' : 'UNKNOWN'),
       sourceUrl: rawUrl,
-      evidence: `Scraped official contact details: email="${emails[0] || 'N/A'}", phone="${phones[0] || 'N/A'}"`,
+      evidence: `Scraped official contact details: email="${primaryEmail || 'N/A'}", phone="${primaryPhone || 'N/A'}", location="${location || 'N/A'}"`,
       confidence: 0.85
     };
   }
@@ -378,107 +466,156 @@ function classifyBrandCategory(domainName, brandName, headings = [], metaDescrip
 }
 
 /**
- * Field 4: Tagline & Slogan Classifier
+ * Strict Tagline / Slogan Validator & Filter Rule
+ * - Exact official tagline/slogan from provided website.
+ * - Searches homepage, hero/header, About/Brand pages, metadata, and structured data.
+ * - NEVER use company/legal name, product description, mission, vision, or generic marketing text.
+ * - If not explicitly supported, returns null / "Not Found" instead of guessing.
+ * - Stores source URL and evidence for verification.
+ */
+function isValidOfficialTagline(str, brandName = '', domainName = '') {
+  if (!str || typeof str !== 'string') return false;
+  const trimmed = str.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+  if (trimmed.length < 2 || trimmed.length > 85) return false;
+
+  const words = trimmed.split(/\s+/);
+  if (words.length > 12) return false;
+
+  const lower = trimmed.toLowerCase();
+  const cleanBrand = (brandName || '').toLowerCase().trim();
+  const cleanDomain = (domainName || '').replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0].toLowerCase().trim();
+  const cleanDomainNoTld = cleanDomain.split('.')[0] || '';
+
+  // 1. NEVER use company or legal name
+  const strippedCand = lower.replace(/[-_\s.,']/g, '');
+  const strippedBrand = cleanBrand.replace(/[-_\s.,']/g, '');
+  const strippedDomainNoTld = cleanDomainNoTld.replace(/[-_\s.,']/g, '');
+
+  if (strippedCand === strippedBrand || strippedCand === strippedDomainNoTld || strippedCand === cleanDomain.replace(/[-_\s.,']/g, '')) {
+    return false;
+  }
+
+  // Country, regional, or store modifier attached to brand name (e.g. "Nike IN", "Nike India", "Nike Store", "Apple Online")
+  if (cleanBrand && (
+    new RegExp(`^${cleanBrand}\\s+(?:in|us|uk|ca|au|eu|global|india|official|store|shop|online|website|app|india\\s+store)$`, 'i').test(lower) ||
+    new RegExp(`^(?:in|us|uk|ca|au|eu|global|india|official|store|shop|online|welcome\\s+to)\\s+${cleanBrand}$`, 'i').test(lower) ||
+    (words.length <= 2 && words.map(w => w.toLowerCase()).includes(cleanBrand) && /(?:in|us|uk|ca|au|eu|global|india|store|shop|app)/i.test(lower))
+  )) {
+    return false;
+  }
+
+  // Legal corporate suffixes (e.g. "Insight Cosmetics Pvt Ltd", "Nike, Inc.")
+  if (/\b(pvt\.?\s*ltd\.?|private\s+limited|inc\.?|llc|llp|corp\.?|corporation|ltd\.?|limited|gmbh|co\.?|holdings?|enterprises?)\b/i.test(lower)) {
+    return false;
+  }
+
+  // Generic website greeting / self-announcement
+  if (/^(welcome\s+to|official\s+website\s+of|about\s+us|home\s+page|homepage|contact\s+us|customer\s+care)\b/i.test(lower)) {
+    return false;
+  }
+
+  // 2. NEVER use product descriptions, catalog categories, or e-commerce UI
+  if (/\b(bestseller|bestsellers|best\s+sellers?|new\s+arrivals?|trending\s+now|trending|shop\s+now|shop\s+all|view\s+all|all\s+products|explore\s+all|add\s+to\s+cart|buy\s+now|checkout|my\s+cart)\b/i.test(lower)) {
+    return false;
+  }
+
+  // Price, discount, promos
+  if (/[₹$€£]\s*\d+|\b\d+%\s*off\b|\bflat\s+\d+%\b|\bfree\s+shipping\b|\bbuy\s+\d+\s+get\s+\d+\b|\buse\s+code\b|\bcoupon\b|\bdiscount\b|\bsale\s+is\s+live\b/i.test(lower)) {
+    return false;
+  }
+
+  // Generic product lists or specifications
+  if (/\b(pack\s+of\s+\d+|\d+\s*ml|\d+\s*gm|\d+\s*g|\d+\s*kg|\d+\s*oz|spf\s*\d+|100%\s*cotton)\b/i.test(lower)) {
+    return false;
+  }
+
+  // Pure category names
+  if (/^(bath\s*&\s*body|sun\s*protection|make\s*up|makeup|skincare|haircare|fragrance|eyeliner|lipstick|lipsticks|foundation|soaps?|shampoo|conditioner|clothing|shoes|sneakers|apparel|accessories|electronics|software|hardware|solutions|services|products)$/i.test(lower)) {
+    return false;
+  }
+
+  // 3. NEVER use mission, vision, or paragraph copy
+  if (/\b(our\s+mission|the\s+mission\s+of|we\s+aim\s+to|we\s+strive\s+to|our\s+vision|vision\s+is\s+to|we\s+are\s+dedicated\s+to|committed\s+to|founded\s+in|since\s+(?:18|19|20)\d{2})\b/i.test(lower)) {
+    return false;
+  }
+
+  // Web policy / utility text
+  if (/\b(privacy\s+policy|terms\s+(?:and|&)\s+conditions|terms\s+of\s+service|cookie\s+policy|all\s+rights\s+reserved|copyright\s+\d{4}|powered\s+by)\b/i.test(lower)) {
+    return false;
+  }
+
+  // 4. Incomplete truncated fragments, dangling prefixes, conjunctions or prepositions
+  if (/(?:^|\s)(?:multi|cross|auto|pre|post|sub|anti|pro|non|inter|intra|cyber|omni|and|or|&|with|for|in|to|of|the|a|an|at|by|from|on|into)[-]?$/i.test(lower)) {
+    return false;
+  }
+  if (/^(?:and|or|&|with|for|in|to|of|the|a|an|at|by|from|on|into)\s+/i.test(lower)) {
+    return false;
+  }
+
+  // 5. Tech platform, software capability, or architecture descriptions (not branding slogans)
+  if (/\b(crm\s+platform|saas\s+platform|automation\s+platform|software\s+platform|management\s+platform|management\s+system|crm\s+system|enterprise\s+platform|software\s+agency|unified\s+inbox|cloud\s+platform|api\s+integration|white-label\s+software)\b/i.test(lower)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Field 4: Tagline & Slogan Classifier with Strict Validation & Provenance
  */
 function validateAndClassifyTagline(scrapedMetadata = {}, headings = [], brandName = '', domainName = '') {
   const rawUrl = scrapedMetadata.cleanUrl || `https://${domainName}`;
 
-  // Priority 1: JSON-LD Organization.slogan
-  if (scrapedMetadata.schemaSlogan && typeof scrapedMetadata.schemaSlogan === 'string' && scrapedMetadata.schemaSlogan.trim().length > 2) {
-    const candidate = scrapedMetadata.schemaSlogan.trim();
-    return {
-      value: candidate,
-      sourceType: 'WEBSITE_SCHEMA',
-      sourceUrl: rawUrl,
-      evidence: `JSON-LD Organization.slogan: "${candidate}"`,
-      method: 'SCHEMA_ORGANIZATION_SLOGAN',
-      confidence: 0.95
-    };
+  // Priority 1: Scraper verified tagline
+  if (scrapedMetadata.extractedTagline && scrapedMetadata.extractedTagline.value) {
+    const candidate = scrapedMetadata.extractedTagline.value;
+    if (isValidOfficialTagline(candidate, brandName, domainName)) {
+      return scrapedMetadata.extractedTagline;
+    }
   }
 
-  // Priority 2: Hero Banner Tagline
-  if (scrapedMetadata.heroBannerTagline && typeof scrapedMetadata.heroBannerTagline === 'string' && scrapedMetadata.heroBannerTagline.trim().length > 2) {
-    const candidate = scrapedMetadata.heroBannerTagline.trim();
-    return {
-      value: candidate,
-      sourceType: 'WEBSITE_DOM',
-      sourceUrl: rawUrl,
-      evidence: `Hero Banner Tagline: "${candidate}"`,
-      method: 'HERO_BANNER_TAGLINE',
-      confidence: 0.88
-    };
+  // Priority 2: JSON-LD Organization.slogan
+  if (scrapedMetadata.schemaSlogan && typeof scrapedMetadata.schemaSlogan === 'string') {
+    const candidate = scrapedMetadata.schemaSlogan.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+    if (isValidOfficialTagline(candidate, brandName, domainName)) {
+      return {
+        value: candidate,
+        sourceType: 'WEBSITE_SCHEMA',
+        sourceUrl: rawUrl,
+        evidence: `JSON-LD Schema slogan: "${candidate}"`,
+        method: 'SCHEMA_ORGANIZATION_SLOGAN',
+        confidence: 0.98,
+        lastVerified: new Date().toISOString()
+      };
+    }
   }
 
-  // Defer un-schematized tagline determination to Multimodal AI
+  // Priority 3: Hero Banner Tagline (Only if strictly valid)
+  if (scrapedMetadata.heroBannerTagline && typeof scrapedMetadata.heroBannerTagline === 'string') {
+    const candidate = scrapedMetadata.heroBannerTagline.trim().replace(/^["“'«]+|["”'»]+$/g, '').trim();
+    if (isValidOfficialTagline(candidate, brandName, domainName)) {
+      return {
+        value: candidate,
+        sourceType: 'WEBSITE_DOM',
+        sourceUrl: rawUrl,
+        evidence: `Hero Banner Tagline: "${candidate}"`,
+        method: 'HERO_BANNER_TAGLINE',
+        confidence: 0.88,
+        lastVerified: new Date().toISOString()
+      };
+    }
+  }
+
+  // If no reliable tagline is explicitly supported by the website, return null / UNKNOWN instead of guessing
   return {
     value: null,
     sourceType: 'UNKNOWN',
     sourceUrl: rawUrl,
-    evidence: 'No JSON-LD schema or hero banner tagline found',
-    method: 'DEFER_TO_MULTIMODAL_AI',
-    confidence: 0
+    evidence: 'No reliable tagline explicitly supported by website',
+    method: 'NO_OFFICIAL_TAGLINE_FOUND',
+    confidence: 0,
+    lastVerified: new Date().toISOString()
   };
-}
-
-function isNegativeTaglineNoise(str, cleanBrand, cleanDomain) {
-  if (!str || str.length < 3) return true;
-  if (str.length > 80) return true;
-  const words = str.trim().split(/\s+/);
-  if (words.length > 12) return true;
-
-  const lower = str.toLowerCase();
-
-  // Parked Domains & Domain Sale Messages
-  if (/premium domain|domain for sale|buy this domain|domain is available|acquisition inquiry|sedo|godaddy|dan\.com|afternic|domain name|inquire now|for sale|this domain|parked domain/i.test(lower)) {
-    return true;
-  }
-
-  // Hardware / Product Model Headlines & Features
-  if (/\b(laptop|desktop|printer|tablet|smartphone|pc|chip|battery|ink|toner|gb|tb|hz|usb|series|gen|model|intel|amd|snapdragon|nvidia|omnipad|omnibook|book|macbook|ipad|iphone|galaxy|poly|headset|earbuds|mouse|keyboard|monitor|display|charger|cable|accessory|accessories|communication)\b/i.test(lower)) {
-    return true;
-  }
-  if (/\b(2-in-1|4k|5g|wifi|oled|inch|intel core|ryzen|geforce|snapdragon)\b/i.test(lower)) {
-    return true;
-  }
-
-  // Navigation / E-Commerce Category Titles
-  if (/^\s*(bath & body|sun protection|make up|skincare|makeup|new arrivals|best sellers|cart|checkout|login|sign in|home|shop all|all products|category|contact us|about us|privacy policy|terms of service)\s*$/i.test(lower)) {
-    return true;
-  }
-
-  // Brand / Domain Repetition or Generic Page Titles
-  const strippedCandidate = lower.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\.(com|in|org|net|io|ai)$/i, '').replace(/[-_\s]/g, '');
-  const strippedBrand = (cleanBrand || '').replace(/[-_\s]/g, '');
-  const strippedDomain = (cleanDomain || '').replace(/[-_\s]/g, '');
-
-  if (strippedCandidate === 'exampledomain' || strippedCandidate === strippedBrand || strippedCandidate === strippedDomain) {
-    return true;
-  }
-  if (lower === 'example domain' || lower === 'home page' || lower === 'index' || lower === 'welcome') {
-    return true;
-  }
-
-  return false;
-}
-
-function isPositiveSemanticSlogan(str) {
-  if (!str || str.length < 3) return false;
-  const lower = str.toLowerCase();
-
-  if (/^([a-z0-9]+\.\s*){2,4}[a-z0-9]+\.?$/i.test(str.trim()) || /^([a-z0-9]+\s*\|\s*){1,3}[a-z0-9]+$/i.test(str.trim())) {
-    return true;
-  }
-
-  const sloganVerbs = /\b(reinvent|reinventing|empower|empowering|inspire|inspiring|think|deliver|delivering|create|creating|transform|transforming|elevate|elevating|reimagine|reimagining|just do it|make|connecting|connect|enable|enabling|built to last|built for the future)\b/i;
-  if (sloganVerbs.test(lower)) {
-    return true;
-  }
-
-  if (/\b(clean|kind|effective|efficacy|inclusivity|sustainability|quality|trusted|built to last|precision|excellence)\b/i.test(lower) && str.split(/\s+/).length <= 6) {
-    return true;
-  }
-
-  return false;
 }
 
 module.exports = {
@@ -488,6 +625,7 @@ module.exports = {
   resolveHeadquartersAndLocations,
   classifyBusinessTypeWithConsensus,
   validateAndClassifyTagline,
+  isValidOfficialTagline,
   resolveBrandName,
   resolveContactInformation
 };

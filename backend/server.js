@@ -946,10 +946,24 @@ app.get('/api/proxy/image', async (req, res) => {
     });
 
     const contentType = response.headers['content-type'] || 'image/png';
-    res.setHeader('Content-Type', contentType);
+    let imageBuffer = Buffer.from(response.data);
+    let finalContentType = contentType;
+
+    // Convert SVG vector images to raster PNG for native mobile <Image> compatibility
+    if (contentType.includes('svg') || targetUrl.toLowerCase().includes('.svg')) {
+      try {
+        const sharp = require('sharp');
+        imageBuffer = await sharp(imageBuffer).resize(256, 256, { fit: 'inside' }).png().toBuffer();
+        finalContentType = 'image/png';
+      } catch (convErr) {
+        console.warn('[IMAGE-PROXY] SVG rasterization fallback note:', convErr.message);
+      }
+    }
+
+    res.setHeader('Content-Type', finalContentType);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'public, max-age=86400');
-    return res.send(Buffer.from(response.data));
+    return res.send(imageBuffer);
   } catch (err) {
     // Primary external image link failed (e.g., 404 Not Found or dead path)
     // Server-side fallback: Automatically extract domain and serve high-res brand logo (200 OK)
@@ -962,8 +976,8 @@ app.get('/api/proxy/image', async (req, res) => {
 
     if (domain) {
       const fallbackUrls = [
-        `https://logo.clearbit.com/${domain}`,
-        `https://www.google.com/s2/favicons?domain=${domain}&sz=256`
+        `https://www.google.com/s2/favicons?domain=${domain}&sz=256`,
+        `https://logo.clearbit.com/${domain}`
       ];
 
       for (const fbUrl of fallbackUrls) {
@@ -1434,19 +1448,44 @@ app.post('/api/workspace/unified-dna-preview', upload.any(), async (req, res) =>
       brandDna.mediaAssets = (brandDna.mediaAssets || []).concat(uploadedImages);
     }
 
-    const previewWorkspace = {
-      tempId: `preview_${Date.now()}`,
-      userEmail: (userEmail || '').toLowerCase().trim(),
-      brandName: brandDna.brandName || brandName || 'New Brand',
-      companyName: brandDna.companyName || brandDna.brandName || brandName,
-      domainUrl: brandDna.domainUrl || cleanUrl || 'https://custombrand.com',
-      logoUrl: uploadedLogoUrl || brandDna.logoUrl || brandDna.faviconUrl || '',
-      brandColors: finalBrandColors,
-      industry: brandDna.industryCategory || 'General Business',
-      industryCategory: brandDna.industryCategory || 'General Business',
-      businessType: brandDna.businessType || 'D2C / B2B',
+      const resolvedHeadquarters = brandDna.headquarters || 
+        (typeof brandDna.contactInfo === 'object' ? brandDna.contactInfo?.location : null) || 
+        brandDna.hqAddress || 
+        brandDna.schemaAddress || 
+        null;
+      const resolvedEmail = (typeof brandDna.contactInfo === 'object' ? brandDna.contactInfo?.email : null) || 
+        (Array.isArray(brandDna.emails) ? brandDna.emails[0] : null) || 
+        brandDna.email || 
+        brandDna.schemaEmail || 
+        null;
+      const resolvedPhone = (typeof brandDna.contactInfo === 'object' ? brandDna.contactInfo?.phone : null) || 
+        (Array.isArray(brandDna.phones) ? brandDna.phones[0] : null) || 
+        brandDna.phone || 
+        brandDna.schemaTelephone || 
+        null;
+
+      const previewWorkspace = {
+        tempId: `preview_${Date.now()}`,
+        userEmail: (userEmail || '').toLowerCase().trim(),
+        brandName: brandDna.brandName || brandName || 'New Brand',
+        companyName: brandDna.companyName || brandDna.brandName || brandName,
+        domainUrl: brandDna.domainUrl || cleanUrl || 'https://custombrand.com',
+        logoUrl: uploadedLogoUrl || brandDna.logoUrl || brandDna.faviconUrl || '',
+        brandColors: finalBrandColors,
+        industry: brandDna.industryCategory || 'General Business',
+        industryCategory: brandDna.industryCategory || 'General Business',
+        businessType: brandDna.businessType || 'D2C / B2B',
+        headquarters: resolvedHeadquarters,
+        address: resolvedHeadquarters,
+        contactInfo: {
+          email: resolvedEmail,
+          phone: resolvedPhone,
+          location: resolvedHeadquarters
+        },
+      parentCompany: brandDna.parentCompany || null,
       companyDescription: brandDna.companyDescription || 'Brand workspace created from single unified input form.',
-      tagline: brandDna.tagline || '',
+      tagline: (brandDna.tagline !== undefined && brandDna.tagline !== '') ? brandDna.tagline : null,
+      taglineProvenance: brandDna.taglineProvenance || null,
       missionStatement: brandDna.missionStatement || '',
       vision: brandDna.vision || '',
       targetAudience: brandDna.targetAudience || [],
@@ -3016,6 +3055,9 @@ app.use((err, req, res, next) => {
 
 // ─── START SERVER ──────────────────────────────────────────────────────────────
 const server = httpServer.listen(PORT, '0.0.0.0', () => {
+  server.setTimeout(600000); // 10 minutes timeout for deep scraping and multi-agent synthesis
+  server.keepAliveTimeout = 610000;
+  server.headersTimeout = 620000;
   console.log(`\n🚀 AI Ads Enterprise Backend v2.0 running on http://0.0.0.0:${PORT}`);
   console.log(`📡 MongoDB: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Connecting...'}`);
   console.log(`\n📋 Active Routes:`);
