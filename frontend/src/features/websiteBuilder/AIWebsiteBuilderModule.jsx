@@ -38,7 +38,7 @@ import { ClarificationCard } from './ClarificationCard';
 import { telemetry, initGlobalTelemetryListeners } from '../../services/telemetryClient';
 
 export const AIWebsiteBuilderModule = () => {
-  const { activeWorkspace, setActiveModule, theme, toggleTheme, t, user } = useWorkspace();
+  const { activeWorkspace, setActiveModule, theme, toggleTheme, t, user, showCustomAlert, setIsSettingsModalOpen, setActiveSettingsTab } = useWorkspace();
 
   const userPlanNorm = (user?.plan || 'starter').toLowerCase();
   const isCampaignLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
@@ -149,6 +149,25 @@ export const AIWebsiteBuilderModule = () => {
   // ── BUILD PIPELINE INITIATION ──
   const handleStartBuild = async (inputPrompt) => {
     if (!inputPrompt || !inputPrompt.trim()) return;
+
+    const isAgencyPlan = userPlanNorm === 'agency' || userPlanNorm === 'agency_pro';
+    if (isAgencyPlan && projects.length >= 30) {
+      if (showCustomAlert) {
+        showCustomAlert({
+          title: 'Website Generation Limit Reached (30/30)',
+          message: 'Agency Plan includes up to 30 AI Websites. Upgrade to Enterprise Plan for unlimited website generations.',
+          type: 'warning',
+          confirmText: 'Upgrade to Enterprise',
+          cancelText: 'Cancel',
+          onConfirm: () => {
+            setActiveModule('settings');
+            if (setActiveSettingsTab) setActiveSettingsTab('billing');
+            if (setIsSettingsModalOpen) setIsSettingsModalOpen(true);
+          }
+        });
+      }
+      return;
+    }
 
     setErrorMsg('');
     setPrompt(inputPrompt.trim());

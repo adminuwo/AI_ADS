@@ -77,8 +77,10 @@ const MainContent = () => {
   const isWebsiteBuilder = ['websiteBuilder', 'websitebuilder', 'builder'].includes(activeModule);
   const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
   const isStarterUser = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
+  const isProUser = userPlanNorm === 'pro' || userPlanNorm === 'professional' || userPlanNorm === 'growth';
+  const isWbUnlocked = !(isStarterUser || isProUser);
 
-  if (isWebsiteBuilder && !isStarterUser) {
+  if (isWebsiteBuilder && isWbUnlocked) {
     return (
       <div className="h-screen w-screen overflow-hidden bg-[#070A11] text-slate-100">
         <AIWebsiteBuilderModule />
@@ -123,7 +125,7 @@ const MainContent = () => {
       case 'websitebuilder':
       case 'builder':
         return (
-          <PlanGate moduleName="AI Website Builder" moduleId="websiteBuilder">
+          <PlanGate moduleName="AI Website Builder" moduleId="websiteBuilder" requiredTier="Agency Plan">
             <NoBrandGate moduleName="AI Website Builder">
               <AIWebsiteBuilderModule />
             </NoBrandGate>

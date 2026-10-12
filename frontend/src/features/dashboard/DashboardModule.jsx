@@ -59,16 +59,18 @@ export const DashboardModule = () => {
 
   const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
   const isStarter = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
+  const isPro = userPlanNorm === 'pro' || userPlanNorm === 'professional' || userPlanNorm === 'growth';
+  const isWebsiteBuilderUnlocked = !(isStarter || isPro);
   const isHighestPlan = userPlanNorm === 'enterprise' || userPlanNorm === 'unlimited';
 
   const handleWebsiteBuilderClick = () => {
-    if (!isHighestPlan) {
+    if (!isWebsiteBuilderUnlocked) {
       if (showCustomAlert) {
         showCustomAlert({
           title: 'AI Website Builder is Locked',
-          message: 'AI Website Builder requires the Pro or higher subscription plan. Upgrade now to generate, customize, and deploy AI websites.',
+          message: 'AI Website Builder is locked on Starter & Pro Plans. Upgrade to Agency Plan or higher to generate, customize, and deploy AI websites.',
           type: 'warning',
-          confirmText: 'Upgrade to Pro',
+          confirmText: 'Upgrade to Agency',
           cancelText: 'Cancel',
           onConfirm: () => {
             setActiveModule('settings');
@@ -387,7 +389,7 @@ export const DashboardModule = () => {
               bg: 'bg-[#f5f3ff] dark:bg-purple-950/30 border border-purple-200/80 dark:border-purple-900/50',
               iconBg: 'bg-purple-400/20 text-purple-600',
               btnBg: 'bg-purple-600',
-              isLocked: !isHighestPlan
+              isLocked: !isWebsiteBuilderUnlocked
             },
           ].map((step) => {
             const Icon = step.icon;
@@ -395,7 +397,7 @@ export const DashboardModule = () => {
               <button
                 key={step.id}
                 onClick={() => {
-                  if (step.id === 'websiteBuilder' && !isHighestPlan) {
+                  if (step.id === 'websiteBuilder' && !isWebsiteBuilderUnlocked) {
                     handleWebsiteBuilderClick();
                     return;
                   }

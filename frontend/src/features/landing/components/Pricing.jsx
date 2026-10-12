@@ -43,19 +43,19 @@ const PLANS = [
     icon: Sparkles,
     monthly: '999',
     yearly: '799',
-    description: 'Unlocked Storytelling & Problem Solving, AI Website Builder (5 Sites) & 7 Brand Workspaces + 120 credits.',
+    description: 'Unlocked Storytelling & Problem Solving, GTM Strategy Engine & 7 Brand Workspaces + 150 credits.',
     cta: 'Start Free Trial',
     ctaStyle: 'primary',
     badge: 'Most Popular',
   },
   {
     id: 'agency',
-    label: 'Agency / Scale',
+    label: 'Agency Scale',
     accent: 'purple',
     icon: Shield,
     monthly: '1,299',
     yearly: '999',
-    description: '300 visual credits, 50,000 words limit, 10 brand workspaces, 20+ Sites & full strategy suite.',
+    description: '250 visual credits, 50,000 words limit, 10 brand workspaces, 3/mo (30/yr) Sites & Briefs.',
     cta: 'Scale Now',
     ctaStyle: 'secondary',
     badge: null,
@@ -67,7 +67,7 @@ const PLANS = [
     icon: Users,
     monthly: '2,499',
     yearly: '1,999',
-    description: '750 visual credits, 150,000 words limit, unlimited workspaces, 50+ Sites & priority processing.',
+    description: '600 visual credits, 150,000 words limit, unlimited workspaces, 50+ Sites & priority processing.',
     cta: 'Contact Sales',
     ctaStyle: 'secondary',
     badge: 'Unlimited Power',
@@ -89,10 +89,10 @@ const ALL_FEATURES = [
 ];
 
 const PLAN_FEATURE_VALUES = {
-  starter:    ['30 credits', '1 workspace', true, false, true, 'Basic', null, false, false, false, false],
-  pro:        ['120 credits', '7 workspaces', true, true, true, 'Full', null, '5 Sites', true, true, false],
-  agency:     ['300 credits', '10 workspaces', true, true, true, 'Priority', null, '20+ Sites', true, true, true],
-  enterprise: ['750 credits', 'Unlimited', true, true, true, 'VIP Priority', null, '50+ Sites', true, true, true],
+  starter:    ['60 credits', '3 workspaces', true, false, true, 'Basic', null, false, false, false, false],
+  pro:        ['150 credits', '7 workspaces', true, true, true, 'Full', null, false, true, true, false],
+  agency:     ['250 credits', '10 workspaces', true, true, true, 'Priority', null, '3/mo (30/yr)', true, true, true],
+  enterprise: ['600 credits', 'Unlimited', true, true, true, 'VIP Priority', null, 'Unlimited Sites', true, true, true],
 };
 
 /* per-plan accent tokens */
@@ -145,13 +145,14 @@ const ACCENT = {
 
 /* ─────────────────── comparison rows ─────────────────── */
 const COMPARISON_ROWS = [
-  { label: 'Visual AI Credits / mo', values: ['30',  '120',       '300', '750'] },
+  { label: 'Visual AI Credits / mo', values: ['60',  '150',       '250', '600'] },
   { label: 'Word Generation Limit',  values: ['1,000 words', '15,000 words', '50,000 words', '150,000 words'] },
-  { label: 'Brand DNA Workspaces',   values: ['1',   '7',         '10', 'Unlimited'] },
+  { label: 'Brand DNA Workspaces',   values: ['3',   '7',         '10', 'Unlimited'] },
   { label: 'Storytelling & Problem Solving', values: [false, true, true, true] },
-  { label: 'Strategy Image Briefs',  values: [false, false,       true, true] },
+  { label: 'GTM Strategy Engine',    values: [false, true, true, true] },
+  { label: 'Strategy Image Briefs',  values: [false, false,       '3/mo (30/yr)', 'Unlimited'] },
   { label: 'SEO Competitor Gaps & Opportunities', values: [false, false, true, true] },
-  { label: 'AI Web Builder',         values: [false, '5 Sites',    '20+ Sites', '50+ Sites'] },
+  { label: 'AI Web Builder',         values: [false, false,       '3/mo (30/yr)', 'Unlimited Sites'] },
   { label: 'AI Copilot',             values: ['Basic', 'Full', 'Priority', 'VIP Priority'] },
 ];
 
