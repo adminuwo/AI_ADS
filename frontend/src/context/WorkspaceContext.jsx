@@ -1076,7 +1076,9 @@ export const WorkspaceProvider = ({ children }) => {
   const getWorkspaceLimit = (plan) => {
     const p = (plan || 'starter').toLowerCase();
     if (p === 'starter' || p === 'base' || p === 'free') return 3;
-    if (p === 'pro' || p === 'growth' || p === 'professional') return 10;
+    if (p === 'pro' || p === 'growth' || p === 'professional') return 7;
+    if (p === 'agency' || p === 'agency_pro' || p === 'scale') return 10;
+    if (p === 'growth_agency' || p === 'growth_agency_2499') return 20;
     return 9999;
   };
 

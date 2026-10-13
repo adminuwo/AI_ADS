@@ -112,7 +112,7 @@ const CURRENCY_OPTIONS = [
   { value: 'AED', label: 'UAE (AED)', icon: '🇦🇪' },
 ];
 
-const PLAN_PRICES = {
+const PLAN_PRICES_MONTHLY = {
   base: {
     INR: { primary: '₹499', period: '/month', secondary: '($5.99/mo)' },
     USD: { primary: '$5.99', period: '/month', secondary: '(₹499/mo)' },
@@ -151,8 +151,50 @@ const PLAN_PRICES = {
   }
 };
 
-const getPlanPrice = (planId, currencyCode) => {
-  return PLAN_PRICES[planId]?.[currencyCode] || PLAN_PRICES[planId]?.['INR'] || { primary: '₹499', period: '/month', secondary: '($5.99/mo)' };
+const PLAN_PRICES_YEARLY = {
+  base: {
+    INR: { primary: '₹399', period: '/month', secondary: 'billed ₹4,788/yr' },
+    USD: { primary: '$4.99', period: '/month', secondary: 'billed $59.88/yr' },
+    EUR: { primary: '€3.99', period: '/month', secondary: 'billed €47.88/yr' },
+    GBP: { primary: '£3.49', period: '/month', secondary: 'billed £41.88/yr' },
+    CAD: { primary: 'CA$5.99', period: '/month', secondary: 'billed CA$71.88/yr' },
+    AUD: { primary: 'A$6.99', period: '/month', secondary: 'billed A$83.88/yr' },
+    AED: { primary: 'AED 17.99', period: '/month', secondary: 'billed AED 215.88/yr' },
+  },
+  professional: {
+    INR: { primary: '₹799', period: '/month', secondary: 'billed ₹9,588/yr' },
+    USD: { primary: '$9.99', period: '/month', secondary: 'billed $119.88/yr' },
+    EUR: { primary: '€8.99', period: '/month', secondary: 'billed €107.88/yr' },
+    GBP: { primary: '£7.49', period: '/month', secondary: 'billed £89.88/yr' },
+    CAD: { primary: 'CA$12.99', period: '/month', secondary: 'billed CA$155.88/yr' },
+    AUD: { primary: 'A$14.99', period: '/month', secondary: 'billed A$179.88/yr' },
+    AED: { primary: 'AED 34.99', period: '/month', secondary: 'billed AED 419.88/yr' },
+  },
+  agency_pro: {
+    INR: { primary: '₹999', period: '/month', secondary: 'billed ₹11,988/yr' },
+    USD: { primary: '$12.99', period: '/month', secondary: 'billed $155.88/yr' },
+    EUR: { primary: '€11.49', period: '/month', secondary: 'billed €137.88/yr' },
+    GBP: { primary: '£9.99', period: '/month', secondary: 'billed £119.88/yr' },
+    CAD: { primary: 'CA$17.99', period: '/month', secondary: 'billed CA$215.88/yr' },
+    AUD: { primary: 'A$19.99', period: '/month', secondary: 'billed A$239.88/yr' },
+    AED: { primary: 'AED 46.99', period: '/month', secondary: 'billed AED 563.88/yr' },
+  },
+  enterprise: {
+    INR: { primary: '₹1,999', period: '/month', secondary: 'billed ₹23,988/yr' },
+    USD: { primary: '$23.99', period: '/month', secondary: 'billed $287.88/yr' },
+    EUR: { primary: '€21.99', period: '/month', secondary: 'billed €263.88/yr' },
+    GBP: { primary: '£18.49', period: '/month', secondary: 'billed £221.88/yr' },
+    CAD: { primary: 'CA$31.99', period: '/month', secondary: 'billed CA$383.88/yr' },
+    AUD: { primary: 'A$35.99', period: '/month', secondary: 'billed A$431.88/yr' },
+    AED: { primary: 'AED 87.99', period: '/month', secondary: 'billed AED 1,055.88/yr' },
+  }
+};
+
+const PLAN_PRICES = PLAN_PRICES_MONTHLY;
+
+const getPlanPrice = (planId, currencyCode, cycle = 'monthly') => {
+  const store = cycle === 'yearly' ? PLAN_PRICES_YEARLY : PLAN_PRICES_MONTHLY;
+  return store[planId]?.[currencyCode] || store[planId]?.['INR'] || { primary: '₹499', period: '/month', secondary: '($5.99/mo)' };
 };
 
 // ──────────────────────────────────────────────
@@ -161,18 +203,19 @@ const getPlanPrice = (planId, currencyCode) => {
 const DETAILED_PLANS = [
   {
     id: 'base',
-    name: 'Starter',
+    name: 'Starter Plan',
     badge: 'Starter',
-    subtitle: 'Essential AI copy & 30 monthly visual credits for solo creators',
-    credits: '30 Visual Credits / mo',
-    creditsDetail: 'Generates up to 30 high-res AI visual assets or ad creatives monthly.',
+    subtitle: 'Essential AI copy & 60 monthly visual credits for solo creators',
+    credits: '60 Visual Credits / mo',
+    creditsDetail: 'Generates up to 60 high-res AI visual assets or ad creatives monthly.',
     color: 'from-blue-600 via-indigo-600 to-slate-900',
     borderColor: 'border-blue-500/30',
     features: [
-      { text: '30 Monthly Visual Credits (AI Image Generator)', highlighted: true },
+      { text: '60 Monthly Visual Credits (Shared across workspaces)', highlighted: true },
       { text: '1,000 Words / mo (Social Copy & Ad Generations)', highlighted: true },
-      { text: '1 Brand DNA Workspace (Scraper & Tone Ingestion)', highlighted: false },
+      { text: '3 Brand DNA Workspaces (Scraper & Tone Ingestion)', highlighted: false },
       { text: '30-Day Marketing Roadmap (Basic Strategy)', highlighted: false },
+      { text: '🔒 SEO Competitor Gaps & Opportunities (Locked - Upgrade to Agency)', highlighted: false },
       { text: '🔒 Storytelling & Problem-Solving Copy (Locked)', highlighted: false },
       { text: '🔒 Strategy Image Briefs (Locked)', highlighted: false },
       { text: '🔒 AI Website Builder (Locked)', highlighted: false }
@@ -180,56 +223,57 @@ const DETAILED_PLANS = [
   },
   {
     id: 'professional',
-    name: 'Pro / Growth',
+    name: 'Pro Plan',
     badge: 'Growth Tier',
-    subtitle: 'Unlocked Storytelling Copy, AI Website Builder & 7 Brand Workspaces',
-    credits: '120 Visual Credits / mo',
-    creditsDetail: 'Generates up to 120 high-res AI visual assets or ad creatives each month.',
+    subtitle: '150 monthly visual credits, GTM Strategy Engine & 7 Brand Workspaces',
+    credits: '150 Visual Credits / mo',
+    creditsDetail: 'Generates up to 150 high-res AI visual assets or ad creatives each month.',
     color: 'from-violet-600 via-purple-600 to-indigo-900',
     borderColor: 'border-violet-500/40',
     features: [
-      { text: '120 Monthly Visual Credits (Creative Studio)', highlighted: true },
+      { text: '150 Monthly Visual Credits (Shared across workspaces)', highlighted: true },
       { text: '15,000 Words / mo (Full Content & Copy Suite)', highlighted: true },
       { text: 'Storytelling & Problem-Solving Copy Unlocked', highlighted: true },
+      { text: 'GTM (Go-To-Market) Strategy Engine Unlocked', highlighted: true },
       { text: '🔒 Strategy Image Briefs (Locked)', highlighted: false },
       { text: '🔒 SEO Competitor Gaps & Opportunities (Locked)', highlighted: false },
-      { text: 'AI Website Builder Unlocked (5 Full Sites)', highlighted: true },
+      { text: '🔒 AI Website Builder (Locked - Upgrade to Agency)', highlighted: false },
       { text: '7 Brand DNA Workspaces', highlighted: true },
       { text: 'AI Copilot & Campaign Planner', highlighted: false }
     ]
   },
   {
     id: 'agency_pro',
-    name: 'Agency / Scale',
+    name: 'Agency Plan',
     badge: 'Most Popular',
-    subtitle: 'High capacity 300 visual credits, 50,000 words & 10 brand workspaces',
-    credits: '300 Visual Credits / mo',
-    creditsDetail: '300 high-res visual credits included monthly.',
+    subtitle: 'High capacity 250 visual credits, 50,000 words & 10 brand workspaces',
+    credits: '250 Visual Credits / mo',
+    creditsDetail: '250 high-res visual credits included monthly.',
     color: 'from-amber-500 via-brand-500 to-cyan-500',
     features: [
-      { text: '300 Monthly Visual Credits (4x Variation Engine)', highlighted: true },
+      { text: '250 Monthly Visual Credits (Shared across workspaces)', highlighted: true },
       { text: '50,000 Words / mo (High-Volume Strategy & Copy)', highlighted: true },
       { text: '10 Brand Workspaces & Multi-Client Access', highlighted: true },
-      { text: 'AI Web Builder (20+ Full Websites & Live Edits)', highlighted: true },
-      { text: 'All Premium Copy, Briefs & Strategy Features Unlocked', highlighted: true },
+      { text: 'AI Website Builder Unlocked (3/mo Monthly, 30/yr Yearly)', highlighted: true },
+      { text: 'Strategy Image Briefs (3/mo Monthly, 30/yr Yearly)', highlighted: true },
       { text: 'Media Asset Library & Cloud Storage', highlighted: false }
     ]
   },
   {
     id: 'enterprise',
-    name: 'Enterprise',
+    name: 'Enterprise Plan',
     badge: 'Enterprise',
-    subtitle: 'High-volume generation, 3,000 visual credits & unlimited AI text generation',
-    credits: '3,000 Visual Credits / mo',
-    creditsDetail: '3,000 high-res visual credits per month with custom volume scaling.',
+    subtitle: 'High-volume generation, 600 visual credits & unlimited AI text generation',
+    credits: '600 Visual Credits / mo',
+    creditsDetail: '600 high-res visual credits per month with custom volume scaling.',
     color: 'from-emerald-600 via-teal-600 to-slate-950',
     borderColor: 'border-emerald-500/40',
     features: [
-      { text: '3,000 Monthly Visual Credits (High-Volume Ad & Visual Gen)', highlighted: true },
+      { text: '600 Monthly Visual Credits (Shared across workspaces)', highlighted: true },
       { text: 'UNLIMITED Text Generations (Uncapped AI Content Engine)', highlighted: true },
       { text: 'Unlimited Brand Workspaces & Priority Processing', highlighted: true },
       { text: 'AI Web Builder with Live Chat Edit (Real-Time Code Tweaking)', highlighted: true },
-      { text: 'All Core Platform Modules Included (Strategy, SEO, Content, Web & Ads)', highlighted: true }
+      { text: 'Strategy Image Briefs (Unlimited Generations)', highlighted: true }
     ]
   }
 ];
@@ -592,6 +636,7 @@ export const SettingsModal = () => {
   const [selectedPlanDetail, setSelectedPlanDetail] = useState(null);
   const [planToast, setPlanToast] = useState(null);
   const [billingSubTab, setBillingSubTab] = useState('current');
+  const [billingCycle, setBillingCycle] = useState('yearly');
 
   // Dynamic Language filtering per Region
   const availableLanguages = REGION_LANGUAGES[region] || REGION_LANGUAGES['India'] || REGION_LANGUAGES['Global'];
@@ -1546,7 +1591,36 @@ export const SettingsModal = () => {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex flex-wrap items-center gap-3 shrink-0">
+                {/* Billing Cycle Toggle */}
+                <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle('monthly')}
+                    className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                      billingCycle === 'monthly'
+                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-slate-700'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle('yearly')}
+                    className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      billingCycle === 'yearly'
+                        ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span>Yearly</span>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      -20% OFF
+                    </span>
+                  </button>
+                </div>
+
                 {/* Country Currency Selector */}
                 <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
                   <span className="text-[10px] font-black uppercase text-slate-400">Currency:</span>
@@ -1587,7 +1661,7 @@ export const SettingsModal = () => {
               <div className="space-y-6 animate-in fade-in">
                 {/* Active Plan Popup Card */}
                 {(() => {
-                  const activePrice = getPlanPrice(activePlanObj.id, activeCurrency);
+                  const activePrice = getPlanPrice(activePlanObj.id, activeCurrency, billingCycle);
                   return (
                     <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-slate-900 via-[#0c111d] to-slate-950 border border-brand-500/50 shadow-2xl relative overflow-hidden space-y-6">
                       {/* Decorative Brand Accent Background Glow */}
@@ -1686,7 +1760,7 @@ export const SettingsModal = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {DETAILED_PLANS.map(t => {
                     const isCurrent = userPlanNorm === t.id.toLowerCase() || (userPlanNorm.includes('agency') && t.id === 'agency_pro') || (userPlanNorm.includes('base') && t.id === 'base') || (userPlanNorm.includes('prof') && t.id === 'professional') || (userPlanNorm.includes('enterp') && t.id === 'enterprise');
-                    const pPrice = getPlanPrice(t.id, activeCurrency);
+                    const pPrice = getPlanPrice(t.id, activeCurrency, billingCycle);
 
                     return (
                       <div

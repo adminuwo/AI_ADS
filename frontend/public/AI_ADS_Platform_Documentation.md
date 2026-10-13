@@ -234,7 +234,7 @@ AI ADS™ employs a proprietary 2-Agent pipeline for commercial ad photography:
 
 | Plan Name | Price (Monthly) | Price (Yearly Billed) | Visual AI Credits | Key Included Features |
 | :--- | :--- | :--- | :--- | :--- |
-| **Starter Suite** | ₹799 / mo | ₹639 / mo | 50 Credits / mo | 1 Brand DNA Workspace, 30-Day Strategy, Standard Ad Visuals |
+| **Starter Suite** | ₹799 / mo | ₹639 / mo | 50 Credits / mo | 3 Brand DNA Workspaces, 30-Day Strategy, Standard Ad Visuals |
 | **Growth Agency** | ₹2,499 / mo | ₹1,999 / mo | 250 Credits / mo | 5 Brand Workspaces, 8K Photorealistic Studio Renders, AI Website Builder, Approvals Desk |
 | **Enterprise Scale** | ₹6,999 / mo | ₹5,599 / mo | 1,000 Credits / mo | Unlimited Workspaces, Dedicated Account Manager, Custom API/Webhook Integrations |
 

@@ -315,8 +315,8 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 const isActive = activeModule === m.id;
                 const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
                 const isStarterUser = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
-                const isHighestPlan = userPlanNorm === 'enterprise' || userPlanNorm === 'unlimited';
-                const isModuleLocked = (!isHighestPlan && ['websiteBuilder', 'websitebuilder', 'builder'].includes(m.id));
+                const isProUser = userPlanNorm === 'pro' || userPlanNorm === 'professional' || userPlanNorm === 'growth';
+                const isModuleLocked = ((isStarterUser || isProUser) && ['websiteBuilder', 'websitebuilder', 'builder'].includes(m.id));
 
                 return (
                   <button
@@ -354,7 +354,7 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                             : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
                         }`}>
                           <Lock className="w-2.5 h-2.5" />
-                          <span>PRO</span>
+                          <span>AGENCY</span>
                         </span>
                       )}
                     </div>

@@ -2,21 +2,23 @@ import React from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { Lock, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react';
 
-export const PlanGate = ({ children, moduleName, moduleId, requiredTier = 'Pro / Growth' }) => {
+export const PlanGate = ({ children, moduleName, moduleId, requiredTier }) => {
   const { user, activeWorkspace, setIsSettingsModalOpen, setActiveSettingsTab, setActiveModule } = useWorkspace();
   const planNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
 
-  const isStarter = planNorm === 'starter' || planNorm === 'free';
-  const isBase = planNorm === 'base';
+  const isStarter = planNorm === 'starter' || planNorm === 'free' || planNorm === 'base';
+  const isPro = planNorm === 'pro' || planNorm === 'professional' || planNorm === 'growth';
   
   // Modules locked for Starter tier: campaigns
   const isLockedForStarter = isStarter && ['campaigns'].includes(moduleId);
+  // Website Builder locked for Starter & Pro tiers (requires Agency Plan or Enterprise)
+  const isLockedForWebsiteBuilder = (isStarter || isPro) && ['websiteBuilder', 'websitebuilder', 'builder'].includes(moduleId);
   
   const isHighestPlan = planNorm === 'enterprise' || planNorm === 'unlimited';
-  // Approvals and Website Builder are locked for ALL plans EXCEPT the highest
-  const isLockedForAll = !isHighestPlan && ['approvals', 'websiteBuilder', 'websitebuilder', 'builder'].includes(moduleId);
+  const isLockedForAll = !isHighestPlan && ['approvals'].includes(moduleId);
 
-  const isLocked = isLockedForStarter || isLockedForAll;
+  const isLocked = isLockedForStarter || isLockedForWebsiteBuilder || isLockedForAll;
+  const targetRequiredTier = requiredTier || (isLockedForWebsiteBuilder ? 'Agency Plan' : 'Pro / Growth');
 
   if (!isLocked) {
     return children;
@@ -44,18 +46,18 @@ export const PlanGate = ({ children, moduleName, moduleId, requiredTier = 'Pro /
           </span>
 
           <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            {moduleName || 'This Feature'} is Locked on Starter Plan
+            {moduleName || 'This Feature'} is Locked
           </h2>
 
           <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-md mt-2 leading-relaxed">
-            {moduleName} requires the <span className="text-brand-400 font-bold">{requiredTier}</span> subscription plan or higher. Upgrade now to unlock full access and scale your marketing.
+            {moduleName} requires the <span className="text-brand-400 font-bold">{targetRequiredTier}</span> subscription plan or higher. Upgrade now to unlock full access and scale your marketing.
           </p>
         </div>
 
-        {/* Feature Highlights included in Pro/Growth */}
+        {/* Feature Highlights included in targetRequiredTier */}
         <div className="relative z-10 p-4 rounded-2xl bg-slate-800/50 border border-slate-700/60 text-left space-y-2.5 max-w-lg mx-auto">
           <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Included when you upgrade to {requiredTier}:
+            Included when you upgrade to {targetRequiredTier}:
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs text-slate-200 font-medium">
@@ -64,11 +66,11 @@ export const PlanGate = ({ children, moduleName, moduleId, requiredTier = 'Pro /
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-200 font-medium">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>450 Monthly Visual Credits (3x more than Starter)</span>
+              <span>Higher Visual Credits & Brand Workspaces</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-200 font-medium">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>3,000 Text Generations & 10 Brand Workspaces</span>
+              <span>Full Strategy Suite & Live Site Editing</span>
             </div>
           </div>
         </div>
@@ -79,7 +81,7 @@ export const PlanGate = ({ children, moduleName, moduleId, requiredTier = 'Pro /
             onClick={handleOpenBilling}
             className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-brand-500/30 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Sparkles className="w-4 h-4" /> Upgrade to {requiredTier}
+            <Sparkles className="w-4 h-4" /> Upgrade to {targetRequiredTier}
           </button>
           
           <button

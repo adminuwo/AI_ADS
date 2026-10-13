@@ -133,8 +133,12 @@ export const StrategyModule = () => {
   } = useWorkspace();
 
   const userPlanNorm = (user?.plan || 'starter').toLowerCase();
+  const isStarterPlan = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
+  const isProPlan = userPlanNorm === 'pro' || userPlanNorm === 'professional' || userPlanNorm === 'growth';
+  const isGtmUnlocked = !isStarterPlan;
+  const isGeoUnlocked = !(isStarterPlan || isProPlan);
   const isCampaignLocked = false;
-  const isImageBriefLocked = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free' || userPlanNorm === 'pro' || userPlanNorm === 'professional' || userPlanNorm === 'growth';
+  const isImageBriefLocked = isStarterPlan || isProPlan;
   const isHighestPlan = userPlanNorm === 'enterprise' || userPlanNorm === 'unlimited';
 
   const [selectedStrategyType, setSelectedStrategyType] = useState(() => {
@@ -256,10 +260,12 @@ export const StrategyModule = () => {
 
     const genCountKey = `image_brief_gen_count_${activeWorkspace?.id || 'default'}`;
     const genCount = parseInt(localStorage.getItem(genCountKey) || '0', 10);
-    if ((userPlanNorm === 'pro' || userPlanNorm === 'growth') && genCount >= 3) {
+    const isAgencyPlan = userPlanNorm === 'agency' || userPlanNorm === 'agency_pro';
+    const briefLimit = isAgencyPlan ? 30 : 3;
+    if ((userPlanNorm === 'pro' || userPlanNorm === 'growth' || isAgencyPlan) && genCount >= briefLimit) {
       showCustomAlert({
-        title: 'Limit Reached',
-        message: 'You have reached the maximum limit of 3 Image Brief generations for your plan. Please upgrade to unlock unlimited generation.',
+        title: 'Image Brief Limit Reached',
+        message: `You have reached the limit of ${briefLimit} Image Brief generations for your plan. Please upgrade to Enterprise Plan to unlock unlimited generation.`,
         type: 'warning'
       });
       return;
@@ -1790,27 +1796,32 @@ export const StrategyModule = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    if (!isHighestPlan) {
+                    if (!isGtmUnlocked) {
                       showCustomAlert({
-                        title: 'Feature Locked',
-                        message: 'GTM Strategy is a premium feature. Please upgrade your plan to unlock.',
+                        title: 'GTM Strategy Locked',
+                        message: 'Go-To-Market (GTM) Strategy Engine is locked in Starter Plan. Upgrade to Pro Plan or above to unlock GTM Strategy.',
                         type: 'warning',
                         confirmText: 'Upgrade Plan',
-                        cancelText: 'Cancel'
+                        cancelText: 'Cancel',
+                        onConfirm: () => {
+                          setActiveModule('settings');
+                          if (setActiveSettingsTab) setActiveSettingsTab('billing');
+                          setIsSettingsModalOpen(true);
+                        }
                       });
                     } else {
                       setGeoSeoGtmTab('gtm');
                     }
                   }}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                    geoSeoGtmTab === 'gtm' && !isHighestPlan
+                    geoSeoGtmTab === 'gtm' && isGtmUnlocked
                       ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-xs'
                       : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white'
                   }`}
                 >
-                  {!isHighestPlan ? <Lock className="w-3.5 h-3.5 text-slate-400" /> : <Rocket className="w-3.5 h-3.5" />}
+                  {!isGtmUnlocked ? <Lock className="w-3.5 h-3.5 text-amber-500" /> : <Rocket className="w-3.5 h-3.5 text-indigo-400" />}
                   <span>{t('gtmTab', 'Go-To-Market (GTM)')}</span>
-                  {!isHighestPlan && <span className="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-700 text-[9px] font-medium flex items-center gap-1">PRO</span>}
+                  {!isGtmUnlocked && <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-400 text-[9px] font-extrabold flex items-center gap-1">LOCKED</span>}
                 </button>
                 <button
                   type="button"
@@ -1824,25 +1835,41 @@ export const StrategyModule = () => {
                   <Search className="w-3.5 h-3.5" />
                   <span>{t('seoTab', 'SEO Strategy')}</span>
                 </button>
-                {!(userPlanNorm === 'starter' || userPlanNorm === 'free') && (
                 <button
                   type="button"
-                  onClick={() => setGeoSeoGtmTab('geo')}
+                  onClick={() => {
+                    if (!isGeoUnlocked) {
+                      showCustomAlert({
+                        title: 'GEO Strategy Locked',
+                        message: 'GEO (Generative Engine Optimization) Regional Targeting is locked in Starter & Pro Plans. Upgrade to Agency Plan or above to unlock GEO Strategy.',
+                        type: 'warning',
+                        confirmText: 'Upgrade Plan',
+                        cancelText: 'Cancel',
+                        onConfirm: () => {
+                          setActiveModule('settings');
+                          if (setActiveSettingsTab) setActiveSettingsTab('billing');
+                          setIsSettingsModalOpen(true);
+                        }
+                      });
+                    } else {
+                      setGeoSeoGtmTab('geo');
+                    }
+                  }}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                    geoSeoGtmTab === 'geo'
+                    geoSeoGtmTab === 'geo' && isGeoUnlocked
                       ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-xs'
                       : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white'
                   }`}
                 >
-                  <MapPin className="w-3.5 h-3.5" />
+                  {!isGeoUnlocked ? <Lock className="w-3.5 h-3.5 text-amber-500" /> : <MapPin className="w-3.5 h-3.5 text-cyan-400" />}
                   <span>{t('geoTab', 'GEO Targeting')}</span>
+                  {!isGeoUnlocked && <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-400 text-[9px] font-extrabold flex items-center gap-1">LOCKED</span>}
                 </button>
-                )}
               </div>
             </div>
 
             {/* TAB CONTENT: GTM */}
-            {isHighestPlan && geoSeoGtmTab === 'gtm' && (
+            {isGtmUnlocked && geoSeoGtmTab === 'gtm' && (
               <div className="space-y-5 animate-in fade-in duration-200">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-indigo-200/50 dark:border-indigo-900/30 space-y-2">
@@ -2001,7 +2028,7 @@ export const StrategyModule = () => {
             )}
 
             {/* TAB CONTENT: GEO */}
-            {geoSeoGtmTab === 'geo' && (
+            {isGeoUnlocked && geoSeoGtmTab === 'geo' && (
               <div className="space-y-5 animate-in fade-in duration-200">
                 {/* Priority Hubs */}
                 <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-blue-200/50 dark:border-blue-900/30 space-y-3">
