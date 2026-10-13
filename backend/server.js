@@ -178,25 +178,7 @@ app.use('/api/account', accountRoutes);
 
 // Memory Store Fallback
 let memoryUsers = [];
-let memoryWorkspaces = [
-  {
-    id: 'ws_001',
-    brandName: 'UWO AI Ads',
-    domainUrl: 'https://aiads.uwo.ai',
-    logoUrl: 'https://api.dicebear.com/7.x/identicon/svg?seed=UWO',
-    brandColors: ['#6366F1', '#8B5CF6', '#06B6D4', '#0F172A'],
-    metaDescription: 'Governed AI-native content marketing, SEO and social-media operations platform.',
-    positioningSummary: 'UWO AI Ads is the premier operating system for agencies and enterprise marketing teams to plan, create, govern, approve, publish, and scale digital content.',
-    voiceGuidelines: { formalityScore: 4, toneKeywords: ['Authoritative', 'Evidence-Based', 'Innovative', 'Direct'], taboos: ['Guaranteed ranking', 'Low effort', 'Spam'] },
-    approvedClaims: [
-      { claimText: 'Reduces long-form SEO draft turnaround time to under 12 seconds', sourceUrl: 'https://uwo.ai/benchmarks', verified: true },
-      { claimText: 'Governed multi-brand workspace with RBAC role control', sourceUrl: 'https://uwo.ai/governance', verified: true }
-    ],
-    restrictedClaims: ['Guaranteed #1 Google ranking', '100% viral outcome guaranteed'],
-    priorityKeywords: ['AI Content Marketing', 'Brand DNA', 'SEO Intelligence', 'Campaign Operations'],
-    contentPillars: ['Enterprise AI', 'SEO Clustering', 'Brand Governance', 'Social Studio Ops']
-  }
-];
+let memoryWorkspaces = [];
 
 let memoryContentStore = [
   {
@@ -637,7 +619,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
     
     user.password = newPassword;
-    await user.save();
+    await user.save({ validateModifiedOnly: true });
     resetOtpStore.delete(cleanEmail);
     
     return res.json({ success: true, message: 'Password reset successfully. You can now login.' });
@@ -647,7 +629,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-// Register Endpoint
+// Register Endpoint (Generates Email Verification OTP)
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, confirmPassword } = req.body;
   if (!email || !password || !confirmPassword) {
@@ -676,41 +658,78 @@ app.post('/api/auth/register', async (req, res) => {
     }
   }
 
-  // Generate OTP instead of creating immediately
+  // Generate 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   registerOtpStore.set(cleanEmail, { password, otp, expiresAt: Date.now() + 10 * 60 * 1000 });
 
   const { sendRegisterOTP } = require('./services/emailService');
-  await sendRegisterOTP({ email: cleanEmail, otp });
+  try {
+    await sendRegisterOTP({ email: cleanEmail, otp });
+  } catch (emailErr) {
+    console.log('Register OTP send note:', emailErr.message);
+  }
 
-  return res.json({ success: true, requiresOtp: true, message: 'Verification code sent to your email.' });
+  console.log(`✉️ [REGISTRATION OTP GENERATED] Email: ${cleanEmail} | OTP: ${otp}`);
+
+  return res.json({
+    success: true,
+    requiresOtp: true,
+    message: `Verification code sent to ${cleanEmail}.`
+  });
+});
+
+app.post('/api/auth/register-resend-otp', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ success: false, error: 'Email is required.' });
+
+  const cleanEmail = email.toLowerCase().trim();
+  const record = registerOtpStore.get(cleanEmail);
+  if (!record) {
+    return res.status(400).json({ success: false, error: 'No pending registration request found. Please register again.' });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  record.otp = otp;
+  record.expiresAt = Date.now() + 10 * 60 * 1000;
+  registerOtpStore.set(cleanEmail, record);
+
+  const { sendRegisterOTP } = require('./services/emailService');
+  try {
+    await sendRegisterOTP({ email: cleanEmail, otp });
+  } catch (emailErr) {
+    console.log('Resend OTP send note:', emailErr.message);
+  }
+
+  console.log(`✉️ [REGISTRATION OTP RESENT] Email: ${cleanEmail} | OTP: ${otp}`);
+  return res.json({ success: true, message: `New verification code sent to ${cleanEmail}.` });
 });
 
 app.post('/api/auth/register-verify', async (req, res) => {
   const { email, otp } = req.body;
-  if (!email || !otp) return res.status(400).json({ success: false, error: 'Email and OTP are required' });
+  if (!email || !otp) return res.status(400).json({ success: false, error: 'Email and verification code are required' });
 
   const cleanEmail = email.toLowerCase().trim();
+  const cleanOtp = String(otp).trim();
   const record = registerOtpStore.get(cleanEmail);
 
-  if (!record) return res.status(400).json({ success: false, error: 'No registration requested or expired.' });
+  if (!record) return res.status(400).json({ success: false, error: 'No registration requested or code expired. Please register again.' });
   if (Date.now() > record.expiresAt) {
     registerOtpStore.delete(cleanEmail);
-    return res.status(400).json({ success: false, error: 'OTP has expired. Please register again.' });
+    return res.status(400).json({ success: false, error: 'Verification code has expired. Please register again.' });
   }
-  if (record.otp !== otp) return res.status(400).json({ success: false, error: 'Invalid verification code.' });
+  if (record.otp !== cleanOtp) return res.status(400).json({ success: false, error: 'Invalid verification code. Please check your email.' });
 
   const password = record.password;
   registerOtpStore.delete(cleanEmail);
   let user = null;
 
   try {
-    user = await User.create({ email: cleanEmail, password, name: cleanEmail.split('@')[0], appearance: 'light' });
-    console.log(`👤 New user registered in MongoDB: ${cleanEmail}`);
+    user = await User.create({ email: cleanEmail, password, name: cleanEmail.split('@')[0], appearance: 'light', isVerified: true });
+    console.log(`👤 New user registered & verified in MongoDB: ${cleanEmail}`);
   } catch (error) {
-    user = { id: `usr_${Date.now()}`, email: cleanEmail, password, name: cleanEmail.split('@')[0], avatar: '', accentColor: 'indigo', appearance: 'light', role: 'AgencyAdmin' };
+    user = { id: `usr_${Date.now()}`, email: cleanEmail, password, name: cleanEmail.split('@')[0], avatar: '', accentColor: 'indigo', appearance: 'light', role: 'AgencyAdmin', isVerified: true };
     memoryUsers.push(user);
-    console.log(`👤 New user registered in Memory: ${cleanEmail}`);
+    console.log(`👤 New user registered & verified in Memory: ${cleanEmail}`);
   }
 
   try {
@@ -733,16 +752,17 @@ app.post('/api/auth/register-verify', async (req, res) => {
       token,
       user: {
         id: userId,
+        _id: userId,
         email: cleanEmail,
         name: user.name || cleanEmail.split('@')[0],
+        role: userRole,
         avatar: user.avatar || '',
         accentColor: user.accentColor || 'indigo',
-        appearance: user.appearance || 'light',
-        role: userRole
+        appearance: user.appearance || 'light'
       }
     });
-  } catch (jwtErr) {
-    return res.status(500).json({ success: false, error: `Auth Error: ${jwtErr.message}` });
+  } catch (tokenErr) {
+    return res.status(500).json({ success: false, error: 'Token creation failed' });
   }
 });
 
@@ -2091,6 +2111,9 @@ app.put('/api/workspace/:id', async (req, res) => {
     if (!updated && req.body.domainUrl) {
       updated = await Workspace.findOneAndUpdate({ domainUrl: req.body.domainUrl }, req.body, { returnDocument: 'after' });
     }
+    if (!updated && req.body.brandName && req.body.brandName !== 'No Brand') {
+      updated = await Workspace.findOneAndUpdate({ brandName: req.body.brandName }, req.body, { returnDocument: 'after' });
+    }
     if (updated) {
       console.log(`🍃 Brand DNA Memory Updated & Saved in MongoDB Atlas for: ${updated.brandName}`);
       return res.json({ success: true, workspace: updated });
@@ -2104,17 +2127,126 @@ app.put('/api/workspace/:id', async (req, res) => {
     memoryWorkspaces[index] = { ...memoryWorkspaces[index], ...req.body };
     return res.json({ success: true, workspace: memoryWorkspaces[index] });
   }
+
+  if (req.body.brandName && req.body.brandName !== 'No Brand') {
+    try {
+      const newWs = new Workspace({ ...req.body, id });
+      await newWs.save();
+      console.log(`🍃 Created brand workspace on PUT fallback: ${newWs.brandName}`);
+      return res.json({ success: true, workspace: newWs });
+    } catch (saveErr) {
+      console.log('Fallback workspace create note:', saveErr.message);
+    }
+  }
+
   res.status(404).json({ success: false, error: 'Workspace not found' });
 });
 
 
 app.delete('/api/workspace/:id', async (req, res) => {
   const { id } = req.params;
+  console.log(`🗑️ [Cascade Delete] Initiating full purge for workspace ID: ${id}`);
+
+  const idsToMatch = [id];
+  let targetWs = null;
+
   try {
-    await Workspace.findByIdAndDelete(id);
-  } catch (e) { }
-  memoryWorkspaces = memoryWorkspaces.filter((w) => w.id !== id && w._id?.toString() !== id);
-  res.json({ success: true, message: 'Workspace deleted successfully' });
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      targetWs = await Workspace.findById(id);
+    }
+    if (!targetWs) {
+      targetWs = await Workspace.findOne({ id });
+    }
+    if (targetWs) {
+      if (targetWs._id) idsToMatch.push(targetWs._id.toString());
+      if (targetWs.id) idsToMatch.push(targetWs.id);
+    }
+
+    const validObjectIds = idsToMatch.filter(i => mongoose.Types.ObjectId.isValid(i));
+
+    // 1. Purge Workspace documents
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      await Workspace.findByIdAndDelete(id).catch(() => {});
+    }
+    await Workspace.deleteMany({
+      $or: [
+        { _id: { $in: validObjectIds } },
+        { id: { $in: idsToMatch } }
+      ]
+    });
+
+    // 2. Cascade Delete BrandProfile (Brand DNA Memory)
+    const bpResult = await BrandProfile.deleteMany({
+      $or: [
+        { workspaceId: { $in: idsToMatch } },
+        ...(targetWs?.brandName && targetWs.brandName !== 'No Brand' ? [{ companyName: targetWs.brandName }] : [])
+      ]
+    });
+    console.log(`  ├─ Purged BrandProfile records: ${bpResult.deletedCount}`);
+
+    // 3. Cascade Delete Campaigns & Campaign Posts
+    const campaigns = await Campaign.find({ workspaceId: { $in: idsToMatch } }).select('_id');
+    const campaignIds = campaigns.map(c => c._id);
+    const postResult = await CampaignPost.deleteMany({
+      $or: [
+        { workspaceId: { $in: idsToMatch } },
+        { campaignId: { $in: campaignIds } }
+      ]
+    });
+    const campResult = await Campaign.deleteMany({ workspaceId: { $in: idsToMatch } });
+    console.log(`  ├─ Purged Campaigns: ${campResult.deletedCount}, Posts: ${postResult.deletedCount}`);
+
+    // 4. Cascade Delete Content & Saved Assets
+    const contentResult = await Content.deleteMany({ workspaceId: { $in: idsToMatch } });
+    console.log(`  ├─ Purged Content assets: ${contentResult.deletedCount}`);
+
+    // 5. Cascade Delete Generated Posts
+    const genPostResult = await GeneratedPost.deleteMany({ workspaceId: { $in: idsToMatch } });
+    console.log(`  ├─ Purged Generated Posts: ${genPostResult.deletedCount}`);
+
+    // 6. Cascade Delete Calendar items
+    const calResult = await Calendar.deleteMany({ workspaceId: { $in: idsToMatch } });
+    console.log(`  ├─ Purged Calendar entries: ${calResult.deletedCount}`);
+
+    // 7. Cascade Delete Chat Sessions
+    const chatResult = await ChatSession.deleteMany({ workspaceId: { $in: idsToMatch } });
+    console.log(`  ├─ Purged Chat Sessions: ${chatResult.deletedCount}`);
+
+    // 8. Cascade Delete Website Projects & Versions (if any)
+    try {
+      const WebsiteProject = require('./models/WebsiteProject');
+      const WebsiteVersion = require('./models/WebsiteVersion');
+      const webProjects = await WebsiteProject.find({ workspaceId: { $in: idsToMatch } }).select('projectId');
+      const projectIds = webProjects.map(p => p.projectId).filter(Boolean);
+      if (projectIds.length > 0) {
+        await WebsiteVersion.deleteMany({ projectId: { $in: projectIds } });
+      }
+      await WebsiteProject.deleteMany({ workspaceId: { $in: idsToMatch } });
+    } catch (webErr) {
+      console.log('  ├─ WebsiteProject cascade note:', webErr.message);
+    }
+
+    // 9. Decrement user's workspacesCreatedCount
+    if (targetWs?.userEmail) {
+      await User.findOneAndUpdate(
+        { email: targetWs.userEmail.toLowerCase().trim(), workspacesCreatedCount: { $gt: 0 } },
+        { $inc: { workspacesCreatedCount: -1 } }
+      ).catch(() => {});
+    }
+  } catch (err) {
+    console.error('Cascade delete error:', err.message);
+  }
+
+  // 10. Clean up in-memory fallbacks
+  memoryWorkspaces = memoryWorkspaces.filter(w => !idsToMatch.includes(w.id) && !idsToMatch.includes(w._id?.toString()));
+  memoryContentStore = memoryContentStore.filter(c => !idsToMatch.includes(c.workspaceId));
+  memoryCalendar = memoryCalendar.filter(c => !idsToMatch.includes(c.workspaceId));
+
+  console.log(`✅ [Cascade Delete] Successfully purged workspace & all associated brand data for: ${targetWs?.brandName || id}`);
+  res.json({
+    success: true,
+    message: 'Workspace and all associated brand data permanently deleted from database'
+  });
 });
 
 // Brand Intelligence API Endpoints

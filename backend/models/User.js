@@ -18,12 +18,12 @@ const userSchema = new mongoose.Schema(
     avatar: { type: String, default: '' },
     accentColor: { type: String, default: 'indigo' },
     appearance: { type: String, default: 'light' },
-    role: { type: String, enum: ['user', 'admin', 'developer', 'AgencyAdmin', 'SuperAdmin', 'Developer', 'Admin', 'User'], default: 'User' },
+    role: { type: String, default: 'User' },
     isBlocked: { type: Boolean, default: false },
 
     // Credits & Subscription
     credits: { type: Number, default: 500 },
-    plan: { type: String, enum: ['free', 'starter', 'pro', 'enterprise'], default: 'free' },
+    plan: { type: String, default: 'free' },
     workspacesCreatedCount: { type: Number, default: 0 },
     customPlans: { type: Array, default: [] },
 

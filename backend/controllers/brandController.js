@@ -353,4 +353,15 @@ Return a JSON object with the relevant data.`;
   }
 };
 
+// ─── DELETE /api/brand/:workspaceId ──────────────────────────────────────────
+exports.deleteBrandProfile = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+    await BrandProfile.deleteMany({ workspaceId });
+    res.json({ success: true, message: 'Brand profile deleted' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 module.exports.mapPreviewToBrandProfile = mapPreviewToBrandProfile;

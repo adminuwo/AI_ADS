@@ -6,6 +6,7 @@ const brandController = require('../controllers/brandController');
 router.post('/analyze', brandController.analyzeBrand);
 router.get('/:workspaceId', brandController.getBrandProfile);
 router.put('/:workspaceId', brandController.updateBrandProfile);
+router.delete('/:workspaceId', brandController.deleteBrandProfile);
 router.post('/regenerate-section', brandController.regenerateSection);
 
 module.exports = router;
