@@ -25,11 +25,24 @@ import {
   Lock,
   Sparkles,
   PanelLeftClose,
-  Menu
+  Menu,
+  Shield
 } from 'lucide-react';
 
 export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: propSetIsMobile }) => {
   const { language, activeModule, setActiveModule, setIsSettingsModalOpen, activeSettingsTab, setActiveSettingsTab, isMobileMenuOpen: contextIsMobile, setIsMobileMenuOpen: contextSetIsMobile, user, userAvatar, activeWorkspace, theme, toggleTheme, logout, t } = useWorkspace();
+
+  const isAdmin = Boolean(
+    user?.role === 'SuperAdmin' ||
+    user?.role === 'Admin' ||
+    user?.role === 'admin' ||
+    (user?.email && (
+      user.email.toLowerCase().trim() === 'admin@aiads.com' ||
+      user.email.toLowerCase().trim() === 'admin@uwo24.com' ||
+      user.email.toLowerCase().trim().startsWith('admin@') ||
+      user.email.toLowerCase().trim() === (import.meta.env?.VITE_ADMIN_EMAIL || '').toLowerCase().trim()
+    ))
+  );
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileCardRef = useRef(null);
@@ -164,6 +177,15 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
       gradient: 'from-pink-500 via-purple-500 to-indigo-500 shadow-purple-500/30',
       iconBg: 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-purple-600 dark:text-pink-400'
     },
+    ...(isAdmin ? [{ 
+      id: 'adminDashboard', 
+      label: t('admin', 'Admin'), 
+      icon: Shield, 
+      color: '#EF4444', 
+      gradient: 'from-rose-600 via-red-600 to-pink-600 shadow-rose-500/30',
+      iconBg: 'bg-rose-500/15 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
+      isAdminOnly: true
+    }] : []),
   ];
 
   const handleNavClick = (id) => {
@@ -357,6 +379,16 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                           <span>AGENCY</span>
                         </span>
                       )}
+                      {m.id === 'adminDashboard' && (
+                        <span className={`flex items-center gap-1 text-[9.5px] font-black px-2 py-0.5 rounded-full ml-1 shadow-xs ${
+                          isActive
+                            ? 'bg-white/25 text-white border border-white/40'
+                            : 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-rose-500/20'
+                        }`}>
+                          <Shield className="w-2.5 h-2.5" />
+                          <span>ADMIN</span>
+                        </span>
+                      )}
                     </div>
                   </button>
                 );
@@ -425,6 +457,19 @@ export const Sidebar = ({ isMobileMenuOpen: propIsMobile, setIsMobileMenuOpen: p
                 </div>
 
                 <div className="space-y-0.5">
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        handleNavClick('adminDashboard');
+                        setShowProfileMenu(false);
+                      }}
+                      className="w-full text-left py-1.5 px-2 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-xl transition-all text-xs font-bold flex items-center gap-2 group/item cursor-pointer"
+                    >
+                      <Shield className="w-3.5 h-3.5 text-rose-500" />
+                      {t('adminConsole', 'Admin Console')}
+                    </button>
+                  )}
+
                   <button
                     onClick={() => {
                       if (setActiveSettingsTab) setActiveSettingsTab('account');

@@ -6,6 +6,18 @@ export const PlanGate = ({ children, moduleName, moduleId, requiredTier }) => {
   const { user, activeWorkspace, setIsSettingsModalOpen, setActiveSettingsTab, setActiveModule } = useWorkspace();
   const planNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
 
+  const isAdmin = Boolean(
+    user?.role === 'SuperAdmin' ||
+    user?.role === 'Admin' ||
+    user?.role === 'admin' ||
+    (user?.email && (
+      user.email.toLowerCase().trim() === 'admin@aiads.com' ||
+      user.email.toLowerCase().trim() === 'admin@uwo24.com' ||
+      user.email.toLowerCase().trim().startsWith('admin@') ||
+      user.email.toLowerCase().trim() === (import.meta.env?.VITE_ADMIN_EMAIL || '').toLowerCase().trim()
+    ))
+  );
+
   const isStarter = planNorm === 'starter' || planNorm === 'free' || planNorm === 'base';
   const isPro = planNorm === 'pro' || planNorm === 'professional' || planNorm === 'growth';
   
@@ -17,7 +29,7 @@ export const PlanGate = ({ children, moduleName, moduleId, requiredTier }) => {
   const isHighestPlan = planNorm === 'enterprise' || planNorm === 'unlimited';
   const isLockedForAll = !isHighestPlan && ['approvals'].includes(moduleId);
 
-  const isLocked = isLockedForStarter || isLockedForWebsiteBuilder || isLockedForAll;
+  const isLocked = !isAdmin && (isLockedForStarter || isLockedForWebsiteBuilder || isLockedForAll);
   const targetRequiredTier = requiredTier || (isLockedForWebsiteBuilder ? 'Agency Plan' : 'Pro / Growth');
 
   if (!isLocked) {

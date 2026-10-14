@@ -222,7 +222,10 @@ Return a JSON object with:
 Return ONLY valid JSON.`;
 
   try {
-    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const { getActiveModelConfigSync } = require('../../../services/modelConfigService');
+    const activeConfig = getActiveModelConfigSync();
+    const seoModel = activeConfig.seoModel || activeConfig.textModel || 'gemini-2.5-flash';
+    const aiResult = await aiService.generateJSON(prompt, { model: seoModel });
     const aiData = aiResult?.data || aiResult;
 
     if (Array.isArray(aiData?.rankingKeywords) && aiData.rankingKeywords.length > 0) {

@@ -311,6 +311,10 @@ export const adminAPI = {
   updateTicketStatus: (ticketId, status) => adminApiFetch(`/admin/help-desk/${ticketId}/status`, { method: 'PATCH', body: { status } }),
   getRolePlanMappings: () => adminApiFetch('/admin/role-plan-mappings'),
   assignPlanToRole: (role, plan) => adminApiFetch('/admin/role-plan-assign', { method: 'PUT', body: { role, plan } }),
+  getModelSettings: () => adminApiFetch('/admin/model-settings'),
+  updateModelSettings: (data) => adminApiFetch('/admin/model-settings', { method: 'POST', body: { modelSettings: data, ...data } }),
+  resetModelSettings: () => adminApiFetch('/admin/model-settings/reset', { method: 'POST' }),
+  testModelConnection: (data) => adminApiFetch('/admin/test-model', { method: 'POST', body: data }),
 };
 
 // ─── Health Check & Testing Diagnostics ────────────────────────────────────────

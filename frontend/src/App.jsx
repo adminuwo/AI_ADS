@@ -69,16 +69,23 @@ const MainContent = () => {
     return <Login onLoginSuccess={loginUser} />;
   }
 
-  // If the user is our dedicated Super Admin, render the entirely separate admin flow
-  if (user.role === 'SuperAdmin') {
-    return <AdminLayout />;
-  }
+  const isAdmin = Boolean(
+    user?.role === 'SuperAdmin' ||
+    user?.role === 'Admin' ||
+    user?.role === 'admin' ||
+    (user?.email && (
+      user.email.toLowerCase().trim() === 'admin@aiads.com' ||
+      user.email.toLowerCase().trim() === 'admin@uwo24.com' ||
+      user.email.toLowerCase().trim().startsWith('admin@') ||
+      user.email.toLowerCase().trim() === (import.meta.env?.VITE_ADMIN_EMAIL || '').toLowerCase().trim()
+    ))
+  );
 
   const isWebsiteBuilder = ['websiteBuilder', 'websitebuilder', 'builder'].includes(activeModule);
   const userPlanNorm = (user?.plan || activeWorkspace?.subscriptionTier || 'agency_pro').toLowerCase();
   const isStarterUser = userPlanNorm === 'starter' || userPlanNorm === 'base' || userPlanNorm === 'free';
   const isProUser = userPlanNorm === 'pro' || userPlanNorm === 'professional' || userPlanNorm === 'growth';
-  const isWbUnlocked = !(isStarterUser || isProUser);
+  const isWbUnlocked = isAdmin || !(isStarterUser || isProUser);
 
   if (isWebsiteBuilder && isWbUnlocked) {
     return (
@@ -159,7 +166,12 @@ const MainContent = () => {
       case 'team': return <TeamRbacModule />;
       case 'pricing':
       case 'settings': return <SettingsBillingModule />;
-      case 'adminDashboard': return <AdminDashboardModule />;
+      case 'adminDashboard': 
+        return isAdmin ? <AdminDashboardModule /> : (
+          <NoBrandGate moduleName="Dashboard">
+            <DashboardModule />
+          </NoBrandGate>
+        );
       default: return <DashboardModule />;
     }
   };

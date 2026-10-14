@@ -59,4 +59,10 @@ router.patch('/help-desk/:id/status', adminAuth, adminController.updateTicketSta
 router.get('/role-plan-mappings', adminAuth, adminController.getRolePlanMappings);
 router.put('/role-plan-assign', adminAuth, adminController.assignPlanToRole);
 
+// AI Model Management & Live Engine Testing
+router.get('/model-settings', adminAuth, adminController.getModelSettings);
+router.post('/model-settings', adminAuth, adminController.updateModelSettings);
+router.post('/model-settings/reset', adminAuth, adminController.resetModelSettings);
+router.post('/test-model', adminAuth, adminController.testModelConnection);
+
 module.exports = router;

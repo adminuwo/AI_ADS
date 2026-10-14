@@ -24,6 +24,10 @@ const connectDB = async () => {
       maxPoolSize: 10
     });
     console.log(`🍃 MongoDB Atlas Cloud Connected: ${conn.connection.host} / DB: ${conn.connection.name}`);
+    try {
+      const { initModelConfig } = require('../services/modelConfigService');
+      initModelConfig().catch(() => {});
+    } catch (mErr) {}
   } catch (error) {
     console.log(`⚠️ Atlas Cloud IP Restricted (${error.message}). Attempting local DB fallback...`);
     try {
@@ -32,6 +36,10 @@ const connectDB = async () => {
         connectTimeoutMS: 5000
       });
       console.log(`🍃 Local MongoDB Connected: ${connLocal.connection.host} / DB: ${connLocal.connection.name}`);
+      try {
+        const { initModelConfig } = require('../services/modelConfigService');
+        initModelConfig().catch(() => {});
+      } catch (mErr) {}
     } catch (localErr) {
       console.log('MongoDB Note: Running with in-memory persistence store.');
     }

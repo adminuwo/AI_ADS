@@ -41,9 +41,12 @@ Output ONLY a JSON object:
   "inferredCapabilities": ["search", "filtering", "cart", "checkout", "booking", "reviews"]
 }
 `;
-  console.log(`${correlationTag}[Tier 1: Flash] Calling Gemini 3.5 Flash for Rapid Intent Analysis...`);
+  const { getActiveModelConfigSync } = require('../../services/modelConfigService');
+  const activeConfig = getActiveModelConfigSync();
+  const currentTextModel = activeConfig.websiteBuilderModel || activeConfig.textModel || 'gemini-2.5-flash';
+  console.log(`${correlationTag}[Tier 1: Flash] Calling ${currentTextModel} for Rapid Intent Analysis...`);
   try {
-    const aiResponse = await generateJSON(prompt, { model: 'gemini-3.5-flash', reqId });
+    const aiResponse = await generateJSON(prompt, { model: currentTextModel, reqId });
     return aiResponse && aiResponse.data ? aiResponse.data : aiResponse;
   } catch (err) {
     console.warn(`${correlationTag}[Tier 1: Flash] Intent analysis failed, using prompt directly:`, err.message);
@@ -211,16 +214,17 @@ GENERATE THE FOLLOWING JSON:
 `;
 
   try {
-    console.log(`${correlationTag}[Tier 2: Fast Planner] Calling Gemini 3.5 for Deep Autonomous Planning & Visual Reasoning...`);
+    const { getActiveModelConfigSync } = require('../../services/modelConfigService');
+    const activeConfig = getActiveModelConfigSync();
+    let modelUsed = activeConfig.websiteBuilderModel || activeConfig.textModel || 'gemini-2.5-flash';
+    console.log(`${correlationTag}[Tier 2: Fast Planner] Calling ${modelUsed} for Deep Autonomous Planning & Visual Reasoning...`);
     let aiResponse = null;
-    let modelUsed = 'gemini-3.5-flash';
 
     try {
-      aiResponse = await generateJSON(systemPrompt, { model: 'gemini-3.5-flash', reqId });
+      aiResponse = await generateJSON(systemPrompt, { model: modelUsed, reqId });
     } catch (flashErr) {
-      console.warn(`${correlationTag}[Tier 2] Gemini 3.5 Flash invocation error (${flashErr.message}), retrying...`);
-      aiResponse = await generateJSON(systemPrompt, { model: 'gemini-3.5-flash', reqId });
-      modelUsed = 'gemini-3.5-flash';
+      console.warn(`${correlationTag}[Tier 2] ${modelUsed} invocation error (${flashErr.message}), retrying...`);
+      aiResponse = await generateJSON(systemPrompt, { model: modelUsed, reqId });
     }
 
     const requirementData = aiResponse && aiResponse.data ? aiResponse.data : aiResponse;
@@ -237,7 +241,7 @@ GENERATE THE FOLLOWING JSON:
         ...normalized,
         analysisMetadata: {
           analysisSource: 'llm_dual_tier',
-          tier1Model: 'gemini-3.5-flash',
+          tier1Model: modelUsed,
           tier2Model: modelUsed,
           provider: 'ai-service',
           confidence: 0.99

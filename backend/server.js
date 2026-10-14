@@ -207,6 +207,16 @@ let memoryCalendar = [
 const loginOtpStore = new Map();
 const registerOtpStore = new Map();
 
+const isAdminEmail = (email) => {
+  if (!email) return false;
+  const clean = String(email).toLowerCase().trim();
+  const configuredAdmin = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
+  return clean === 'admin@aiads.com' ||
+         clean === 'admin@uwo24.com' ||
+         (configuredAdmin && clean === configuredAdmin) ||
+         clean.startsWith('admin@');
+};
+
 // Auth Endpoints
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
@@ -253,7 +263,7 @@ app.post('/api/auth/login', async (req, res) => {
   let userRole = user.role || 'AgencyAdmin';
   const userEmail = user.email || cleanEmail;
 
-  if (userEmail === 'admin@aiads.com') {
+  if (isAdminEmail(userEmail)) {
     userRole = 'SuperAdmin';
     if (user._id && user.role !== 'SuperAdmin') {
       user.role = 'SuperAdmin';
@@ -307,7 +317,7 @@ app.post('/api/auth/login-verify', async (req, res) => {
     let userRole = user.role || 'AgencyAdmin';
     const userEmail = user.email || cleanEmail;
 
-    if (userEmail === 'admin@aiads.com') {
+    if (isAdminEmail(userEmail)) {
       userRole = 'SuperAdmin';
       if (user._id && user.role !== 'SuperAdmin') {
         user.role = 'SuperAdmin';
@@ -360,7 +370,7 @@ const handleUwoLogin = async (req, res) => {
         providerId: uwo_user_id || `uwo_${Date.now()}`,
         isVerified: true,
         appearance: 'light',
-        role: cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin',
+        role: isAdminEmail(cleanEmail) ? 'SuperAdmin' : 'AgencyAdmin',
         credits: 500,
         plan: 'free'
       });
@@ -389,7 +399,7 @@ const handleUwoLogin = async (req, res) => {
         avatar: '',
         accentColor: 'indigo',
         appearance: 'light',
-        role: cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin',
+        role: isAdminEmail(cleanEmail) ? 'SuperAdmin' : 'AgencyAdmin',
         credits: 500,
         plan: 'free'
       };
@@ -401,7 +411,7 @@ const handleUwoLogin = async (req, res) => {
   try {
     const userId = user._id ? user._id.toString() : String(user.id || `usr_${Date.now()}`);
     let userRole = user.role || 'AgencyAdmin';
-    if (cleanEmail === 'admin@aiads.com') {
+    if (isAdminEmail(cleanEmail)) {
       userRole = 'SuperAdmin';
     }
 
@@ -438,38 +448,52 @@ app.post('/api/auth/sso/uwo-login', handleUwoLogin);
 
 // Google SSO Login Endpoint
 const handleGoogleLogin = async (req, res) => {
-  const { credential } = req.body;
-  if (!credential) {
-    return res.status(400).json({ success: false, error: 'Google credential is required' });
+  const { credential, email: directEmail, name: directName, picture: directPicture } = req.body;
+  if (!credential && !directEmail) {
+    return res.status(400).json({ success: false, error: 'Google credential or account email is required' });
   }
 
   try {
-    const { OAuth2Client } = require('google-auth-library');
-    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-    
-    let payload;
-    // Check if the credential is a JWT (id_token) or an access_token
-    if (credential.split('.').length === 3) {
-      const ticket = await client.verifyIdToken({
-          idToken: credential,
-          audience: process.env.GOOGLE_CLIENT_ID,
-      });
-      payload = ticket.getPayload();
-    } else {
-      // It's an access_token, fetch user info from Google API
-      const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${credential}` }
-      });
-      if (!userInfoRes.ok) {
-        throw new Error('Failed to fetch user profile using the provided access token.');
+    let email;
+    let name;
+    let googleId;
+    let picture;
+
+    if (credential && credential !== 'demo_google_token') {
+      const { OAuth2Client } = require('google-auth-library');
+      const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+      
+      let payload;
+      // Check if the credential is a JWT (id_token) or an access_token
+      if (credential.split('.').length === 3) {
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        payload = ticket.getPayload();
+      } else {
+        // It's an access_token, fetch user info from Google API
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${credential}` }
+        });
+        if (!userInfoRes.ok) {
+          throw new Error('Failed to fetch user profile using the provided access token.');
+        }
+        payload = await userInfoRes.json();
       }
-      payload = await userInfoRes.json();
+      
+      email = payload.email;
+      name = payload.name;
+      googleId = payload.sub;
+      picture = payload.picture;
+    } else if (directEmail) {
+      email = directEmail;
+      name = directName || directEmail.split('@')[0];
+      googleId = `google_${Date.now()}`;
+      picture = directPicture || '';
+    } else {
+      return res.status(400).json({ success: false, error: 'Valid Google credential or account email is required' });
     }
-    
-    const email = payload.email;
-    const name = payload.name;
-    const googleId = payload.sub;
-    const picture = payload.picture;
     
     const cleanEmail = email.toLowerCase().trim();
     let user = null;
@@ -485,7 +509,7 @@ const handleGoogleLogin = async (req, res) => {
           isVerified: true,
           avatar: picture || '',
           appearance: 'light',
-          role: cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin',
+          role: isAdminEmail(cleanEmail) ? 'SuperAdmin' : 'AgencyAdmin',
           credits: 500,
           plan: 'free'
         });
@@ -517,7 +541,7 @@ const handleGoogleLogin = async (req, res) => {
           avatar: picture || '',
           accentColor: 'indigo',
           appearance: 'light',
-          role: cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin',
+          role: isAdminEmail(cleanEmail) ? 'SuperAdmin' : 'AgencyAdmin',
           credits: 500,
           plan: 'free'
         };
@@ -528,7 +552,7 @@ const handleGoogleLogin = async (req, res) => {
 
     const userId = user._id ? user._id.toString() : String(user.id || `usr_${Date.now()}`);
     let userRole = user.role || 'AgencyAdmin';
-    if (cleanEmail === 'admin@aiads.com') {
+    if (isAdminEmail(cleanEmail)) {
        userRole = 'SuperAdmin';
     }
 
@@ -1299,7 +1323,11 @@ async function extractLogoColorsFromBuffer(imageBuffer, mimeType = 'image/png') 
         const b64 = imageBuffer.toString('base64');
         const prompt = `Inspect this uploaded official brand logo image. Extract the EXACT 3 to 5 primary, secondary, and accent brand hex color codes. Return ONLY a raw valid JSON array of hex color strings like ["#1E40AF", "#3B82F6", "#F59E0B"]. Do not add markdown text or explanation.`;
 
-        const candidateModels = ['gemini-3.5-flash'];
+        const { getActiveModelConfigSync } = require('./services/modelConfigService');
+        const activeConfig = getActiveModelConfigSync();
+        const primaryModel = activeConfig.visionModel || activeConfig.textModel || 'gemini-2.5-flash';
+        const fallbackModel = activeConfig.fallbackTextModel || 'gemini-2.5-flash';
+        const candidateModels = [primaryModel, fallbackModel].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
         let aiRes = null;
         for (const modelName of candidateModels) {
           try {

@@ -8,7 +8,7 @@ import {
   MessageSquare, DollarSign, ShieldAlert, FileCode, Headphones,
   Sliders, Lock, Settings, Save, Plus, Trash2, Edit3, ExternalLink,
   Sun, Moon, ArrowUpRight, IndianRupee, HelpCircle, Check, Filter,
-  Mail, Bot, AlertTriangle, Cpu
+  Mail, Bot, AlertTriangle, Cpu, Calendar, Palette, Wand2, Layout
 } from 'lucide-react';
 import { adminAPI, plansAPI } from '../../services/api';
 import { useWorkspace } from '../../context/WorkspaceContext';
@@ -615,6 +615,55 @@ export const AdminDashboardModule = () => {
   const [rolePlanSavingRole, setRolePlanSavingRole] = useState(null);
   const [rolePlanSuccessMsg, setRolePlanSuccessMsg] = useState('');
 
+  // AI Model Configuration State for all 8 categories
+  const [modelSettings, setModelSettings] = useState({
+    // 1. Text Response & AI Copilot Chat
+    textModel: 'gemini-2.5-flash',
+    fallbackTextModel: 'gemini-2.5-flash',
+    temperature: 0.7,
+    maxOutputTokens: 8192,
+    // 2. Autonomous Website Builder
+    websiteBuilderModel: 'gemini-2.5-flash',
+    // 3. SEO Engine & Blog Generator
+    seoModel: 'gemini-2.5-flash',
+    // 4. 30-Day Content Strategy Agent
+    strategyModel: 'gemini-2.5-flash',
+    // 5. Visual Ad Image Generation
+    imageModel: 'gemini-3.1-flash-image',
+    fallbackImageModel: 'imagen-3.0-generate-002',
+    defaultAspectRatio: '1:1',
+    // 6. Google Live Search Grounding
+    groundingModel: 'gemini-2.5-flash',
+    // 7. Vision & Logo Color Grounding
+    visionModel: 'gemini-2.5-flash',
+    // 8. Visual Prompt Crafting
+    promptCraftingModel: 'gemini-2.5-flash',
+  });
+  const [modelCandidates, setModelCandidates] = useState({
+    textModels: [
+      { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', badge: 'Verified in asia-south1 • Recommended', desc: 'State-of-the-art balance of speed, cost, and high reasoning' },
+      { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash', badge: 'Ultra Fast Reasoning', desc: 'Next-gen performance and speed for complex tasks' },
+      { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', badge: 'Fast Standard', desc: 'Standard low-latency multimodal reasoning' },
+      { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash', badge: 'Legacy Fast', desc: 'Standard high-throughput model' },
+      { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro', badge: 'Deep Reasoning', desc: 'Complex reasoning with larger context window' },
+      { id: 'gpt-4o', label: 'GPT-4o (OpenAI)', badge: 'OpenAI Flagship', desc: 'OpenAI flagship multimodal intelligence' },
+      { id: 'gpt-4o-mini', label: 'GPT-4o Mini (OpenAI)', badge: 'Fast Lightweight', desc: 'Lightweight fast OpenAI model' },
+    ],
+    imageModels: [
+      { id: 'gemini-3.1-flash-image', label: 'Gemini 3.1 Flash Image (Nano Banana)', badge: 'Default • Recommended', desc: 'High quality prompt adherence and fast visual generation' },
+      { id: 'imagen-3.0-generate-002', label: 'Google Imagen 3.0 Gen 2', badge: 'Photorealistic Studio', desc: 'Google highest fidelity photorealistic generator' },
+      { id: 'imagen-3.0-fast-generate-001', label: 'Google Imagen 3.0 Fast', badge: 'Ultra-low latency', desc: 'Speed-optimized visual marketing generator' },
+      { id: 'dall-e-3', label: 'OpenAI DALL-E 3', badge: 'OpenAI Creative', desc: 'OpenAI high precision prompt adherence' },
+    ]
+  });
+  const [modelSaving, setModelSaving] = useState(false);
+  const [modelResetting, setModelResetting] = useState(false);
+  const [modelSuccessMsg, setModelSuccessMsg] = useState('');
+  const [modelErrorMsg, setModelErrorMsg] = useState('');
+  const [testingModelKey, setTestingModelKey] = useState(null);
+  const [testResult, setTestResult] = useState(null);
+  const [customModelOverrides, setCustomModelOverrides] = useState({});
+
   // Dynamically compute authenticated admin user initials
   const adminInitials = useMemo(() => {
     try {
@@ -748,14 +797,15 @@ export const AdminDashboardModule = () => {
 
   const fetchData = async () => {
     try {
-      const [summaryRes, usersRes, chatRes, legalRes, limitsRes, ticketsRes, mappingsRes] = await Promise.all([
+      const [summaryRes, usersRes, chatRes, legalRes, limitsRes, ticketsRes, mappingsRes, modelSettingsRes] = await Promise.all([
         adminAPI.getDashboardSummary().catch(() => ({ success: false })),
         adminAPI.getAllUserStats().catch(() => ({ success: false })),
         adminAPI.getChatSessions().catch(() => ({ success: false })),
         adminAPI.getLegalPages().catch(() => ({ success: false })),
         adminAPI.getToolLimits().catch(() => ({ success: false })),
         adminAPI.getHelpDeskTickets().catch(() => ({ success: false })),
-        adminAPI.getRolePlanMappings().catch(() => ({ success: false }))
+        adminAPI.getRolePlanMappings().catch(() => ({ success: false })),
+        adminAPI.getModelSettings().catch(() => ({ success: false }))
       ]);
 
       if (summaryRes?.success) setSummary(summaryRes.data);
@@ -765,6 +815,32 @@ export const AdminDashboardModule = () => {
       if (limitsRes?.success) setToolLimits(limitsRes.data);
       if (ticketsRes?.success) setHelpDeskTickets(ticketsRes.data);
       if (mappingsRes?.success && mappingsRes.data) setRolePlanMappings(mappingsRes.data);
+      if (modelSettingsRes?.success && modelSettingsRes.data) {
+        const loadedConfig = modelSettingsRes.data;
+        setModelSettings(prev => ({
+          ...prev,
+          ...loadedConfig
+        }));
+        if (modelSettingsRes.candidates) {
+          setModelCandidates(prev => ({ ...prev, ...modelSettingsRes.candidates }));
+        }
+        const candidateTextIds = [
+          'gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gpt-4o', 'gpt-4o-mini'
+        ];
+        const candidateImageIds = [
+          'gemini-3.1-flash-image', 'imagen-3.0-generate-002', 'imagen-3.0-fast-generate-001', 'dall-e-3'
+        ];
+        const overrides = {};
+        ['textModel', 'websiteBuilderModel', 'seoModel', 'strategyModel', 'groundingModel', 'visionModel', 'promptCraftingModel'].forEach(k => {
+          if (loadedConfig[k] && !candidateTextIds.includes(loadedConfig[k])) {
+            overrides[k] = true;
+          }
+        });
+        if (loadedConfig.imageModel && !candidateImageIds.includes(loadedConfig.imageModel)) {
+          overrides.imageModel = true;
+        }
+        setCustomModelOverrides(overrides);
+      }
     } catch (err) {
       console.error('Admin dashboard fetch error:', err);
     } finally {
@@ -840,6 +916,93 @@ export const AdminDashboardModule = () => {
       }
     } catch (err) {
       console.error('Error updating ticket status:', err);
+    }
+  };
+
+  // AI Model Configuration Handlers
+  const handleSaveModelSettings = async () => {
+    setModelSaving(true);
+    setModelSuccessMsg('');
+    setModelErrorMsg('');
+    try {
+      const res = await adminAPI.updateModelSettings(modelSettings);
+      if (res?.success) {
+        setModelSettings(res.data);
+        setModelSuccessMsg('AI Model configuration saved and applied across all backend services in real time!');
+        setTimeout(() => setModelSuccessMsg(''), 6000);
+      } else {
+        setModelErrorMsg(res?.error || 'Failed to update model settings');
+      }
+    } catch (err) {
+      setModelErrorMsg(err?.response?.data?.error || err.message || 'Error updating model settings');
+    } finally {
+      setModelSaving(false);
+    }
+  };
+
+  const handleResetModelSettings = async () => {
+    if (!window.confirm('Are you sure you want to reset all AI model configurations to platform defaults?')) return;
+    setModelResetting(true);
+    setModelSuccessMsg('');
+    setModelErrorMsg('');
+    try {
+      const res = await adminAPI.resetModelSettings();
+      if (res?.success) {
+        setModelSettings(res.data);
+        setCustomModelOverrides({});
+        setModelSuccessMsg('AI Model configurations have been reset to platform defaults!');
+        setTimeout(() => setModelSuccessMsg(''), 6000);
+      } else {
+        setModelErrorMsg(res?.error || 'Failed to reset model settings');
+      }
+    } catch (err) {
+      setModelErrorMsg(err?.response?.data?.error || err.message || 'Error resetting model settings');
+    } finally {
+      setModelResetting(false);
+    }
+  };
+
+  const handleTestModel = async (categoryKey, targetModel, type = 'text', featureTitle = '') => {
+    setTestingModelKey(categoryKey);
+    setTestResult(null);
+    try {
+      const res = await adminAPI.testModelConnection({
+        type: type || 'text',
+        model: targetModel,
+        prompt: type === 'image'
+          ? 'A minimalist modern geometric commercial logo icon on clean studio white background'
+          : 'Ping test from Admin Console. Reply with: OK and current system timestamp.'
+      });
+      if (res?.success) {
+        setTestResult({
+          category: categoryKey,
+          label: featureTitle,
+          type,
+          status: 'success',
+          latencyMs: res.latencyMs,
+          model: res.model || targetModel,
+          reply: res.reply || res.message,
+          hasImage: res.hasImage
+        });
+      } else {
+        setTestResult({
+          category: categoryKey,
+          label: featureTitle,
+          type,
+          status: 'error',
+          error: res?.error || res?.message || 'Model test failed'
+        });
+      }
+    } catch (err) {
+      setTestResult({
+        category: categoryKey,
+        label: featureTitle,
+        type,
+        status: 'error',
+        error: err?.response?.data?.error || err.message || 'Test request failed'
+      });
+    } finally {
+      setTestingModelKey(null);
     }
   };
 
@@ -921,6 +1084,7 @@ export const AdminDashboardModule = () => {
     { id: 'tool-limit', label: 'Tool Limit', icon: Shield },
     { id: 'legal-pages', label: 'Legal Pages', icon: FileText },
     { id: 'help-desk', label: 'HELP DESK', icon: Headphones },
+    { id: 'models', label: 'MODEL', icon: Cpu },
   ];
 
   if (loading) {
@@ -2299,6 +2463,931 @@ export const AdminDashboardModule = () => {
               <p className="text-[11px] font-medium text-slate-400">Tickets submitted through the feedback endpoint will automatically appear here in real time.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── TAB 10: MODEL CONFIGURATION (HOT-SWAP TEXT, IMAGE & AGENT MODELS) ── */}
+      {activeTab === 'models' && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          {/* Top Header Bar */}
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                <Cpu className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-black text-slate-900 tracking-tight">AI Model &amp; Engine Management</h3>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold border border-emerald-200/70 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Live Hot-Swap Enabled
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Configure text response models, visual image generators, and specialized agents in real time without restarting backend servers.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 self-stretch md:self-auto justify-end">
+              <button
+                onClick={handleResetModelSettings}
+                disabled={modelResetting || modelSaving}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-extrabold text-xs flex items-center gap-2 transition-all disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${modelResetting ? 'animate-spin' : ''}`} />
+                Reset Defaults
+              </button>
+              <button
+                onClick={handleSaveModelSettings}
+                disabled={modelSaving || modelResetting}
+                className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-xs shadow-md shadow-brand-500/20 flex items-center gap-2 transition-all disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {modelSaving ? 'Saving & Deploying...' : 'Save & Apply Config'}
+              </button>
+            </div>
+          </div>
+
+          {/* Feedback Banners */}
+          {modelSuccessMsg && (
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2.5 shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{modelSuccessMsg}</span>
+            </div>
+          )}
+          {modelErrorMsg && (
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2.5 shadow-sm">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{modelErrorMsg}</span>
+            </div>
+          )}
+
+          {/* ── LIVE DIAGNOSTIC RESULT BOX ── */}
+          {testResult && (
+            <div className={`p-5 rounded-2xl border shadow-sm space-y-3 animate-in fade-in duration-200 ${
+              testResult.status === 'success'
+                ? 'bg-emerald-50/60 border-emerald-200'
+                : 'bg-rose-50/60 border-rose-200'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  {testResult.status === 'success' ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+                  )}
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                      Live Diagnostic Ping: {testResult.label || testResult.category}
+                    </h4>
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                    testResult.status === 'success'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                      : 'bg-rose-100 text-rose-800 border border-rose-200'
+                  }`}>
+                    {testResult.status === 'success' ? `ONLINE • ${testResult.latencyMs}ms` : 'FAILED'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTestResult(null)}
+                  className="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1 rounded-lg hover:bg-white/80 transition-all"
+                >
+                  ✕ Dismiss
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-700">
+                <span>Model Endpoint: <code className="font-mono bg-white px-2 py-0.5 rounded border border-slate-200 font-bold text-brand-600">{testResult.model}</code></span>
+                {testResult.status === 'success' && (
+                  <span>Round-Trip Latency: <strong className="text-emerald-700 font-mono">{testResult.latencyMs} ms</strong></span>
+                )}
+              </div>
+
+              {testResult.status === 'success' ? (
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 font-mono text-xs text-slate-800 leading-relaxed max-h-32 overflow-y-auto shadow-xs">
+                  {testResult.reply || testResult.message || 'Model responded successfully with HTTP 200 OK.'}
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-white border border-rose-200 font-mono text-xs text-rose-700 leading-relaxed shadow-xs">
+                  {testResult.error || testResult.message || 'Model endpoint connection failed.'}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── 8 FEATURE CATEGORIES STATUS OVERVIEW ── */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                Active AI Models Overview (8 Feature Categories)
+              </span>
+              <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                All 8 Services Connected
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { key: 'textModel', label: '1. Text & Copilot', icon: Bot, color: 'text-brand-600 bg-brand-50 border-brand-200' },
+                { key: 'websiteBuilderModel', label: '2. Website Builder', icon: Layout, color: 'text-sky-600 bg-sky-50 border-sky-200' },
+                { key: 'seoModel', label: '3. SEO & Articles', icon: Search, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
+                { key: 'strategyModel', label: '4. 30-Day Strategy', icon: Calendar, color: 'text-amber-600 bg-amber-50 border-amber-200' },
+                { key: 'imageModel', label: '5. Creative Studio', icon: ImageIcon, color: 'text-indigo-600 bg-indigo-50 border-indigo-200' },
+                { key: 'groundingModel', label: '6. Live Grounding', icon: Globe, color: 'text-blue-600 bg-blue-50 border-blue-200' },
+                { key: 'visionModel', label: '7. Vision & Palette', icon: Palette, color: 'text-violet-600 bg-violet-50 border-violet-200' },
+                { key: 'promptCraftingModel', label: '8. Prompt Crafter', icon: Wand2, color: 'text-fuchsia-600 bg-fuchsia-50 border-fuchsia-200' },
+              ].map((item) => {
+                const IconCmp = item.icon;
+                const activeId = modelSettings[item.key] || 'gemini-2.5-flash';
+                return (
+                  <div key={item.key} className="p-3 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                    <div className="flex items-center justify-between gap-1.5 mb-1.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border ${item.color}`}>
+                          <IconCmp className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="text-[11px] font-black text-slate-800 truncate">{item.label}</span>
+                      </div>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    </div>
+                    <div className="text-[11px] font-mono font-bold text-slate-900 truncate bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                      {activeId}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── 8 INDIVIDUAL FEATURE MODEL CONFIGURATION CARDS ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* ── CARD 1: TEXT RESPONSE & AI COPILOT CHAT (FULL WIDTH) ── */}
+            <div className="lg:col-span-2 p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-5">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-brand-50 border border-brand-200 text-brand-600 flex items-center justify-center shrink-0">
+                    <Bot className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-black text-slate-900">1. Text Response &amp; AI Copilot Chat</h4>
+                      <span className="px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 text-[10px] font-black border border-brand-200">
+                        Primary Conversational Core
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Powers Floating Assistant Drawer, Campaign Copilot, Chat Sessions, Captions, Marketing Copy &amp; Autopilot.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleTestModel('textModel', modelSettings.textModel, 'text', '1. Text Response & AI Copilot')}
+                  disabled={testingModelKey !== null}
+                  className="px-3.5 py-1.5 rounded-xl border border-brand-200 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-extrabold flex items-center gap-1.5 transition-all self-start md:self-auto disabled:opacity-50"
+                >
+                  <Zap className={`w-3.5 h-3.5 ${testingModelKey === 'textModel' ? 'animate-spin text-brand-600' : 'text-brand-500'}`} />
+                  {testingModelKey === 'textModel' ? 'Pinging Model...' : 'Test Connection'}
+                </button>
+              </div>
+
+              {/* Model Selector Dropdown & Custom Override */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-400 block">
+                  Selected AI Model for Feature 1
+                </label>
+                {customModelOverrides.textModel ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={modelSettings.textModel}
+                        onChange={(e) => setModelSettings(prev => ({ ...prev, textModel: e.target.value.trim() }))}
+                        placeholder="Enter model endpoint ID (e.g. gemini-2.5-flash or gpt-4o)"
+                        className="flex-1 px-3.5 py-2.5 rounded-xl border border-brand-300 bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 shadow-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomModelOverrides(prev => ({ ...prev, textModel: false }));
+                          setModelSettings(prev => ({ ...prev, textModel: 'gemini-2.5-flash' }));
+                        }}
+                        className="px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold transition-all whitespace-nowrap"
+                      >
+                        Use Standard Presets
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-amber-600 font-medium">Custom identifier active. Model will be directly dispatched for all conversational chat &amp; copywriting.</p>
+                  </div>
+                ) : (
+                  <select
+                    value={modelSettings.textModel}
+                    onChange={(e) => {
+                      if (e.target.value === '__custom__') {
+                        setCustomModelOverrides(prev => ({ ...prev, textModel: true }));
+                      } else {
+                        setModelSettings(prev => ({ ...prev, textModel: e.target.value }));
+                      }
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100/80 text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-500 transition-all font-sans"
+                  >
+                    {(modelCandidates?.textModels || []).map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.label} — {m.badge || m.desc}
+                      </option>
+                    ))}
+                    <option value="__custom__">⚙️ Custom Model Identifier (Manual Override)...</option>
+                  </select>
+                )}
+              </div>
+
+              {/* Sub-parameters: Failover Model, Temperature, Max Tokens */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-100">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-700 block">
+                    Failover / Fallback Model
+                  </label>
+                  <select
+                    value={modelSettings.fallbackTextModel}
+                    onChange={(e) => setModelSettings(prev => ({ ...prev, fallbackTextModel: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:border-brand-500"
+                  >
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (asia-south1)</option>
+                    <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    <option value="gpt-4o">GPT-4o (OpenAI)</option>
+                  </select>
+                  <p className="text-[10px] text-slate-400">Auto-activated if primary model quota or endpoint is unavailable.</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-extrabold text-slate-700">Temperature</label>
+                    <span className="text-xs font-mono font-black text-brand-600">{modelSettings.temperature}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={modelSettings.temperature}
+                    onChange={(e) => setModelSettings(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                    className="w-full accent-brand-600 cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                    <span>0.0 (Precise)</span>
+                    <span>0.7 (Balanced)</span>
+                    <span>1.0 (Creative)</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-700 block">
+                    Max Output Tokens
+                  </label>
+                  <select
+                    value={modelSettings.maxOutputTokens}
+                    onChange={(e) => setModelSettings(prev => ({ ...prev, maxOutputTokens: parseInt(e.target.value, 10) }))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:border-brand-500"
+                  >
+                    <option value={2048}>2,048 Tokens (~1,500 words)</option>
+                    <option value={4096}>4,096 Tokens (~3,000 words)</option>
+                    <option value={8192}>8,192 Tokens (~6,000 words - Default)</option>
+                    <option value={16384}>16,384 Tokens (~12,000 words)</option>
+                  </select>
+                  <p className="text-[10px] text-slate-400">Maximum response length per AI copilot turn.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── CARD 2: AUTONOMOUS WEBSITE BUILDER ── */}
+            <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center shrink-0">
+                      <Layout className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">2. Autonomous Website Builder</h4>
+                      <p className="text-[10px] text-slate-500 font-medium">Intent analysis, architecture planning &amp; live chat code editor</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTestModel('websiteBuilderModel', modelSettings.websiteBuilderModel, 'text', '2. Autonomous Website Builder')}
+                    disabled={testingModelKey !== null}
+                    className="px-3 py-1.5 rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-extrabold flex items-center gap-1 transition-all disabled:opacity-50 shrink-0"
+                  >
+                    <Zap className={`w-3.5 h-3.5 ${testingModelKey === 'websiteBuilderModel' ? 'animate-spin text-sky-600' : 'text-sky-500'}`} />
+                    {testingModelKey === 'websiteBuilderModel' ? 'Testing...' : 'Test Ping'}
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                    Website Builder AI Model
+                  </label>
+                  {customModelOverrides.websiteBuilderModel ? (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={modelSettings.websiteBuilderModel}
+                          onChange={(e) => setModelSettings(prev => ({ ...prev, websiteBuilderModel: e.target.value.trim() }))}
+                          placeholder="e.g. gemini-2.5-flash"
+                          className="flex-1 px-3 py-2 rounded-xl border border-sky-300 bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomModelOverrides(prev => ({ ...prev, websiteBuilderModel: false }));
+                            setModelSettings(prev => ({ ...prev, websiteBuilderModel: 'gemini-2.5-flash' }));
+                          }}
+                          className="px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold"
+                        >
+                          Preset
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <select
+                      value={modelSettings.websiteBuilderModel}
+                      onChange={(e) => {
+                        if (e.target.value === '__custom__') {
+                          setCustomModelOverrides(prev => ({ ...prev, websiteBuilderModel: true }));
+                        } else {
+                          setModelSettings(prev => ({ ...prev, websiteBuilderModel: e.target.value }));
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-900 focus:outline-none focus:border-sky-500"
+                    >
+                      {(modelCandidates?.textModels || []).map((m) => (
+                        <option key={m.id} value={m.id}>{m.label} ({m.id})</option>
+                      ))}
+                      <option value="__custom__">⚙️ Custom Model Identifier...</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span>Active Endpoint: <strong className="font-mono text-slate-800">{modelSettings.websiteBuilderModel}</strong></span>
+                <span className="text-[10px] text-sky-600 font-extrabold bg-sky-50 px-2 py-0.5 rounded border border-sky-200">Modules: WebsiteBuilder</span>
+              </div>
+            </div>
+
+            {/* ── CARD 3: SEO ENGINE & BLOG GENERATOR ── */}
+            <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
+                      <Search className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">3. SEO Engine &amp; Blog Generator</h4>
+                      <p className="text-[10px] text-slate-500 font-medium">Keywords, 1500+ word articles, competitor gap analysis</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTestModel('seoModel', modelSettings.seoModel, 'text', '3. SEO Engine & Blog Generator')}
+                    disabled={testingModelKey !== null}
+                    className="px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-extrabold flex items-center gap-1 transition-all disabled:opacity-50 shrink-0"
+                  >
+                    <Zap className={`w-3.5 h-3.5 ${testingModelKey === 'seoModel' ? 'animate-spin text-emerald-600' : 'text-emerald-500'}`} />
+                    {testingModelKey === 'seoModel' ? 'Testing...' : 'Test Ping'}
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                    SEO AI Model Selection
+                  </label>
+                  {customModelOverrides.seoModel ? (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={modelSettings.seoModel}
+                          onChange={(e) => setModelSettings(prev => ({ ...prev, seoModel: e.target.value.trim() }))}
+                          placeholder="e.g. gemini-2.5-flash"
+                          className="flex-1 px-3 py-2 rounded-xl border border-emerald-300 bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomModelOverrides(prev => ({ ...prev, seoModel: false }));
+                            setModelSettings(prev => ({ ...prev, seoModel: 'gemini-2.5-flash' }));
+                          }}
+                          className="px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold"
+                        >
+                          Preset
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <select
+                      value={modelSettings.seoModel}
+                      onChange={(e) => {
+                        if (e.target.value === '__custom__') {
+                          setCustomModelOverrides(prev => ({ ...prev, seoModel: true }));
+                        } else {
+                          setModelSettings(prev => ({ ...prev, seoModel: e.target.value }));
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-500"
+                    >
+                      {(modelCandidates?.textModels || []).map((m) => (
+                        <option key={m.id} value={m.id}>{m.label} ({m.id})</option>
+                      ))}
+                      <option value="__custom__">⚙️ Custom Model Identifier...</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span>Active Endpoint: <strong className="font-mono text-slate-800">{modelSettings.seoModel}</strong></span>
+                <span className="text-[10px] text-emerald-600 font-extrabold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Modules: SEO Vertex &amp; Briefs</span>
+              </div>
+            </div>
+
+            {/* ── CARD 4: 30-DAY CONTENT STRATEGY AGENT ── */}
+            <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0">
+                      <Calendar className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">4. 30-Day Content Strategy Agent</h4>
+                      <p className="text-[10px] text-slate-500 font-medium">Multi-platform 30-day marketing calendar &amp; campaign schedule</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTestModel('strategyModel', modelSettings.strategyModel, 'text', '4. 30-Day Content Strategy')}
+                    disabled={testingModelKey !== null}
+                    className="px-3 py-1.5 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-extrabold flex items-center gap-1 transition-all disabled:opacity-50 shrink-0"
+                  >
+                    <Zap className={`w-3.5 h-3.5 ${testingModelKey === 'strategyModel' ? 'animate-spin text-amber-600' : 'text-amber-500'}`} />
+                    {testingModelKey === 'strategyModel' ? 'Testing...' : 'Test Ping'}
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                    Strategy Agent AI Model
+                  </label>
+                  {customModelOverrides.strategyModel ? (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={modelSettings.strategyModel}
+                          onChange={(e) => setModelSettings(prev => ({ ...prev, strategyModel: e.target.value.trim() }))}
+                          placeholder="e.g. gemini-2.5-flash"
+                          className="flex-1 px-3 py-2 rounded-xl border border-amber-300 bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomModelOverrides(prev => ({ ...prev, strategyModel: false }));
+                            setModelSettings(prev => ({ ...prev, strategyModel: 'gemini-2.5-flash' }));
+                          }}
+                          className="px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold"
+                        >
+                          Preset
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <select
+                      value={modelSettings.strategyModel}
+                      onChange={(e) => {
+                        if (e.target.value === '__custom__') {
+                          setCustomModelOverrides(prev => ({ ...prev, strategyModel: true }));
+                        } else {
+                          setModelSettings(prev => ({ ...prev, strategyModel: e.target.value }));
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
+                    >
+                      {(modelCandidates?.textModels || []).map((m) => (
+                        <option key={m.id} value={m.id}>{m.label} ({m.id})</option>
+                      ))}
+                      <option value="__custom__">⚙️ Custom Model Identifier...</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span>Active Endpoint: <strong className="font-mono text-slate-800">{modelSettings.strategyModel}</strong></span>
+                <span className="text-[10px] text-amber-600 font-extrabold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Modules: CustomStrategyAgent</span>
+              </div>
+            </div>
+
+            {/* ── CARD 5: AD IMAGE GENERATION & CREATIVE STUDIO (FULL WIDTH) ── */}
+            <div className="lg:col-span-2 p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-5">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center shrink-0">
+                    <ImageIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-black text-slate-900">5. Ad Image Generation &amp; Creative Studio</h4>
+                      <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[10px] font-black border border-indigo-200">
+                        Visual Ad Engine
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Powers Creative Studio, Brand Image Agent, GCS/Base64 image creation &amp; multi-size social banners.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleTestModel('imageModel', modelSettings.imageModel, 'image', '5. Ad Image Generation Engine')}
+                  disabled={testingModelKey !== null}
+                  className="px-3.5 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-extrabold flex items-center gap-1.5 transition-all self-start md:self-auto disabled:opacity-50"
+                >
+                  <Sparkles className={`w-3.5 h-3.5 ${testingModelKey === 'imageModel' ? 'animate-spin text-indigo-600' : 'text-indigo-500'}`} />
+                  {testingModelKey === 'imageModel' ? 'Generating Visual Ping...' : 'Test Image Generation'}
+                </button>
+              </div>
+
+              {/* Primary Image Model Selector & Custom Override */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-400 block">
+                  Primary Visual Image Engine Selection
+                </label>
+                {customModelOverrides.imageModel ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={modelSettings.imageModel}
+                        onChange={(e) => setModelSettings(prev => ({ ...prev, imageModel: e.target.value.trim() }))}
+                        placeholder="Enter image model ID (e.g. imagen-3.0-generate-002 or dall-e-3)"
+                        className="flex-1 px-3.5 py-2.5 rounded-xl border border-indigo-300 bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomModelOverrides(prev => ({ ...prev, imageModel: false }));
+                          setModelSettings(prev => ({ ...prev, imageModel: 'gemini-3.1-flash-image' }));
+                        }}
+                        className="px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold transition-all whitespace-nowrap"
+                      >
+                        Use Standard Presets
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-amber-600 font-medium">Custom visual model active. Passed to image generation pipeline.</p>
+                  </div>
+                ) : (
+                  <select
+                    value={modelSettings.imageModel}
+                    onChange={(e) => {
+                      if (e.target.value === '__custom__') {
+                        setCustomModelOverrides(prev => ({ ...prev, imageModel: true }));
+                      } else {
+                        setModelSettings(prev => ({ ...prev, imageModel: e.target.value }));
+                      }
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100/80 text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500 transition-all font-sans"
+                  >
+                    {(modelCandidates?.imageModels || []).map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.label} — {m.badge || m.desc}
+                      </option>
+                    ))}
+                    <option value="__custom__">⚙️ Custom Image Model Identifier...</option>
+                  </select>
+                )}
+              </div>
+
+              {/* Sub-parameters: Failover Image Model & Default Aspect Ratio */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-700 block">
+                    Failover Image Engine
+                  </label>
+                  <select
+                    value={modelSettings.fallbackImageModel}
+                    onChange={(e) => setModelSettings(prev => ({ ...prev, fallbackImageModel: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="imagen-3.0-generate-002">Google Imagen 3.0 Gen 2 (High Fidelity)</option>
+                    <option value="gemini-3.1-flash-image">Gemini 3.1 Flash Image (Nano Banana)</option>
+                    <option value="imagen-3.0-fast-generate-001">Google Imagen 3.0 Fast</option>
+                    <option value="dall-e-3">OpenAI DALL-E 3</option>
+                  </select>
+                  <p className="text-[10px] text-slate-400">Used automatically if primary image generator endpoint hits quota limits.</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-700 block">
+                    Default Canvas Aspect Ratio
+                  </label>
+                  <select
+                    value={modelSettings.defaultAspectRatio || '1:1'}
+                    onChange={(e) => setModelSettings(prev => ({ ...prev, defaultAspectRatio: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="1:1">1:1 Square (Instagram Posts, Meta Feed, Avatars)</option>
+                    <option value="16:9">16:9 Landscape (YouTube Banners, Web Display Ads)</option>
+                    <option value="9:16">9:16 Vertical (Instagram Stories, TikTok, Reels)</option>
+                    <option value="4:5">4:5 Portrait (Standard Meta &amp; Social Ads)</option>
+                  </select>
+                  <p className="text-[10px] text-slate-400">Default canvas proportion applied for single-click banner creations.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── CARD 6: GOOGLE LIVE SEARCH GROUNDING ── */}
+            <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0">
+                      <Globe className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">6. Google Live Search Grounding</h4>
+                      <p className="text-[10px] text-slate-500 font-medium">Real-time web search grounding &amp; Brand DNA scraper Tier 4</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTestModel('groundingModel', modelSettings.groundingModel, 'text', '6. Google Live Search Grounding')}
+                    disabled={testingModelKey !== null}
+                    className="px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-extrabold flex items-center gap-1 transition-all disabled:opacity-50 shrink-0"
+                  >
+                    <Zap className={`w-3.5 h-3.5 ${testingModelKey === 'groundingModel' ? 'animate-spin text-blue-600' : 'text-blue-500'}`} />
+                    {testingModelKey === 'groundingModel' ? 'Testing...' : 'Test Ping'}
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                    Grounding AI Model Selection
+                  </label>
+                  {customModelOverrides.groundingModel ? (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={modelSettings.groundingModel}
+                          onChange={(e) => setModelSettings(prev => ({ ...prev, groundingModel: e.target.value.trim() }))}
+                          placeholder="e.g. gemini-2.5-flash"
+                          className="flex-1 px-3 py-2 rounded-xl border border-blue-300 bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomModelOverrides(prev => ({ ...prev, groundingModel: false }));
+                            setModelSettings(prev => ({ ...prev, groundingModel: 'gemini-2.5-flash' }));
+                          }}
+                          className="px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold"
+                        >
+                          Preset
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <select
+                      value={modelSettings.groundingModel}
+                      onChange={(e) => {
+                        if (e.target.value === '__custom__') {
+                          setCustomModelOverrides(prev => ({ ...prev, groundingModel: true }));
+                        } else {
+                          setModelSettings(prev => ({ ...prev, groundingModel: e.target.value }));
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-900 focus:outline-none focus:border-blue-500"
+                    >
+                      {(modelCandidates?.textModels || []).map((m) => (
+                        <option key={m.id} value={m.id}>{m.label} ({m.id})</option>
+                      ))}
+                      <option value="__custom__">⚙️ Custom Model Identifier...</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span>Active Endpoint: <strong className="font-mono text-slate-800">{modelSettings.groundingModel}</strong></span>
+                <span className="text-[10px] text-blue-600 font-extrabold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Modules: GoogleGroundingService</span>
+              </div>
+            </div>
+
+            {/* ── CARD 7: VISION & LOGO COLOR GROUNDING ── */}
+            <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-violet-50 border border-violet-200 text-violet-600 flex items-center justify-center shrink-0">
+                      <Palette className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">7. Vision &amp; Logo Color Grounding</h4>
+                      <p className="text-[10px] text-slate-500 font-medium">[COLOR-SCRAPER], uploaded logo palette extractor, visual QA</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTestModel('visionModel', modelSettings.visionModel, 'text', '7. Vision & Logo Palette Grounding')}
+                    disabled={testingModelKey !== null}
+                    className="px-3 py-1.5 rounded-xl border border-violet-200 bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-extrabold flex items-center gap-1 transition-all disabled:opacity-50 shrink-0"
+                  >
+                    <Zap className={`w-3.5 h-3.5 ${testingModelKey === 'visionModel' ? 'animate-spin text-violet-600' : 'text-violet-500'}`} />
+                    {testingModelKey === 'visionModel' ? 'Testing...' : 'Test Ping'}
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                    Vision &amp; Color Extractor Model
+                  </label>
+                  {customModelOverrides.visionModel ? (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={modelSettings.visionModel}
+                          onChange={(e) => setModelSettings(prev => ({ ...prev, visionModel: e.target.value.trim() }))}
+                          placeholder="e.g. gemini-2.5-flash"
+                          className="flex-1 px-3 py-2 rounded-xl border border-violet-300 bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomModelOverrides(prev => ({ ...prev, visionModel: false }));
+                            setModelSettings(prev => ({ ...prev, visionModel: 'gemini-2.5-flash' }));
+                          }}
+                          className="px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold"
+                        >
+                          Preset
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <select
+                      value={modelSettings.visionModel}
+                      onChange={(e) => {
+                        if (e.target.value === '__custom__') {
+                          setCustomModelOverrides(prev => ({ ...prev, visionModel: true }));
+                        } else {
+                          setModelSettings(prev => ({ ...prev, visionModel: e.target.value }));
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-900 focus:outline-none focus:border-violet-500"
+                    >
+                      {(modelCandidates?.textModels || []).map((m) => (
+                        <option key={m.id} value={m.id}>{m.label} ({m.id})</option>
+                      ))}
+                      <option value="__custom__">⚙️ Custom Model Identifier...</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span>Active Endpoint: <strong className="font-mono text-slate-800">{modelSettings.visionModel}</strong></span>
+                <span className="text-[10px] text-violet-600 font-extrabold bg-violet-50 px-2 py-0.5 rounded border border-violet-200">Modules: BrandScraper &amp; ColorExtractor</span>
+              </div>
+            </div>
+
+            {/* ── CARD 8: VISUAL PROMPT CRAFTING AGENT ── */}
+            <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-fuchsia-50 border border-fuchsia-200 text-fuchsia-600 flex items-center justify-center shrink-0">
+                      <Wand2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">8. Visual Prompt Crafting Agent</h4>
+                      <p className="text-[10px] text-slate-500 font-medium">Commercial photography synthesis &amp; visual scene expansion</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTestModel('promptCraftingModel', modelSettings.promptCraftingModel, 'text', '8. Visual Prompt Crafter')}
+                    disabled={testingModelKey !== null}
+                    className="px-3 py-1.5 rounded-xl border border-fuchsia-200 bg-fuchsia-50 hover:bg-fuchsia-100 text-fuchsia-700 text-xs font-extrabold flex items-center gap-1 transition-all disabled:opacity-50 shrink-0"
+                  >
+                    <Zap className={`w-3.5 h-3.5 ${testingModelKey === 'promptCraftingModel' ? 'animate-spin text-fuchsia-600' : 'text-fuchsia-500'}`} />
+                    {testingModelKey === 'promptCraftingModel' ? 'Testing...' : 'Test Ping'}
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+                    Prompt Crafting AI Model
+                  </label>
+                  {customModelOverrides.promptCraftingModel ? (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={modelSettings.promptCraftingModel}
+                          onChange={(e) => setModelSettings(prev => ({ ...prev, promptCraftingModel: e.target.value.trim() }))}
+                          placeholder="e.g. gemini-2.5-flash"
+                          className="flex-1 px-3 py-2 rounded-xl border border-fuchsia-300 bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomModelOverrides(prev => ({ ...prev, promptCraftingModel: false }));
+                            setModelSettings(prev => ({ ...prev, promptCraftingModel: 'gemini-2.5-flash' }));
+                          }}
+                          className="px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold"
+                        >
+                          Preset
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <select
+                      value={modelSettings.promptCraftingModel}
+                      onChange={(e) => {
+                        if (e.target.value === '__custom__') {
+                          setCustomModelOverrides(prev => ({ ...prev, promptCraftingModel: true }));
+                        } else {
+                          setModelSettings(prev => ({ ...prev, promptCraftingModel: e.target.value }));
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-900 focus:outline-none focus:border-fuchsia-500"
+                    >
+                      {(modelCandidates?.textModels || []).map((m) => (
+                        <option key={m.id} value={m.id}>{m.label} ({m.id})</option>
+                      ))}
+                      <option value="__custom__">⚙️ Custom Model Identifier...</option>
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span>Active Endpoint: <strong className="font-mono text-slate-800">{modelSettings.promptCraftingModel}</strong></span>
+                <span className="text-[10px] text-fuchsia-600 font-extrabold bg-fuchsia-50 px-2 py-0.5 rounded border border-fuchsia-200">Modules: PromptCraftingAgent</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── BOTTOM STICKY ACTION FOOTER BAR ── */}
+          <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center font-black">
+                <Cpu className="w-5 h-5 text-slate-700" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-slate-900">Save &amp; Apply All 8 Model Assignments</p>
+                <p className="text-[11px] text-slate-500 font-medium">Updates are deployed to the MongoDB system setting &amp; hot-reloaded across all services.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={handleResetModelSettings}
+                disabled={modelResetting || modelSaving}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-extrabold text-xs flex items-center gap-2 transition-all disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${modelResetting ? 'animate-spin' : ''}`} />
+                Reset Defaults
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveModelSettings}
+                disabled={modelSaving || modelResetting}
+                className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-xs shadow-md shadow-brand-500/20 flex items-center gap-2 transition-all disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {modelSaving ? 'Saving & Deploying...' : 'Save & Apply Config'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

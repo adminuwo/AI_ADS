@@ -82,10 +82,13 @@ Return a JSON object with:
 Return ONLY valid JSON.`;
 
   try {
-    const result = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const { getActiveModelConfigSync } = require('../../services/modelConfigService');
+    const activeConfig = getActiveModelConfigSync();
+    const seoModel = activeConfig.seoModel || activeConfig.textModel || 'gemini-2.5-flash';
+    const result = await aiService.generateJSON(prompt, { model: seoModel });
     const aiData = result?.data || result;
     if (aiData?.term) {
-      return { success: true, keyword: aiData, model: result?.model || 'gemini-3.5-flash' };
+      return { success: true, keyword: aiData, model: result?.model || seoModel };
     }
   } catch (err) {
     console.warn('Single keyword regeneration error:', err.message);

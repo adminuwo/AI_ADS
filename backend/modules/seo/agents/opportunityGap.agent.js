@@ -167,7 +167,10 @@ CRITICAL RULES:
 Return ONLY valid JSON.`;
 
   try {
-    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const { getActiveModelConfigSync } = require('../../../services/modelConfigService');
+    const activeConfig = getActiveModelConfigSync();
+    const seoModel = activeConfig.seoModel || activeConfig.textModel || 'gemini-2.5-flash';
+    const aiResult = await aiService.generateJSON(prompt, { model: seoModel });
     const data = aiResult?.data || aiResult;
 
     if (data) {

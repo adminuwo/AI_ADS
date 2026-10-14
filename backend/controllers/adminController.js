@@ -698,6 +698,151 @@ const assignPlanToRole = async (req, res) => {
   }
 };
 
+// ─── GET /api/admin/model-settings ───────────────────────────────────────────
+const getModelSettings = async (req, res) => {
+  try {
+    const { getActiveModelConfig } = require('../services/modelConfigService');
+    const config = await getActiveModelConfig();
+    return res.json({
+      success: true,
+      data: config,
+      candidateModels: {
+        text: [
+          { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash', provider: 'Google Cloud Vertex AI', tag: 'Fast & High Reasoning (Default)' },
+          { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'Google Cloud Vertex AI', tag: 'Verified Active in asia-south1' },
+          { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'Google Cloud Vertex AI', tag: 'Next-Gen Multimodal Flash' },
+          { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', provider: 'Google Cloud Vertex AI', tag: 'High Throughput' },
+          { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', provider: 'Google Cloud Vertex AI', tag: 'Deep Complex Reasoning' },
+          { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI', tag: 'Omni Multimodal' },
+          { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI', tag: 'Fast Lightweight' },
+        ],
+        image: [
+          { id: 'gemini-3.1-flash-image', name: 'Gemini 3.1 Flash Image', provider: 'Google Cloud Vertex AI', tag: 'Native Photorealistic Commercial Visuals (Default)' },
+          { id: 'imagen-3.0-generate-002', name: 'Imagen 3 Standard (002)', provider: 'Google Cloud Vertex AI', tag: 'High Fidelity Studio Render' },
+          { id: 'imagen-3.0-fast-generate-001', name: 'Imagen 3 Fast (001)', provider: 'Google Cloud Vertex AI', tag: 'High Velocity Generation' },
+          { id: 'dall-e-3', name: 'DALL-E 3', provider: 'OpenAI', tag: 'Creative Diffusion' }
+        ]
+      }
+    });
+  } catch (err) {
+    console.error('[Admin] getModelSettings error:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ─── POST /api/admin/model-settings ──────────────────────────────────────────
+const updateModelSettings = async (req, res) => {
+  try {
+    const rawPayload = req.body?.modelSettings || req.body;
+    if (!rawPayload || typeof rawPayload !== 'object' || Object.keys(rawPayload).length === 0) {
+      return res.status(400).json({ success: false, error: 'Invalid model settings payload' });
+    }
+    const cleanSettings = rawPayload.modelSettings && typeof rawPayload.modelSettings === 'object'
+      ? rawPayload.modelSettings
+      : rawPayload;
+
+    const { updateModelConfig } = require('../services/modelConfigService');
+    const updated = await updateModelConfig(cleanSettings, req.user?.email || 'Admin');
+    return res.json({
+      success: true,
+      message: 'AI Model configuration updated and applied live across all services!',
+      data: updated
+    });
+  } catch (err) {
+    console.error('[Admin] updateModelSettings error:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ─── POST /api/admin/model-settings/reset ────────────────────────────────────
+const resetModelSettings = async (req, res) => {
+  try {
+    const { resetModelConfig } = require('../services/modelConfigService');
+    const resetConfig = await resetModelConfig(req.user?.email || 'Admin');
+    return res.json({
+      success: true,
+      message: 'AI Model configuration reset to factory defaults',
+      data: resetConfig
+    });
+  } catch (err) {
+    console.error('[Admin] resetModelSettings error:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ─── POST /api/admin/test-model ──────────────────────────────────────────────
+const testModelConnection = async (req, res) => {
+  const { model, type = 'text', prompt = 'Hello AI test' } = req.body;
+  const { getActiveModelConfigSync } = require('../services/modelConfigService');
+  const activeConfig = getActiveModelConfigSync();
+  const targetModel = model || (type === 'image' ? (activeConfig.imageModel || 'gemini-3.1-flash-image') : (activeConfig.textModel || 'gemini-2.5-flash'));
+  const startTime = Date.now();
+
+  try {
+    if (type === 'image') {
+      const { globalAiClient, aiClient } = require('../config/vertex');
+      const client = globalAiClient || aiClient;
+      if (!client) throw new Error('Vertex AI client not initialized');
+
+      const testPrompt = 'A minimalist modern geometric commercial logo icon on clean studio white background';
+      const vertexRes = await client.models.generateContent({
+        model: targetModel,
+        contents: [{ role: 'user', parts: [{ text: testPrompt }] }],
+        config: { responseModalities: ['IMAGE'] }
+      });
+      const latencyMs = Date.now() - startTime;
+      const parts = vertexRes?.candidates?.[0]?.content?.parts || [];
+      const hasImage = parts.some(p => p.inlineData?.data);
+      return res.json({
+        success: true,
+        latencyMs,
+        model: targetModel,
+        message: hasImage ? `Image model "${targetModel}" responded successfully (${latencyMs}ms)` : `Image model "${targetModel}" responded without image part`,
+        hasImage
+      });
+    } else {
+      if (targetModel.startsWith('gpt')) {
+        const { chatWithOpenAI } = require('../services/aiService');
+        const aiRes = await chatWithOpenAI([{ role: 'user', content: 'Ping test. Reply with "OK" in 1 word.' }], { modelId: targetModel, maxTokens: 10 });
+        const latencyMs = Date.now() - startTime;
+        return res.json({
+          success: true,
+          latencyMs,
+          model: targetModel,
+          reply: aiRes.text?.trim() || 'OK',
+          message: `OpenAI model "${targetModel}" responded in ${latencyMs}ms`
+        });
+      } else {
+        const { globalAiClient, aiClient } = require('../config/vertex');
+        const client = globalAiClient || aiClient;
+        if (!client) throw new Error('Google Cloud Vertex AI client not initialized');
+        const genRes = await client.models.generateContent({
+          model: targetModel,
+          contents: [{ role: 'user', parts: [{ text: 'Ping test. Reply with "OK" in 1 word.' }] }]
+        });
+        const latencyMs = Date.now() - startTime;
+        const text = genRes.text || genRes.candidates?.[0]?.content?.parts?.[0]?.text || 'OK';
+        return res.json({
+          success: true,
+          latencyMs,
+          model: targetModel,
+          reply: text.trim(),
+          message: `Vertex AI model "${targetModel}" responded in ${latencyMs}ms`
+        });
+      }
+    }
+  } catch (err) {
+    const latencyMs = Date.now() - startTime;
+    return res.status(200).json({
+      success: false,
+      latencyMs,
+      model: targetModel,
+      error: err.message || 'Model execution error',
+      message: `Failed to test model "${targetModel}" (${err.message})`
+    });
+  }
+};
+
 module.exports = {
   getAllUserStats,
   getUserDetail,
@@ -712,6 +857,11 @@ module.exports = {
   getHelpDeskTickets,
   updateTicketStatus,
   getRolePlanMappings,
-  assignPlanToRole
+  assignPlanToRole,
+  getModelSettings,
+  updateModelSettings,
+  resetModelSettings,
+  testModelConnection
 };
+
 

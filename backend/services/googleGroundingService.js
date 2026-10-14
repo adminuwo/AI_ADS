@@ -5,15 +5,18 @@ const { aiClient, globalAiClient } = require('../config/vertex');
  * Executes real-time Google Search Grounding queries using Google Cloud Vertex AI / Gemini SDK
  */
 
-async function searchWithGoogleGrounding(prompt, model = 'gemini-3.5-flash') {
+async function searchWithGoogleGrounding(prompt, model = null) {
   const client = globalAiClient || aiClient;
   if (!client) {
     console.warn('[GoogleGrounding] Google Vertex/Gemini client is not initialized.');
     return null;
   }
 
-  let requestedModel = 'gemini-3.5-flash';
-  const candidateModels = ['gemini-3.5-flash'];
+  const { getActiveModelConfigSync } = require('./modelConfigService');
+  const modelConfig = getActiveModelConfigSync();
+  const primaryModel = model || modelConfig.groundingModel || modelConfig.textModel || 'gemini-2.5-flash';
+  const fallbackModel = modelConfig.fallbackTextModel || 'gemini-2.5-flash';
+  const candidateModels = [primaryModel, fallbackModel].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
   for (const mName of candidateModels) {
     let maxRetries = 2;

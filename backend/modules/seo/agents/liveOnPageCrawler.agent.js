@@ -879,7 +879,10 @@ Return a JSON with:
 Return ONLY valid JSON.`;
 
   try {
-    const aiRes = await aiService.generateJSON(brandPrompt, { model: 'gemini-3.5-flash' });
+    const { getActiveModelConfigSync } = require('../../../services/modelConfigService');
+    const activeConfig = getActiveModelConfigSync();
+    const seoModel = activeConfig.seoModel || activeConfig.textModel || 'gemini-2.5-flash';
+    const aiRes = await aiService.generateJSON(brandPrompt, { model: seoModel });
     const data = aiRes?.data || aiRes;
     if (data?.brandName) resolvedBrand = data.brandName;
     if (data?.industry) resolvedIndustry = data.industry;

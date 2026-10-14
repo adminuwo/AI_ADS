@@ -54,17 +54,27 @@ export const Login = ({ onLoginSuccess }) => {
         if (savedAvatar) userAvatar = savedAvatar;
       } catch (e) { }
     }
+    const isAdmin = Boolean(
+      uUser.role === 'SuperAdmin' ||
+      uUser.role === 'Admin' ||
+      uUser.role === 'admin' ||
+      cleanEmail === 'admin@aiads.com' ||
+      cleanEmail === 'admin@uwo24.com' ||
+      cleanEmail.startsWith('admin@') ||
+      cleanEmail === (import.meta.env?.VITE_ADMIN_EMAIL || '').toLowerCase().trim()
+    );
+
     const formattedUser = {
       id: uUser.id || uUser._id || `usr_${Date.now()}`,
       _id: uUser.id || uUser._id || `usr_${Date.now()}`,
       email: cleanEmail,
       name: uUser.name || cleanEmail.split('@')[0],
-      role: uUser.role || (cleanEmail === 'admin@aiads.com' ? 'SuperAdmin' : 'AgencyAdmin'),
+      role: isAdmin ? 'SuperAdmin' : (uUser.role || 'AgencyAdmin'),
       avatar: userAvatar,
       accentColor: uUser.accentColor || 'indigo',
       appearance: uUser.appearance || 'light',
       credits: uUser.credits !== undefined ? uUser.credits : 500,
-      plan: uUser.plan || 'free',
+      plan: isAdmin ? 'enterprise' : (uUser.plan || 'free'),
     };
     try {
       localStorage.setItem('aisa_token', data.token || data.access_token);

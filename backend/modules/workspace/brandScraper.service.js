@@ -181,7 +181,11 @@ async function fetchWebsiteHtmlWithResilience(cleanUrl, brandName, domainName) {
       const { aiClient, globalAiClient } = require('../../config/vertex');
       const client = globalAiClient || aiClient;
       if (client) {
-        const candidateModels = ['gemini-3.5-flash'];
+        const { getActiveModelConfigSync } = require('../../services/modelConfigService');
+        const activeConfig = getActiveModelConfigSync();
+        const primaryModel = activeConfig.groundingModel || activeConfig.textModel || 'gemini-2.5-flash';
+        const fallbackModel = activeConfig.fallbackTextModel || 'gemini-2.5-flash';
+        const candidateModels = [primaryModel, fallbackModel].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
         let aiRes = null;
         for (const modelName of candidateModels) {
           try {
@@ -773,7 +777,11 @@ Return ONLY a raw JSON array of 3 to 5 hex string codes representing the exact o
 
 Return ONLY a raw JSON array of hex strings with no markdown formatting. Example: ["#000000", "#D8A016", "#FED260", "#9F6B08"]`;
 
-      const candidateModels = ['gemini-3.5-flash'];
+      const { getActiveModelConfigSync } = require('../../services/modelConfigService');
+      const activeConfig = getActiveModelConfigSync();
+      const primaryModel = activeConfig.groundingModel || activeConfig.visionModel || activeConfig.textModel || 'gemini-2.5-flash';
+      const fallbackModel = activeConfig.fallbackTextModel || 'gemini-2.5-flash';
+      const candidateModels = [primaryModel, fallbackModel].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
       let aiRes = null;
       for (const modelName of candidateModels) {
         try {

@@ -380,15 +380,17 @@ async function _executeBrandAdImageGeneration({
   const targetAspect = aspect || ((platLower.includes('reel') || platLower.includes('tiktok') || platLower.includes('story')) ? '9:16' : platLower === 'instagram' ? '1:1' : '16:9');
 
   let imageUrl = '';
-  let engineUsed = 'gemini-3.1-flash-image';
+  const { getActiveModelConfigSync } = require('./modelConfigService');
+  const modelConfig = getActiveModelConfigSync();
+  const primaryImg = modelConfig.imageModel || 'gemini-3.1-flash-image';
+  const fallbackImg = modelConfig.fallbackImageModel || 'imagen-3.0-generate-002';
+  let engineUsed = primaryImg;
 
-  // Tier 1: Try Vertex AI / @google/genai with gemini-3.1-flash-image model
+  // Tier 1: Try Vertex AI / @google/genai with configured image models
   let gcsPath = null;
   const client = globalAiClient || aiClient;
   if (client && typeof client.models?.generateContent === 'function') {
-    const candidateModels = [
-      'gemini-3.1-flash-image'
-    ];
+    const candidateModels = [primaryImg, fallbackImg].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
     for (const modelName of candidateModels) {
       if (imageUrl) break;
       try {

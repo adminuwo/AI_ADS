@@ -64,7 +64,11 @@ async function fetchImageAsBase64(imageUrl) {
 async function analyzeProductFromImage(client, referenceImageBase64, referenceImageMime) {
   if (!referenceImageBase64 || !referenceImageMime) return null;
 
-  const candidateTextModels = ['gemini-3.5-flash'];
+  const { getActiveModelConfigSync } = require('./modelConfigService');
+  const modelConfig = getActiveModelConfigSync();
+  const primaryModel = modelConfig.visionModel || modelConfig.textModel || 'gemini-2.5-flash';
+  const fallbackModel = modelConfig.fallbackTextModel || 'gemini-2.5-flash';
+  const candidateTextModels = [primaryModel, fallbackModel].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
   for (const modelName of candidateTextModels) {
     try {
@@ -192,7 +196,11 @@ CRITICAL RULES:
 - Specify camera: 85mm portrait lens, 50mm prime, macro close-up, etc.
 - End with photography quality cues: "8K resolution, photorealistic, commercial product photography, Hasselblad H6D-100c quality, no rendered text, no artificial logos"`;
 
-  const candidateTextModels = ['gemini-3.5-flash'];
+  const { getActiveModelConfigSync } = require('./modelConfigService');
+  const modelConfig = getActiveModelConfigSync();
+  const primaryModel = modelConfig.promptCraftingModel || modelConfig.textModel || 'gemini-2.5-flash';
+  const fallbackModel = modelConfig.fallbackTextModel || 'gemini-2.5-flash';
+  const candidateTextModels = [primaryModel, fallbackModel].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
   for (const modelName of candidateTextModels) {
     try {
@@ -341,9 +349,12 @@ async function runImageEditingAgent({
   let gcsPath = null;
   let engineUsed = 'Multi-Model Pipeline';
 
-  const candidateImageModels = [
-    'gemini-3.1-flash-image'
-  ];
+  const { getActiveModelConfigSync } = require('./modelConfigService');
+  const modelConfig = getActiveModelConfigSync();
+  const primaryImg = modelConfig.imageModel || 'gemini-3.1-flash-image';
+  const fallbackImg = modelConfig.fallbackImageModel || 'imagen-3.0-generate-002';
+
+  const candidateImageModels = [primaryImg, fallbackImg].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
   if (client) {
     for (const modelName of candidateImageModels) {

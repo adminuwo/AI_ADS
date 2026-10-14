@@ -281,7 +281,7 @@ exports.sendMessage = async (req, res) => {
     };
     session.messages.push(aiMsg);
     session.lastModified = Date.now();
-    session.model = model;
+    session.model = aiResult?.model || model;
 
     // Save in memory cache always
     memoryChatSessions.set(sessionId, session);

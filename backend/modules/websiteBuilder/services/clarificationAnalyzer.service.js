@@ -61,11 +61,15 @@ Return valid JSON with format:
     const userPromptPayload = `User Prompt: "${prompt}"
 Workspace Brand: ${brandContext.brandName || 'Not specified'} (${brandContext.industryCategory || 'General'})`;
 
+    const { getActiveModelConfigSync } = require('../../../services/modelConfigService');
+    const activeConfig = getActiveModelConfigSync();
+    const wbModel = activeConfig.websiteBuilderModel || activeConfig.textModel || 'gemini-2.5-flash';
+
     const aiRes = await generateJSON({
       systemPrompt: aiSystemPrompt,
       userPrompt: userPromptPayload,
       temperature: 0.2,
-      model: 'gemini-3.5-flash'
+      model: wbModel
     });
 
     if (aiRes && aiRes.questions && Array.isArray(aiRes.questions) && aiRes.questions.length > 0) {

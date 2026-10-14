@@ -104,7 +104,11 @@ ${companyDescription ? `- Description: "${companyDescription}"` : ''}
 
 Output the master image generation prompt now:`;
 
-    const candidateModels = ['gemini-3.5-flash'];
+    const { getActiveModelConfigSync } = require('./modelConfigService');
+    const modelConfig = getActiveModelConfigSync();
+    const primaryModel = modelConfig.promptCraftingModel || modelConfig.textModel || 'gemini-2.5-flash';
+    const fallbackModel = modelConfig.fallbackTextModel || 'gemini-2.5-flash';
+    const candidateModels = [primaryModel, fallbackModel].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
     for (const modelName of candidateModels) {
       try {

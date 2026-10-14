@@ -95,17 +95,19 @@ const chatWithGemini = async (messages, options = {}) => {
       });
     }
 
-    let requestedModel = 'gemini-3.5-flash';
-    if (options.modelId || options.model) {
-      const customModel = String(options.modelId || options.model).toLowerCase();
-      if (customModel.includes('gemini') || customModel.includes('3.5') || customModel.includes('flash') || customModel.includes('pro')) {
-        requestedModel = 'gemini-3.5-flash';
-      } else {
-        requestedModel = customModel;
-      }
+    const { getActiveModelConfigSync } = require('./modelConfigService');
+    const activeModelConfig = getActiveModelConfigSync();
+
+    let requestedModel = options.modelId || activeModelConfig.textModel || 'gemini-2.5-flash';
+    if (requestedModel === 'gemini' || requestedModel === 'default') {
+      requestedModel = activeModelConfig.textModel || 'gemini-2.5-flash';
     }
 
-    const modelSequence = ['gemini-3.5-flash'];
+    const fallbackCandidate = activeModelConfig.fallbackTextModel || 'gpt-4o';
+    const modelSequence = [requestedModel];
+    if (fallbackCandidate !== requestedModel) {
+      modelSequence.push(fallbackCandidate);
+    }
 
     let lastError = null;
     for (const client of clientCandidates) {
@@ -513,37 +515,49 @@ const generateSmartFallbackResponse = (messages, options = {}) => {
 // ─── Main Chat Dispatcher with Robust Fallback Chain ──────────────────────────
 const chat = async (messages, options = {}) => {
   const reqTag = options.reqId ? `[WB:${options.reqId}] ` : '[AI-Service] ';
-  const modelChoice = (options.model || 'gemini').toLowerCase();
+
+  const { getActiveModelConfigSync } = require('./modelConfigService');
+  const activeModelConfig = getActiveModelConfigSync();
+
+  const requestedModel = (options.modelId || options.model || '').trim();
+  let configuredTextModel = activeModelConfig.textModel || 'gemini-2.5-flash';
+  if (requestedModel && requestedModel !== 'gemini' && requestedModel !== 'default') {
+    configuredTextModel = requestedModel;
+  }
 
   const geminiAvailable = !!aiClient;
+  const isTargetOpenAI = (configuredTextModel.toLowerCase().startsWith('gpt') || configuredTextModel.toLowerCase() === 'openai');
 
   // Print generated prompt to terminal
   const lastUserMsg = messages && messages.length > 0 ? (messages[messages.length - 1].content || '') : '';
+
   console.log('\n==================================================');
-  console.log(`🤖 [GENERATED AI TEXT PROMPT] (${options.model || 'gemini'})`);
+  console.log(`🤖 [GENERATED AI TEXT PROMPT] (${configuredTextModel})`);
   console.log('==================================================');
   console.log(lastUserMsg.trim() || JSON.stringify(messages, null, 2));
   console.log('==================================================\n');
 
-  console.log(`${reqTag}AI Request initiated. Target provider: ${modelChoice}, Gemini Available: ${geminiAvailable}`);
+  console.log(`${reqTag}AI Request initiated. Target model: ${configuredTextModel}, Gemini Available: ${geminiAvailable}`);
 
   try {
-    if (modelChoice === 'gpt-4o' || modelChoice === 'openai') {
-      console.log(`${reqTag}Selected AI provider: OpenAI (Model: gpt-4o)`);
-      return await chatWithOpenAI(messages, options);
+    if (isTargetOpenAI) {
+      const openAiModel = configuredTextModel.startsWith('gpt') ? configuredTextModel : 'gpt-4o';
+      console.log(`${reqTag}Selected AI provider: OpenAI (Model: ${openAiModel})`);
+      return await chatWithOpenAI(messages, { ...options, modelId: openAiModel });
     } else if (!geminiAvailable) {
-      console.log(`${reqTag}Gemini/Vertex not configured. Attempting OpenAI GPT-4o...`);
-      return await chatWithOpenAI(messages, options);
+      console.log(`${reqTag}Gemini/Vertex not configured. Attempting OpenAI fallback...`);
+      return await chatWithOpenAI(messages, { ...options, modelId: activeModelConfig.fallbackTextModel || 'gpt-4o' });
     } else {
-      console.log(`${reqTag}Selected AI provider: Gemini / Vertex AI`);
-      return await chatWithGemini(messages, options);
+      console.log(`${reqTag}Selected AI provider: Gemini / Vertex AI (Model: ${configuredTextModel})`);
+      return await chatWithGemini(messages, { ...options, modelId: configuredTextModel });
     }
   } catch (primaryError) {
     const safeError = primaryError.message ? primaryError.message.replace(/(key|token|auth)=[^&\s]+/gi, '$1=***') : 'Unknown error';
-    console.warn(`${reqTag}Primary AI provider failed (${safeError}). Attempting OpenAI fallback...`);
+    const fallbackModel = activeModelConfig.fallbackTextModel || 'gpt-4o';
+    console.warn(`${reqTag}Primary AI provider failed (${safeError}). Attempting fallback (${fallbackModel})...`);
     try {
-      console.log(`${reqTag}OpenAI fallback started...`);
-      return await chatWithOpenAI(messages, options);
+      console.log(`${reqTag}Fallback (${fallbackModel}) started...`);
+      return await chatWithOpenAI(messages, { ...options, modelId: fallbackModel });
     } catch (fallbackError) {
       const safeFbError = fallbackError.message ? fallbackError.message.replace(/(key|token|auth)=[^&\s]+/gi, '$1=***') : 'Unknown error';
       console.warn(`${reqTag}All external AI APIs failed (${safeFbError}). Activating AI Ads™ Smart Fallback Engine...`);

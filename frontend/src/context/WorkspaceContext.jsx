@@ -819,11 +819,37 @@ export const WorkspaceProvider = ({ children }) => {
           const savedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
           if (savedAvatar) u.avatar = savedAvatar;
         }
+        const uEmail = String(u.email || savedEmail || '').toLowerCase().trim();
+        const isAdmin = Boolean(
+          u.role === 'SuperAdmin' ||
+          u.role === 'Admin' ||
+          u.role === 'admin' ||
+          uEmail === 'admin@aiads.com' ||
+          uEmail === 'admin@uwo24.com' ||
+          uEmail.startsWith('admin@') ||
+          uEmail === (import.meta.env?.VITE_ADMIN_EMAIL || '').toLowerCase().trim()
+        );
+        if (isAdmin) {
+          u.role = 'SuperAdmin';
+          if (!u.plan || u.plan === 'free') u.plan = 'enterprise';
+        }
         return u;
       } else if (savedEmail && savedToken) {
         const cleanEmail = savedEmail.toLowerCase().trim();
         const savedAvatar = localStorage.getItem(`aisa_user_avatar_${cleanEmail}`);
-        return { email: savedEmail, name: savedName || savedEmail.split('@')[0], avatar: savedAvatar || '', role: 'AgencyAdmin' };
+        const isAdmin = Boolean(
+          cleanEmail === 'admin@aiads.com' ||
+          cleanEmail === 'admin@uwo24.com' ||
+          cleanEmail.startsWith('admin@') ||
+          cleanEmail === (import.meta.env?.VITE_ADMIN_EMAIL || '').toLowerCase().trim()
+        );
+        return { 
+          email: savedEmail, 
+          name: savedName || savedEmail.split('@')[0], 
+          avatar: savedAvatar || '', 
+          role: isAdmin ? 'SuperAdmin' : 'AgencyAdmin',
+          plan: isAdmin ? 'enterprise' : 'free'
+        };
       }
       return null;
     } catch (e) {

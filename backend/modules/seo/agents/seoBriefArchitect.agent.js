@@ -90,7 +90,10 @@ Generate a JSON object with:
 Return ONLY valid JSON.`;
 
   try {
-    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const { getActiveModelConfigSync } = require('../../../services/modelConfigService');
+    const activeConfig = getActiveModelConfigSync();
+    const seoModel = activeConfig.seoModel || activeConfig.textModel || 'gemini-2.5-flash';
+    const aiResult = await aiService.generateJSON(prompt, { model: seoModel });
     const aiBrief = aiResult?.data || aiResult;
 
     if (aiBrief && Array.isArray(aiBrief.suggestedTitles) && aiBrief.suggestedTitles.length > 0) {
@@ -228,7 +231,10 @@ Return a JSON object with:
 Return ONLY valid JSON.`;
 
   try {
-    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const { getActiveModelConfigSync } = require('../../../services/modelConfigService');
+    const activeConfig = getActiveModelConfigSync();
+    const seoModel = activeConfig.seoModel || activeConfig.textModel || 'gemini-2.5-flash';
+    const aiResult = await aiService.generateJSON(prompt, { model: seoModel });
     const aiArticle = aiResult?.data || aiResult;
 
     if (aiArticle && aiArticle.content && aiArticle.content.length > 500) {
@@ -242,7 +248,7 @@ Return ONLY valid JSON.`;
         content: aiArticle.content,
         faqSection: aiArticle.faqSection || [],
         socialSnippet: aiArticle.socialSnippet || '',
-        model: aiResult?.model || 'gemini-3.5-flash'
+        model: aiResult?.model || 'active-model'
       };
     }
   } catch (err) {
@@ -304,7 +310,10 @@ Return a JSON object with:
 Return ONLY valid JSON.`;
 
   try {
-    const aiResult = await aiService.generateJSON(prompt, { model: 'gemini-3.5-flash' });
+    const { getActiveModelConfigSync } = require('../../../services/modelConfigService');
+    const activeConfig = getActiveModelConfigSync();
+    const seoModel = activeConfig.seoModel || activeConfig.textModel || 'gemini-2.5-flash';
+    const aiResult = await aiService.generateJSON(prompt, { model: seoModel });
     const aiData = aiResult?.data || aiResult;
     if (aiData && aiData.linkedInPost) {
       return { success: true, outputs: aiData };
