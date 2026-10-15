@@ -448,97 +448,132 @@ app.post('/api/auth/sso/uwo-login', handleUwoLogin);
 
 // Google SSO Login Endpoint
 const handleGoogleLogin = async (req, res) => {
-  const { credential, email: directEmail, name: directName, picture: directPicture } = req.body;
-  if (!credential && !directEmail) {
-    return res.status(400).json({ success: false, error: 'Google credential or account email is required' });
+  const { credential } = req.body;
+  if (!credential || typeof credential !== 'string') {
+    return res.status(400).json({ success: false, error: 'Google credential is required' });
   }
 
   try {
-    let email;
-    let name;
-    let googleId;
-    let picture;
+    const { OAuth2Client } = require('google-auth-library');
+    
+    // Allowed audiences: Web client ID, Android client ID, iOS client ID
+    const validAudiences = [
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_ANDROID_CLIENT_ID,
+      process.env.GOOGLE_IOS_CLIENT_ID,
+      '743928421487-jdji1kn6u5gpklrgiv52956cftcojlj3.apps.googleusercontent.com',
+      '743928421487-e905nk7tg23dk801bd9kdo9t1lrihiqo.apps.googleusercontent.com',
+      '743928421487-kqpqmtf88raagsdpt089qo0thmp245gi.apps.googleusercontent.com'
+    ].filter(Boolean);
 
-    if (credential && credential !== 'demo_google_token') {
-      const { OAuth2Client } = require('google-auth-library');
-      const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-      
-      let payload;
-      // Check if the credential is a JWT (id_token) or an access_token
-      if (credential.split('.').length === 3) {
-        const ticket = await client.verifyIdToken({
-            idToken: credential,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        payload = ticket.getPayload();
-      } else {
-        // It's an access_token, fetch user info from Google API
-        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${credential}` }
-        });
-        if (!userInfoRes.ok) {
-          throw new Error('Failed to fetch user profile using the provided access token.');
-        }
-        payload = await userInfoRes.json();
-      }
-      
-      email = payload.email;
-      name = payload.name;
-      googleId = payload.sub;
-      picture = payload.picture;
-    } else if (directEmail) {
-      email = directEmail;
-      name = directName || directEmail.split('@')[0];
-      googleId = `google_${Date.now()}`;
-      picture = directPicture || '';
+    const client = new OAuth2Client();
+    let payload;
+
+    // 1. If credential is a JWT ID token (3 parts: header.payload.signature)
+    if (credential.split('.').length === 3) {
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: validAudiences.length > 0 ? validAudiences : undefined,
+      });
+      payload = ticket.getPayload();
     } else {
-      return res.status(400).json({ success: false, error: 'Valid Google credential or account email is required' });
+      // 2. If credential is an OAuth2 access token (e.g. from web GIS popup)
+      const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${credential}` }
+      });
+      if (!userInfoRes.ok) {
+        return res.status(401).json({ success: false, error: 'Failed to verify Google access token' });
+      }
+      payload = await userInfoRes.json();
     }
-    
-    const cleanEmail = email.toLowerCase().trim();
+
+    if (!payload || !payload.email) {
+      return res.status(400).json({ success: false, error: 'Google authentication payload is missing an email address' });
+    }
+
+    // Security: verify that Google confirms email ownership
+    if (payload.email_verified === false) {
+      return res.status(403).json({ success: false, error: 'Google email address is not verified by Google.' });
+    }
+
+    const cleanEmail = payload.email.toLowerCase().trim();
+    const name = payload.name || cleanEmail.split('@')[0];
+    const googleSub = payload.sub || String(payload.id);
+    const picture = payload.picture || '';
+
     let user = null;
-    
+    const User = require('./models/User');
+
     try {
-      user = await User.findOne({ email: cleanEmail });
+      // Search by providerId (Google sub) OR email
+      user = await User.findOne({
+        $or: [
+          { providerId: googleSub },
+          { email: cleanEmail }
+        ]
+      }).select('+providerId');
+
       if (!user) {
-        user = await User.create({
-          email: cleanEmail,
-          name: name || cleanEmail.split('@')[0],
-          provider: 'google',
-          providerId: googleId,
-          isVerified: true,
-          avatar: picture || '',
-          appearance: 'light',
-          role: isAdminEmail(cleanEmail) ? 'SuperAdmin' : 'AgencyAdmin',
-          credits: 500,
-          plan: 'free'
-        });
-        console.log(`👤 New Google SSO user registered in MongoDB: ${cleanEmail}`);
-      } else {
-        if (!user.provider || user.provider === 'local') {
-          user.provider = 'google';
+        // Safe creation with duplicate key handling
+        try {
+          user = await User.create({
+            email: cleanEmail,
+            name: name,
+            provider: 'google',
+            providerId: googleSub,
+            isVerified: true,
+            avatar: picture,
+            appearance: 'light',
+            role: isAdminEmail(cleanEmail) ? 'SuperAdmin' : 'AgencyAdmin',
+            credits: 500,
+            plan: 'free'
+          });
+          console.log(`👤 New verified Google user registered: ${cleanEmail} (sub: ${googleSub})`);
+        } catch (createErr) {
+          if (createErr.code === 11000) {
+            // Handled concurrent signup race condition
+            user = await User.findOne({ email: cleanEmail }).select('+providerId');
+          } else {
+            throw createErr;
+          }
         }
-        user.isVerified = true;
-        if (name && (!user.name || user.name === user.email.split('@')[0])) {
-          user.name = name;
+      }
+
+      if (user) {
+        // Secure account linking policy:
+        let needsSave = false;
+        if (!user.providerId) {
+          user.providerId = googleSub;
+          needsSave = true;
+        }
+        if (!user.isVerified) {
+          user.isVerified = true;
+          needsSave = true;
         }
         if (picture && !user.avatar) {
           user.avatar = picture;
+          needsSave = true;
         }
-        await user.save().catch(e => console.log('Google user update note:', e.message));
+        if (name && (!user.name || user.name === cleanEmail.split('@')[0])) {
+          user.name = name;
+          needsSave = true;
+        }
+        if (needsSave) {
+          await user.save().catch(e => console.log('Google user link note:', e.message));
+        }
       }
     } catch (dbErr) {
       console.log('MongoDB Google Auth Note (Checking Memory Store):', dbErr.message);
-      user = memoryUsers.find(u => u.email === cleanEmail);
+      user = memoryUsers.find(u => u.email === cleanEmail || u.providerId === googleSub);
       if (!user) {
         user = {
           id: `usr_${Date.now()}`,
           email: cleanEmail,
-          name: name || cleanEmail.split('@')[0],
+          name: name,
           provider: 'google',
-          providerId: googleId,
+          providerId: googleSub,
           isVerified: true,
-          avatar: picture || '',
+          avatar: picture,
           accentColor: 'indigo',
           appearance: 'light',
           role: isAdminEmail(cleanEmail) ? 'SuperAdmin' : 'AgencyAdmin',
@@ -546,14 +581,22 @@ const handleGoogleLogin = async (req, res) => {
           plan: 'free'
         };
         memoryUsers.push(user);
-        console.log(`👤 New Google SSO user registered in Memory: ${cleanEmail}`);
+        console.log(`👤 New Google user registered in Memory: ${cleanEmail}`);
       }
+    }
+
+    if (!user) {
+      return res.status(500).json({ success: false, error: 'Failed to authenticate user' });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({ success: false, error: 'Your account has been deactivated. Please contact support.' });
     }
 
     const userId = user._id ? user._id.toString() : String(user.id || `usr_${Date.now()}`);
     let userRole = user.role || 'AgencyAdmin';
     if (isAdminEmail(cleanEmail)) {
-       userRole = 'SuperAdmin';
+      userRole = 'SuperAdmin';
     }
 
     const token = jwt.sign(
@@ -569,8 +612,8 @@ const handleGoogleLogin = async (req, res) => {
         id: userId,
         _id: userId,
         email: cleanEmail,
-        name: user.name || cleanEmail.split('@')[0],
-        avatar: user.avatar || '',
+        name: user.name || name,
+        avatar: user.avatar || picture || '',
         accentColor: user.accentColor || 'indigo',
         appearance: user.appearance || 'light',
         role: userRole,
@@ -581,7 +624,7 @@ const handleGoogleLogin = async (req, res) => {
 
   } catch (err) {
     console.error('Google Auth verification error:', err);
-    return res.status(500).json({ success: false, error: 'Google Auth Error: ' + err.message });
+    return res.status(401).json({ success: false, error: 'Google authentication failed: ' + err.message });
   }
 };
 
